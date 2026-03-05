@@ -24,3 +24,24 @@ Proof.
   apply Bool.andb_comm.
 Qed.
 
+(*|
+Notes
+=====
+
+What we wish for is roughly the following embed OCaml tactic:
+
+.. code:: ocaml
+
+   Goal.enter_one begin fun goal ->
+     let conclusion = Goal.conclusion goal in
+     let pattern = Pattern.of_econstr goal conclusion in
+     let results = Command.SearchPattern.run ~goal conclusion in
+     let message =
+       if List.is_empty results then Message.error "No theorem could be applied."
+       else Message.message
+              ~trim:true
+              "Here is the list of theorems that could be applied: %s"
+              (results |> List.map SearchResult.print |> Message.join Message.new_line)
+     in Message.print message
+   end
+|*)
