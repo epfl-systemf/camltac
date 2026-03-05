@@ -1,0 +1,5 @@
+*~
+*.vo*
+*.cache
+*.glob
+.*.aux
