@@ -48,13 +48,7 @@ let subst_vars env sigma ids t =
   (sigma, subst sigma t)
 
 let get_pattern env sigma t =
-  let rec get_vars sigma t =
-    let open Names in
-    match EConstr.kind sigma t with
-    | Var id -> Id.Set.singleton id
-    | _ -> EConstr.fold sigma (fun ids t -> Id.Set.union ids (get_vars sigma t)) Id.Set.empty t
-  in
-  let ids = get_vars sigma t in
+  let ids = Termops.collect_vars sigma t in
   let (sigma, t) = subst_vars env sigma ids t in
   (sigma, Patternops.pattern_of_constr env sigma t)
 
