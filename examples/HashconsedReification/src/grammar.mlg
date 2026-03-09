@@ -1,0 +1,4 @@
+DECLARE PLUGIN "HashconsedReification.plugin"
+
+{
+}
