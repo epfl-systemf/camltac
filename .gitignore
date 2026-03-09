@@ -1,5 +1,13 @@
 *~
+
+# Rocq
 *.vo*
 *.cache
 *.glob
 .*.aux
+
+# OCaml
+*.o
+*.a
+*.d
+*.cm*

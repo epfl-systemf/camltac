@@ -1,7 +1,3 @@
 Makefile.rocq
 Makefile.rocq.conf
 .merlin
-*.a
-*.o
-*.d
-*.cm*
