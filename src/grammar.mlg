@@ -1,0 +1,11 @@
+DECLARE PLUGIN "mltac.plugin"
+
+{
+  (* Required for wit_* functions *)
+  open Stdarg
+}
+
+VERNAC COMMAND EXTEND LoadFile CLASSIFIED AS SIDEFF
+| [ "Load" "OCaml" "File" string(file) ] ->
+  { Main.load_file file }
+END

@@ -1,0 +1,11 @@
+(library
+ (name mltac_plugin)
+ (public_name mltac.plugin)
+ (synopsis "OCaml as a Tactic Language")
+ (libraries
+   rocq-runtime.plugins.ltac2
+   unix
+   dynlink))
+
+(rocq.pp
+ (modules grammar))

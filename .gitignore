@@ -11,3 +11,6 @@
 *.a
 *.d
 *.cm*
+
+# Dune
+_build/

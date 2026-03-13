@@ -1,0 +1,6 @@
+# We provide a _RocqProject only for IDEs; dune takes care of the build.
+
+-R theories MLtac
+
+theories/Init.v
+theories/MLtac.v

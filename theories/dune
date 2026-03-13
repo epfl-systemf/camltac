@@ -1,0 +1,4 @@
+(rocq.theory
+ (name MLtac)
+ (package mltac)
+ (plugins mltac.plugin))
