@@ -13,7 +13,20 @@ GLOBAL:
 
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
-        { let sep, text = Tok.trim_quotation q in text } ] ]
+        { let sep, text = Tok.trim_quotation q in
+	  (* Get location of OCaml code only *)
+	  let sep_length =
+	    match sep with
+	    | Some sep ->
+	       q |> String.to_seq
+	         |> Seq.take_while (fun c -> c = sep)
+		 |> Seq.length
+ 	    | None -> 0
+	  in
+	  let start_shift = String.length "ocaml:" + sep_length in
+	  let end_shift = sep_length in
+	  let loc = Loc.shift_loc start_shift end_shift loc in
+	  loc, text } ] ]
 
   ;
 END
@@ -29,5 +42,5 @@ END
 
 VERNAC COMMAND EXTEND RunOCamlSnippet CLASSIFIED AS SIDEFF
 | [ "Run" ocaml(c) ] ->
-   { Main.run_snippet c }
+   { let loc, snippet = c in Main.run_snippet ~loc snippet }
 END

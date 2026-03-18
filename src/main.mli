@@ -2,4 +2,4 @@
 val run_file : string -> unit
 
 (** Run the given OCaml snippet in the current Rocq context. *)
-val run_snippet : string -> unit
+val run_snippet : loc:Loc.t -> string -> unit
