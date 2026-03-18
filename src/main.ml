@@ -31,6 +31,6 @@ let run_snippet ~loc snippet =
 
 let run_snippet_as_term ~loc snippet =
   let snippet = prepend_line_number_directives loc snippet in
-  let snippet = "let res = \n" ^ snippet ^ "\n in Registry.out := Some res" in
+  let snippet = "let res = \n" ^ snippet ^ "\n in Registry.register_term res" in
   Runner.run_snippet snippet;
-  Option.get !Registry.out
+  Registry.get_last_term ()
