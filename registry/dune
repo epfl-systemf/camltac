@@ -1,0 +1,5 @@
+(library
+ (name registry)
+ (public_name mltac.plugin.registry)
+ (libraries
+   rocq-runtime.plugins.ltac2))

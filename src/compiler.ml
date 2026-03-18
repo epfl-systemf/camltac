@@ -68,6 +68,8 @@ let compilation_command file out =
       "-shared";
       "-package";
       String.concat "," rocq_packages;
+      "-package";
+      "mltac.plugin.registry";
       "-o";
       out;
       file

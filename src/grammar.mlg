@@ -4,12 +4,15 @@ DECLARE PLUGIN "mltac.plugin"
   (* Required for wit_* functions *)
   open Stdarg
 
+  (* Term grammar *)
+  open Procq.Constr
+
   let ocaml_code = Procq.Entry.make "ocaml_code"
 }
 
 GRAMMAR EXTEND Gram
 GLOBAL:
-  ocaml_code;
+  ocaml_code term;
 
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
@@ -28,6 +31,11 @@ GLOBAL:
 	  let loc = Loc.shift_loc start_shift end_shift loc in
 	  loc, text } ] ]
 
+  ;
+  term: LEVEL "0"
+    [ [ c = ocaml_code ->
+        { let loc, code = c in
+	  CAst.make ~loc (Main.run_snippet_as_term ~loc code) } ] ]
   ;
 END
 

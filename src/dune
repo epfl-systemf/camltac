@@ -5,7 +5,8 @@
  (libraries
    rocq-runtime.plugins.ltac2
    unix
-   dynlink))
+   dynlink
+   mltac.plugin.registry))
 
 (rocq.pp
  (modules grammar))
