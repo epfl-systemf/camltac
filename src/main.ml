@@ -1,12 +1,6 @@
 open Pp
 
-let run_file file =
-  match Compiler.compile file with
-  | Ok out ->
-     Loader.load_file out;
-     Sys.remove out
-  | Error err ->
-     CErrors.user_err (fmt "Compilation of %s exited with error code %d." file err)
+let run_file = Runner.run_file
 
 (** Prepend line number directives to each line of the snippet.
 
@@ -33,24 +27,10 @@ let prepend_line_number_directives loc snippet =
 
 let run_snippet ~loc snippet =
   let snippet = prepend_line_number_directives loc snippet in
-  Temp_file.with_temp_file ~prefix:"snippet" ~suffix:".ml" snippet begin fun temp_file ->
-    match Compiler.compile temp_file with
-    | Ok out ->
-       Loader.load_file out;
-       Sys.remove out
-    | Error err ->
-       CErrors.user_err (fmt "Compilation of snippet exited with error code %d." err)
-  end
+  Runner.run_snippet snippet
 
 let run_snippet_as_term ~loc snippet =
   let snippet = prepend_line_number_directives loc snippet in
   let snippet = "let res = \n" ^ snippet ^ "\n in Registry.out := Some res" in
-  Temp_file.with_temp_file ~prefix:"snippet" ~suffix:".ml" snippet begin fun temp_file ->
-    match Compiler.compile temp_file with
-    | Ok out ->
-       Loader.load_file out;
-       Sys.remove out
-    | Error err ->
-       CErrors.user_err (fmt "Compilation of snippet exited with error code %d." err)
-  end;
+  Runner.run_snippet snippet;
   Option.get !Registry.out
