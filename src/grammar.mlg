@@ -3,9 +3,31 @@ DECLARE PLUGIN "mltac.plugin"
 {
   (* Required for wit_* functions *)
   open Stdarg
+
+  let ocaml_code = Procq.Entry.make "ocaml_code"
 }
 
-VERNAC COMMAND EXTEND LoadFile CLASSIFIED AS SIDEFF
-| [ "Load" "OCaml" "File" string(file) ] ->
-  { Main.load_file file }
+GRAMMAR EXTEND Gram
+GLOBAL:
+  ocaml_code;
+
+  ocaml_code:
+    [ [ q = QUOTATION "ocaml:" ->
+        { let sep, text = Tok.trim_quotation q in text } ] ]
+
+  ;
+END
+
+VERNAC ARGUMENT EXTEND ocaml
+| [ ocaml_code(c) ] -> { c }
+END
+
+VERNAC COMMAND EXTEND LoadOCamlFile CLASSIFIED AS SIDEFF
+| [ "Load" "OCaml" string(file) ] ->
+   { Main.run_file file }
+END
+
+VERNAC COMMAND EXTEND RunOCamlSnippet CLASSIFIED AS SIDEFF
+| [ "Run" ocaml(c) ] ->
+   { Main.run_snippet c }
 END
