@@ -60,25 +60,33 @@ let rocq_packages = [
     "rocq-runtime.vm";
 ]
 
-(** Create the compilation command for the given [file]. *)
-let compilation_command file out =
+(** Call the OCaml compiler with the given arguments, returning [Ok ()] if the
+    compilation was successful, or [Error code] if the compilation failed. *)
+let call_compiler args =
   let ocamlfind = Boot.Env.ocamlfind () in
-  let args = [
-      if Dynlink.is_native then "ocamlopt" else "ocamlc";
-      "-shared";
-      "-package";
-      String.concat "," rocq_packages;
-      "-package";
-      "mltac.plugin.registry";
-      "-o";
-      out;
-      file
-  ] in
-  Filename.quote_command ocamlfind args
+  let compiler = if Dynlink.is_native then "ocamlopt" else "ocamlc" in
+  let command = Filename.quote_command ocamlfind (compiler :: args) in
+  let err = Sys.command command in
+  if err = 0 then Ok () else Error err
+
+(** Return the compilation arguments for the given [file]. *)
+let compilation_args file out =
+  [
+    if Dynlink.is_native then "-shared" else "-c";
+    "-package";
+    String.concat "," rocq_packages;
+    "-package";
+    "mltac.plugin.registry";
+    "-o";
+    out;
+    "-impl";
+    file
+  ]
 
 
 let compile file =
-  let out = Dynlink.adapt_filename file in
-  let command = compilation_command file out in
-  let err = Sys.command command in
-  if err = 0 then Ok out else Error err
+  let out = Dynlink.adapt_filename (Filename.remove_extension file ^ ".cmo") in
+  let args = compilation_args file out in
+  match call_compiler args with
+  | Ok () -> Ok out
+  | Error err -> Error err
