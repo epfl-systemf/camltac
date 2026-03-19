@@ -43,12 +43,12 @@ VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }
 END
 
-VERNAC COMMAND EXTEND LoadOCamlFile CLASSIFIED AS SIDEFF
-| [ "Load" "OCaml" string(file) ] ->
+VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
+| [ "MLtac" "Load" string(file) ] ->
    { Main.run_file file }
 END
 
-VERNAC COMMAND EXTEND RunOCamlSnippet CLASSIFIED AS SIDEFF
-| [ "Run" ocaml(c) ] ->
+VERNAC COMMAND EXTEND MltacRun CLASSIFIED AS SIDEFF
+| [ "MLtac" "Run" ocaml(c) ] ->
    { let loc, snippet = c in Main.run_snippet ~loc snippet }
 END
