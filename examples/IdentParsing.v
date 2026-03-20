@@ -1,12 +1,12 @@
 (** This file was copied verbatim from Koika's "IdentParsing.v" *)
-Require Import Coq.NArith.NArith Coq.Strings.String.
-Require Import Coq.Init.Byte.
+From Stdlib Require Import NArith.NArith Strings.String.
+Require Import Corelib.Init.Byte.
 Require Import Ltac2.Ltac2.
 
 Import Ltac2.Init.
 Import Ltac2.Notations.
 
-Import Coq.Lists.List.ListNotations.
+From Stdlib Require Import List.
 Open Scope list.
 
 Ltac2 compute c :=

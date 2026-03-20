@@ -1,0 +1,8 @@
+(rocq.theory
+ (name MLtac.Examples)
+ (plugins rocq-runtime.plugins.ltac2)
+ (generate_project_file)
+ (theories
+   MLtac
+   Stdlib
+   Ltac2))

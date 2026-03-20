@@ -1,2 +1,0 @@
-# Put hashcons first to shadow the Rocq version of Hashcons
-CAMLPKGS := -package hashcons -package rocq-runtime.plugins.ltac2

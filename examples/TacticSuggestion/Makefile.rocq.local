@@ -1,1 +1,0 @@
-CAMLPKGS := -package rocq-runtime.plugins.ltac2

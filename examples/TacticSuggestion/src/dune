@@ -1,4 +1,0 @@
-(library
- (name TacticSuggestion_plugin)
- (public_name rocq-runtime.plugins.TacticSuggestion)
- (libraries rocq-runtime.plugins.ltac2))

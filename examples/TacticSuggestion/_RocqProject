@@ -1,9 +1,0 @@
-src/META.TacticSuggestion
--R theories TacticSuggestion
--I src
-
-theories/Loader.v
-theories/Demo.v
-
-src/main.ml
-src/TacticSuggestion_plugin.mlpack
