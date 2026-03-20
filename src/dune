@@ -4,7 +4,6 @@
  (synopsis "OCaml as a Tactic Language")
  (libraries
    rocq-runtime.plugins.ltac2
-   unix
    dynlink
    mltac.plugin.runtime))
 
