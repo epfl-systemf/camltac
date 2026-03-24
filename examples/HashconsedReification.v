@@ -32,7 +32,7 @@ Section Ltac2Reification.
     | false => constr:(Literal false)
     | negb ?a =>
         let a' := reify a in
-        constr:(Literal $a')
+        constr:(Neg $a')
     | andb ?a ?b =>
         let a' := reify a in
         let b' := reify b in
