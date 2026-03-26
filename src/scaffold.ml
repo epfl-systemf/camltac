@@ -65,5 +65,12 @@ let wrap ~before ~after { header; content; footer } =
     footer = join after footer }
 
 let contents { header; content; footer } =
-  List.fold_left join header [content; footer]
+  let scaffold_name = "<scaffold>" in
+  (* Insert a line directive for the header *)
+  let header = add_line_number_directive ~line_number:1 ~source_file:scaffold_name header in
+  (* Insert a line directive for the footer. *)
+  let header_and_content = join header content in
+  let line_count = String.fold_left (fun count c -> if c = '\n' then count + 1 else count) 1 header_and_content in
+  let footer = add_line_number_directive ~line_number:line_count ~source_file:scaffold_name footer in
+  join header_and_content footer
 
