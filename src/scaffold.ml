@@ -21,7 +21,7 @@ type t = {
     and is used by preprocessors to map line numbers in generated code
     to their original locations.
 
-    See https://ocaml.org/manual/5.4/lex.html#sss:lex-linedir. *)
+    @see <https://ocaml.org/manual/5.4/lex.html#sss:lex-linedir> *)
 let add_line_number_directive ~line_number ~source_file code =
   Format.sprintf {|# %d "%s"|} line_number source_file
   ^ "\n"
