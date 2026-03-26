@@ -4,7 +4,7 @@
 type t
 
 (** Create a scaffold with the given content. *)
-val make : loc:Loc.t -> string -> t
+val make : ?loc:Loc.t -> string -> t
 
 (** Wraps the main content of the scaffold with [before] and [after]. *)
 val wrap : before:string -> after:string -> t -> t

@@ -32,23 +32,26 @@ let add_line_number_directive ~line_number ~source_file code =
 let pad_initial_line ~start_col code =
   String.make start_col ' ' ^ code
 
-let make ~loc snippet =
+let make ?loc snippet =
   let open Loc in
-  let start_line = loc.line_nb in
-  let start_col = loc.bp - loc.bol_pos in
-  let source_file = 
-    match loc.fname with
-    | Loc.ToplevelInput -> "Toplevel"
-    | Loc.InFile { file } -> file
-  in
-  let snippet =
-    snippet
-    |> pad_initial_line ~start_col
-    |> add_line_number_directive
-         ~line_number:start_line
-         ~source_file
-  in
-  { header = ""; content = snippet; footer = "" }
+  match loc with
+  | None -> { header = ""; content = snippet; footer = "" }
+  | Some loc ->
+     let start_line = loc.line_nb in
+     let start_col = loc.bp - loc.bol_pos in
+     let source_file =
+       match loc.fname with
+       | Loc.ToplevelInput -> "Toplevel"
+       | Loc.InFile { file } -> file
+     in
+     let snippet =
+       snippet
+       |> pad_initial_line ~start_col
+       |> add_line_number_directive
+            ~line_number:start_line
+            ~source_file
+     in
+     { header = ""; content = snippet; footer = "" }
 
 (** [join s1 s2] appends [s2] to [s1] with a new line in-between if [s1]
     does not already end with a newline. *)
