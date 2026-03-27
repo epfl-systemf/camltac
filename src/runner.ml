@@ -14,7 +14,7 @@ let run_file file =
   run ~name:file file
 
 let run_snippet snippet =
-  Temp_file.with_temp_file
+  Tempfile.with_temp_file
     ~prefix:"snippet"
     ~suffix:".ml"
     snippet
