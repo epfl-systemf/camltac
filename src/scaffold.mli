@@ -3,8 +3,8 @@
 (** Type of scaffolds. *)
 type t
 
-(** Create a scaffold with the given content. *)
-val make : ?loc:Loc.t -> string -> t
+(** Create a scaffold for the given snippet. *)
+val make : Snippet.t -> t
 
 (** Wraps the main content of the scaffold with [before] and [after]. *)
 val wrap : before:string -> after:string -> t -> t
