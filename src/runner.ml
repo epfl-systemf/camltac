@@ -13,10 +13,10 @@ let run ~name file =
 let run_file file =
   run ~name:file file
 
-let run_snippet snippet =
+let run_code code =
   Tempfile.with_temp_file
     ~prefix:"snippet"
     ~suffix:".ml"
-    snippet
+    code
     (fun temp_file -> run ~name:"snippet" temp_file)
   
