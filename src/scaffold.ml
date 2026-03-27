@@ -31,7 +31,7 @@ let wrap ~before ~after { header; snippet; footer } =
     snippet;
     footer = join after footer }
 
-(** Add a line number directive to the start of the given code snippet.
+(** Add a line number directive to the start of the given code fragment.
 
     A line number directive is of the form #<line>"<source_file>",
     and is used by preprocessors to map line numbers in generated code
