@@ -10,6 +10,6 @@ let run_snippet_as_term ~loc snippet =
   let scaffold =
     snippet
     |> Scaffold.make ~loc
-    |> Scaffold.wrap ~before:"Runtime.Registry.register_term begin" ~after:"end" in
+    |> Scaffold.wrap ~before:"Runtime.Registry.register_output begin" ~after:"end" in
   Runner.run_snippet (Scaffold.contents scaffold);
-  Runtime.Registry.get_last_term ()
+  Runtime.Registry.get_last_output ()

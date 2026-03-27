@@ -1,15 +1,15 @@
 (** Output registry for dynamically loaded code. *)
 
-let registered_terms = ref []
+let outputs : Obj.t list ref = ref []
 
-let register_term t =
-  registered_terms := t :: !registered_terms
+let register_output t =
+  outputs := Obj.repr t :: !outputs
 
-let get_last_term () =
-  match !registered_terms with
+let get_last_output () =
+  match !outputs with
   | t :: ts ->
-     registered_terms := ts;
-     t
+     outputs := ts;
+     Obj.obj t
   | [] -> raise Not_found
 
 module StringMap = Map.Make(String)

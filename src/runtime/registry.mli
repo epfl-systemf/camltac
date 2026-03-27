@@ -2,12 +2,13 @@ open Ltac2_plugin
 
 (** Defines registration methods for dynamically linked code. *)
 
-val register_term : Constrexpr.constr_expr_r -> unit
-(** Registers the given term as a new output. *)
 
-val get_last_term : unit -> Constrexpr.constr_expr_r
-(** Return the last registered term, or raises [Not_found] if there
-    are no such terms. *)
+val register_output : 'a -> unit
+(** Registers the given output. *)
+
+val get_last_output : unit -> 'a
+(** Return the last output, or raises [Not_found] if there
+    is no such output. *)
  
 val register : string -> 'a -> unit
 (** [register name v] registers value [v] with key [name] in the
