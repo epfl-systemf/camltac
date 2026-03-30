@@ -34,8 +34,8 @@ GLOBAL:
   ;
   term: LEVEL "0"
     [ [ c = ocaml_code ->
-        { let loc, code = c in
-	  CAst.make ~loc (Main.run_snippet_as_term ~loc code) } ] ]
+        { let open Constrexpr in
+	  CAst.make ~loc @@ CGenarg (Raw (TacInTerm.wit_ocaml_in_term, c)) } ] ]
   ;
 END
 
@@ -49,6 +49,6 @@ VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
 END
 
 VERNAC COMMAND EXTEND MltacRun CLASSIFIED AS SIDEFF
-| [ "MLtac" "Run" ocaml(c) ] ->
-   { let loc, snippet = c in Main.run_snippet ~loc snippet }
+| [ "MLtac" "Run" ocaml(snippet) ] ->
+   { Main.run_snippet snippet }
 END
