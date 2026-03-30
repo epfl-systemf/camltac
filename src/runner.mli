@@ -4,6 +4,6 @@
     is an absolute path. *)
 val run_file : string -> unit
 
-(** [run_code code] compiles and runs the given OCaml code by
-    storing it to a temporary file. *)
-val run_code : string -> unit
+(** [run_code ?env code] compiles and runs the given OCaml code in environment
+    [env] by writing the code to a temporary file. *)
+val run_code : ?env:Runtime.Environment.t -> string -> unit
