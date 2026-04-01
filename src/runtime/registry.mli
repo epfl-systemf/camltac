@@ -22,5 +22,5 @@ val find : string -> 'a
 val register_ltac : string -> unit Proofview.tactic -> unit
 (** [register_ltac name tac] registers tactic [tac] as name [f]. *)
 
-val register_ltac2 : string -> ('a, 'f) Tac2externals.spec -> Tac2expr.raw_typexpr_r -> 'f -> unit
-(** [register_ltac2 name spec typ f] registers function [f] as an Ltac2 function with typ [typ]. *)
+val register_ltac2 : string -> ('a, 'f) Tac2externals.spec -> 'f -> unit
+(** [register_ltac2 name spec f] registers function [f] as an Ltac2 function. Note that you need an Ltac2 @external to use this function. *)
