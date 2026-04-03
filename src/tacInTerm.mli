@@ -3,8 +3,14 @@
 open Names
 
 (** Raw representation of OCaml code snippets.
-    The OCaml code may contain reference to unbound variables. *)
-type raw_ocaml = Snippet.t
+    The OCaml code is compiled once at parsing time to avoid unnecessary overhead on each interpretation. *)
+type raw_ocaml = {
+    (** Source code of the snippet, used for printing purposes. *)
+    source_code: Snippet.t;
+
+    (** Path to the compilation artifact. *)
+    compiled_file: string
+}
 
 (** Globalized representation of OCaml code snippets.
     Each name is mapped to a globalized term used for interpretation. *)
