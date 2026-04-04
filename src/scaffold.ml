@@ -5,7 +5,7 @@ open Snippet
 (** A scaffold is divided into 3 separate regions:
 
     - The header contains setup code that is run before the snippet.
-      This includes [open] directives.
+      This can include [open] directives, let bindings, etc.
 
     - The main content is the snippet that is entered by the user.
 

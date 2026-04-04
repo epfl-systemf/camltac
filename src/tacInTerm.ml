@@ -32,15 +32,20 @@ open Names
     - [Genprint.register_constr_print]: printing functions.
  *)
 
-(** Raw representation of compiled OCaml snippets. *)
-type raw_ocaml =
-  { source_code: Snippet.t;
-    compiled_file: string }
+(** Representation of OCaml snippets in [Constrexpr.constr_expr] terms.
 
-(** Globalized representation of OCaml snippets. *)
-type glob_ocaml =
-  { env: Runtime.Environment.t;
-    snippet: raw_ocaml }
+    Note that snippets are compiled once at parsing time, so that the compilation
+    overhead is amortized over each interpretation. *)
+type raw_ocaml = {
+  source_code: Snippet.t; (** Source code of the snippet. *)
+  compiled_file: string;  (** Path to the compiled file. *)
+}
+
+(** Representation of OCaml snippets in [Glob_term.glob_constr] terms. *)
+type glob_ocaml = {
+  env: Runtime.Environment.t;
+  snippet: raw_ocaml;
+}
 
 let wit_ocaml_in_term : (raw_ocaml, glob_ocaml) GenConstr.tag = GenConstr.create "ocaml"
 

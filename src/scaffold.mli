@@ -3,10 +3,8 @@
 (** {1 Scaffolds} *)
 
 (** A scaffold encapsulates a [Snippet.t] by wrapping it between
-    initialization and finalization code.
-
-    Scaffolds are used to transform snippets before they run, adding
-    the necessary boilerplate. *)
+    initialization and finalization code, making sure that the snippet
+    is self-contained and ready to be run. *)
 
 (** Type of scaffolds. *)
 type t
