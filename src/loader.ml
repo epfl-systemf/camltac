@@ -16,10 +16,10 @@ let check_file file =
 
 let load_file file =
   check_file file;
-  Feedback.msg_debug (fmt "Loading file %s." file);
+  Flags.if_verbose Feedback.msg_debug (fmt "Loading file %s." file);
   try
     Dynlink.loadfile_private file;
-    Feedback.msg_debug (fmt "File %s successfully loaded." file);
+    Flags.if_verbose Feedback.msg_debug (fmt "File %s successfully loaded." file);
   with Dynlink.Error e ->
     let message = Dynlink.error_message e in
     CErrors.user_err (str message)
