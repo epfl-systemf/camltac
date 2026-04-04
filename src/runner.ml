@@ -12,8 +12,8 @@ let run ?(env = Runtime.Environment.empty) ~name file =
   | Error err ->
      CErrors.user_err (fmt "Compilation of %s exited with error code %d." name err)
 
-let run_file file =
-  run ~name:file file
+let run_file ?env file =
+  run ?env ~name:file file
 
 let run_code ?env code =
   Tempfile.with_temp_file
