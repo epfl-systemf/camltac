@@ -49,6 +49,23 @@ type glob_ocaml = {
 
 let wit_ocaml_in_term : (raw_ocaml, glob_ocaml) GenConstr.tag = GenConstr.create "ocaml"
 
+let of_snippet snippet =
+  let open Constrexpr in
+  (* Create a scaffold over the snippet *)
+  let scaffold = Scaffold.make snippet in
+  let scaffold = Scaffold.wrap ~before:"Runtime.Registry.register_output begin" ~after:"end" scaffold in
+  (* Add type cast to catch type errors *)
+  let scaffold = Scaffold.wrap ~before:"let tac : _ Proofview.tactic = " ~after:"in tac" scaffold in
+  (* Compile the code *)
+  let file = Tempfile.with_content (Scaffold.contents scaffold) ~prefix:"snippet" ~suffix:".ml" in
+  match Compiler.compile file with
+  | Ok out ->
+     { source_code = snippet;
+       compiled_file = out }
+  | Error err ->
+     let loc = Snippet.loc snippet in
+     CErrors.user_err ~loc (Pp.fmt "Compilation of snippet exited with error code %d." err)
+
 (** {2 Internalization} *)
 
 let intern ?loc glb_sign snippet =

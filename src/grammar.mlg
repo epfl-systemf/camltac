@@ -35,20 +35,8 @@ GLOBAL:
   term: LEVEL "0"
     [ [ c = ocaml_code ->
         { let open Constrexpr in
-	  (* Create a scaffold over the snippet *)
-	  let scaffold = Scaffold.make c in
-	  let scaffold = Scaffold.wrap ~before:"Runtime.Registry.register_output begin" ~after:"end" scaffold in
-	  (* Compile the code *)
-	  let file = Tempfile.with_content (Scaffold.contents scaffold) ~prefix:"snippet" ~suffix:".ml" in
-	  match Compiler.compile file with
-          | Ok out ->
-             let raw = TacInTerm.{
-                 source_code = c;
-                 compiled_file = out
-             } in
-             CAst.make ~loc @@ CGenarg (Raw (TacInTerm.wit_ocaml_in_term, raw))
-          | Error err ->
-             CErrors.user_err (Pp.fmt "Compilation of snippet exited with error code %d." err)
+	  let raw = TacInTerm.of_snippet c in
+	  CAst.make ~loc @@ CGenarg (Raw (TacInTerm.wit_ocaml_in_term, raw))
     } ] ]
   ;
 END
@@ -59,10 +47,11 @@ END
 
 VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
 | [ "MLtac" "Load" string(file) ] ->
-   { Main.run_file file }
+   { Runner.run_file file }
 END
 
 VERNAC COMMAND EXTEND MltacRun CLASSIFIED AS SIDEFF
 | [ "MLtac" "Run" ocaml(snippet) ] ->
-   { Main.run_snippet snippet }
+   { let scaffold = Scaffold.make snippet in
+     Runner.run_code (Scaffold.contents scaffold) }
 END
