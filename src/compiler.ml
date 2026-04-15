@@ -90,4 +90,7 @@ let compile file =
   let args = compilation_args file out in
   match call_compiler args with
   | Ok () -> Ok out
-  | Error err -> Error err
+  | Error err ->
+     (* TODO: Capture OCaml compilation errors to avoid printing them, e.g., when using [Fail].
+        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
+     Error err
