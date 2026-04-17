@@ -1,0 +1,2 @@
+; Exclude `examples` from the default build
+(dirs (:standard \ examples))
