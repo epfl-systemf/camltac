@@ -1,0 +1,5 @@
+(library
+ (name api)
+ (public_name mltac.plugin.api)
+ (synopsis "Stable APIs for interacting with Rocq")
+ (libraries rocq-runtime.tactics))
