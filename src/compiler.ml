@@ -77,6 +77,8 @@ let compilation_args file out =
     String.concat "," rocq_packages;
     "-package";
     "mltac.plugin.runtime";
+    "-package";
+    "mltac.plugin.api";
     "-O3";
     "-o";
     out;
