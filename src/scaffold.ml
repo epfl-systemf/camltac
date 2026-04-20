@@ -58,6 +58,11 @@ let contents { header; snippet = { loc; contents }; footer } =
   let source_file =
     match loc.fname with
     | Loc.ToplevelInput -> "Toplevel"
+    (* FIXME: Top-level input shouldn't really have a file name; compilation
+              error messages start with [File "Toplevel", …], which is not really
+              great. *)
+    (* FIXME: ProofGeneral uses the toplevel to send its command, so if we're running
+              under ProofGeneral, we should use the original file name. *)
     | Loc.InFile { file } -> file
   in
   let contents =
