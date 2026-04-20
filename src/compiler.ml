@@ -60,14 +60,34 @@ let rocq_packages = [
     "rocq-runtime.vm";
 ]
 
+let run_command prog args =
+  let command = Filename.quote_command prog args in
+  let err = Sys.command command in
+  if err = 0 then Ok () else Error err
+
+let preprocessing_args input out =
+  [
+    (* TODO: Add [-loc-filename] argument *)
+    "-as-pp";
+    "-impl"; input;
+    "-o"; out
+  ]
+
+(** Run the MLtac preprocessor on the given file. *)
+let preprocess file =
+  let ppx_program = "ppx-mltac" in
+  let out = Filename.remove_extension file ^ ".preprocessed.ml" in
+  let args = preprocessing_args file out in
+  match run_command ppx_program args with
+  | Ok () -> Ok out
+  | Error err -> Error err
+
 (** Call the OCaml compiler with the given arguments, returning [Ok ()] if the
     compilation was successful, or [Error code] if the compilation failed. *)
 let call_compiler args =
   let ocamlfind = Boot.Env.ocamlfind () in
   let compiler = if Dynlink.is_native then "ocamlopt" else "ocamlc" in
-  let command = Filename.quote_command ocamlfind (compiler :: args) in
-  let err = Sys.command command in
-  if err = 0 then Ok () else Error err
+  run_command ocamlfind (compiler :: args)
 
 (** Return the compilation arguments for the given [file]. *)
 let compilation_args file out =
@@ -79,6 +99,8 @@ let compilation_args file out =
     "mltac.plugin.runtime";
     "-package";
     "mltac.plugin.api";
+    "-package";
+    "mltac.plugin.quoting";
     "-O3";
     "-o";
     out;
