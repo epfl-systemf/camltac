@@ -27,7 +27,7 @@ GLOBAL:
  	    | None -> 0
 	  in
 	  let start_shift = String.length "ocaml:" + sep_length in
-	  let end_shift = sep_length in
+	  let end_shift = - sep_length in
 	  let loc = Loc.shift_loc start_shift end_shift loc in
 	  Snippet.make ~loc contents } ] ]
 
