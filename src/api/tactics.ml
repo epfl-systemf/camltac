@@ -15,8 +15,8 @@ let with_env f =
   let* goals = Proofview.Goal.goals in
   match goals with
   | [] ->
-     let env = Global.env () in
-     let sigma = Evd.from_env env in
+     let* env = Proofview.tclENV in
+     let* sigma = Proofview.tclEVARMAP in
      return (f env sigma)
   | [goal] ->
      let* goal in
