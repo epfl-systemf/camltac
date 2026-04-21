@@ -21,6 +21,9 @@ val parse_constrexpr : string -> Constrexpr.constr_expr
 val parse_ident : string -> Names.Id.t
 (** [parse_ident s] parses an identifier from string [s]. *)
 
+val parse_qualid : string -> Libnames.qualid
+(** [parse_qualid s] parses a qualified identifier from string [s]. *)
+
 val parse_pattern : string -> Constrexpr.cases_pattern_expr
 (** [parse_pattern s] parse a pattern (from match expressions) from string [s]. *)
 

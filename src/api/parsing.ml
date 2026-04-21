@@ -4,6 +4,7 @@ let parse entry s = Procq.parse_string entry s
 
 let parse_constrexpr = parse Procq.Constr.term
 let parse_ident      = parse Procq.Constr.ident
+let parse_qualid     = parse Procq.Prim.qualid
 let parse_pattern    = parse Procq.Constr.pattern
 let parse_vernac     = parse Pvernac.Vernac_.vernac_control
 let parse_ltac       = parse Ltac_plugin.Pltac.tactic
