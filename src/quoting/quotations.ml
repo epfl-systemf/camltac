@@ -2,6 +2,16 @@
 
 open Ppxlib
 
+let ident_expansion ~ctxt s =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let s = Ast_builder.Default.estring ~loc s in
+  [%expr let open Api in Parsing.parse_ident [%e s]]
+
+let qualid_expansion ~ctxt s =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let s = Ast_builder.Default.estring ~loc s in
+  [%expr let open Api in Parsing.parse_qualid [%e s]]
+
 let constrexpr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
@@ -26,6 +36,20 @@ let vernac_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
   [%expr let open Api in Parsing.parse_vernac [%e s]]
+
+let ident =
+  Extension.V3.declare
+    "ident"
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload (estring __))
+    ident_expansion
+
+let qualid =
+  Extension.V3.declare
+    "qualid"
+    Extension.Context.expression
+    Ast_pattern.(single_expr_payload (estring __))
+    qualid_expansion
 
 let expr =
   Extension.V3.declare
@@ -64,5 +88,5 @@ let vernac =
 
 let () =
   Ppxlib.Driver.register_transformation
-    ~extensions:[expr; preterm; constr; open_constr; vernac]
+    ~extensions:[ident; qualid; expr; preterm; constr; open_constr; vernac]
     "mltac"
