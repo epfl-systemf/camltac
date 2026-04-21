@@ -2,7 +2,7 @@
 
 (** {1 Tactic monad} *)
 
-type 'a tactic = 'a Proofview.tactic
+type +'a tactic = 'a Proofview.tactic
 
 let return = Proofview.Monad.return
 let (let*) = Proofview.Monad.(>>=)

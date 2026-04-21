@@ -1,4 +1,4 @@
-type 'a tactic = 'a Proofview.tactic
+type +'a tactic = 'a Proofview.tactic
 (** The tactic monad. *)
 
 val return : 'a -> 'a tactic
