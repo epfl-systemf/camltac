@@ -1,5 +1,7 @@
 (** API for parsing terms, tactics, etc. *)
 
+open Names
+
 (** {1 Parsing functions} *)
 
 val parse : 'a Procq.Entry.t -> string -> 'a
@@ -59,3 +61,45 @@ val constr_of_string : string -> EConstr.constr Evd.in_ustate Proofview.tactic
 val open_constr_of_string : string -> (Evd.evar_map * Evd.econstr) Proofview.tactic
 (** [open_constr_of_string s] behaves like [constr_of_string], but evars are
     allowed in the resulting term. *)
+
+(** {1 Parsing with antiquotations} *)
+
+(** An antiquotation is a hole that is substituted by an expression at parsing time.
+    They are denoted by {v %{x} v}, where [x] is a valid OCaml identifier. Methods that
+    can handle antiquotations are called {i quasi-parsing methods}.
+
+    For example, while ["1 + 1"] can be immediately parsed to a term, parsing
+    ["1 + %{x}"] requires substituting the value of the OCaml variable [x]
+    before continuing.
+
+    All quasi-parsing methods below therefore take an additional argument,
+    [context], that represents the substitution from names to OCaml
+    expressions. The type of the context depends on the type of holes allowed,
+    i.e., terms in terms, strings in vernaculars, etc.
+ *)
+
+val quasiparse_constrexpr : string -> Constrexpr.constr_expr Id.Map.t -> Constrexpr.constr_expr
+(** [quasiparse_constrexpr s context] behaves like [parse_constexpr s], except that
+    subterms of the form {v %{x} v} are replaced by [Id.Map.find x context]. *)
+
+val glob_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> Glob_term.glob_constr Proofview.tactic
+(** [glob_constr_of_quasistring s context] behaves like [glob_constr_of_string s],
+    except that subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
+
+    @see [glob_constr_of_string]
+ *)
+
+val constr_of_quasistring : string -> EConstr.constr Id.Map.t -> EConstr.constr Evd.in_ustate Proofview.tactic
+(** [constr_of_quasistring s context] behaves like [constr_of_string s], except that
+    subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
+
+    @see [constr_of_string]
+    @see [openconstr_of_quasistring]
+ *)
+
+val open_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> (Evd.evar_map * Evd.econstr) Proofview.tactic
+(** [open_constr_of_quasistring s] behaves like [open_constr_of_string], except that
+    subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
+
+    @see [open_constr_of_string]
+ *)
