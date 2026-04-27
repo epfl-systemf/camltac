@@ -6,10 +6,10 @@ type +'a tactic = 'a Proofview.tactic
 
 let return = Proofview.Monad.return
 let (let*) = Proofview.Monad.(>>=)
-let fail = Proofview.tclZERO
+let fail ?(level = 0) msg = Tacticals.tclFAILn level msg
+let user_error ?loc msg = Tacticals.tclZEROMSG ?loc msg
 
-exception More_than_one_goal
-(** Exception thrown when there is more than one goal in focus. *)
+(** {2 Utilities} *)
 
 let with_env f =
   let* goals = Proofview.Goal.goals in
@@ -24,4 +24,57 @@ let with_env f =
      let sigma = Proofview.Goal.sigma goal in
      return (f env sigma)
   | _ :: _ ->
-     fail More_than_one_goal
+     user_error (Pp.str "More than one goal is focussed.")
+
+(** {1 Tactic syntax} *)
+
+(** {2 Goal selectors} *)
+
+type goal_selector = Proofview.goal_range_selector
+
+let nth n = Proofview.NthSelector n
+let range i j = Proofview.RangeSelector (i, j)
+let id id =
+  let qualid = Libnames.qualid_of_string id in
+  Proofview.IdSelector qualid
+
+let with_focus selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
+
+let all = Proofview.tclINDEPENDENT
+
+(** {2 Tacticals} *)
+
+let (let*) = (let*)
+let (>>) = Proofview.Monad.(>>)
+
+let repeat ?n t =
+  match n with
+  | Some n -> Tacticals.tclDO n t
+  | None -> Tacticals.tclREPEAT t
+
+let try_ = Tacticals.tclTRY
+let tryif t ~then_ ~else_ = Tacticals.tclIFCATCH t (fun () -> then_) (fun () -> else_)
+
+let (+) = Tacticals.tclOR
+let (||) = Tacticals.tclORELSE
+
+let progress t = Proofview.tclPROGRESS t
+let solve t = Tacticals.tclSOLVE t
+
+let once = Tacticals.tclONCE
+let exactly_once = Tacticals.tclEXACTLY_ONCE
+
+let first tacs = Tacticals.tclFIRST tacs
+let (>) tac1 tacs = tac1 >> Proofview.tclDISPATCHL tacs
+
+let time ?name t = Tacticals.tclTIME name t
+let timeout = Tacticals.tclTIMEOUT
+
+let abstract ?opaque ?name t = Abstract.tclABSTRACT ?opaque name t
+
+(** {1 Basic tactics} *)
+
+open Ltac2_plugin
+open Tac2api
+
+include Ltac2.Std
