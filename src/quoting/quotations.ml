@@ -5,12 +5,12 @@ open Ppxlib
 let ident_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_ident [%e s]]
+  [%expr let open Api in Parsing.parse_ident [%string [%e s]]]
 
 let qualid_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_qualid [%e s]]
+  [%expr let open Api in Parsing.parse_qualid [%string [%e s]]]
 
 let constrexpr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
@@ -35,7 +35,7 @@ let open_constr_expansion ~ctxt s =
 let vernac_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_vernac [%e s]]
+  [%expr let open Api in Parsing.parse_vernac [%string [%e s]]]
 
 let ident =
   Extension.V3.declare

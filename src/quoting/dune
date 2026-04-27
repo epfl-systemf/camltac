@@ -6,6 +6,7 @@
  (modules (:standard \ ppx_mltac))
  (libraries
    mltac.plugin.api
+   ppx_string ; For string interpolation
    ppxlib)
  (preprocess (pps ppxlib.metaquot)))
 
