@@ -33,7 +33,7 @@ module Hint = struct
   let name hint = Hints.FullHint.name hint
   let database hint = Hints.FullHint.database hint
 
-  let print hint = Tactics.with_env (fun env sigma -> Hints.FullHint.print env sigma hint)
+  let print hint = Tactics.(with_env (fun env sigma -> return (Hints.FullHint.print env sigma hint)))
 end
 
 (** Type of named hint databases.
@@ -125,7 +125,7 @@ let all_hints { db } =
   !hints
 
 let print { db } =
-  Tactics.with_env (fun env sigma -> Hints.pr_hint_db_env env sigma db)
+  Tactics.(with_env (fun env sigma -> return (Hints.pr_hint_db_env env sigma db)))
 
 let print_applicable () =
   let open Tactics in
@@ -137,7 +137,7 @@ let print_applicable () =
      return ()
 
 let print_reference glob_ref =
-  Tactics.with_env (fun env sigma -> Hints.pr_hint_ref env sigma glob_ref)
+  Tactics.(with_env (fun env sigma -> return (Hints.pr_hint_ref env sigma glob_ref)))
 
 let databases () =
   let database_names = Hints.current_db_names () in

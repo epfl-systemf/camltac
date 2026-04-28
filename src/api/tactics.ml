@@ -11,18 +11,18 @@ let user_error ?loc msg = Tacticals.tclZEROMSG ?loc msg
 
 (** {2 Utilities} *)
 
-let with_env f =
+let with_env t =
   let* goals = Proofview.Goal.goals in
   match goals with
   | [] ->
      let* env = Proofview.tclENV in
      let* sigma = Proofview.tclEVARMAP in
-     return (f env sigma)
+     t env sigma
   | [goal] ->
      let* goal in
      let env = Proofview.Goal.env goal in
      let sigma = Proofview.Goal.sigma goal in
-     return (f env sigma)
+     t env sigma
   | _ :: _ ->
      user_error (Pp.str "More than one goal is focussed.")
 

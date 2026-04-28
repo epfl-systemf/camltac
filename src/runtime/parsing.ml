@@ -1,7 +1,7 @@
 (** API for parsing terms. *)
 
 open Names
-open Api
+open Api.Tactics
 
 let parse entry s = Procq.parse_string entry s
 
@@ -14,18 +14,18 @@ let parse_ltac       = parse Ltac_plugin.Pltac.tactic
 let parse_ltac2      = parse Ltac2_plugin.G_ltac2.ltac2_expr
 
 let glob_constr_of_string s =
-  Tactics.with_env begin fun env sigma ->
-    Constrintern.intern_constr env sigma (parse_constrexpr s)
+  with_env begin fun env sigma ->
+    return (Constrintern.intern_constr env sigma (parse_constrexpr s))
   end
 
 let constr_of_string s =
-  Tactics.with_env begin fun env sigma ->
-    Constrintern.interp_constr env sigma (parse_constrexpr s)
+  with_env begin fun env sigma ->
+    return (Constrintern.interp_constr env sigma (parse_constrexpr s))
   end
 
 let open_constr_of_string s =
-  Tactics.with_env begin fun env sigma ->
-    Constrintern.interp_open_constr env sigma (parse_constrexpr s)
+  with_env begin fun env sigma ->
+    return (Constrintern.interp_open_constr env sigma (parse_constrexpr s))
   end
 
 (** {1 Parsing with antiquotations} *)
@@ -74,19 +74,19 @@ let quasiparse_constrexpr s context =
     (fun () -> parse_constrexpr s)
 
 let glob_constr_of_quasistring s context =
-  Tactics.with_env begin fun env sigma ->
+  with_env begin fun env sigma ->
     let context = Id.Map.map (Constrextern.extern_constr ~flags:(PrintingFlags.current ()) env sigma) context in
-    Constrintern.intern_constr env sigma (quasiparse_constrexpr s context)
+    return (Constrintern.intern_constr env sigma (quasiparse_constrexpr s context))
   end
 
 let constr_of_quasistring s context =
-  Tactics.with_env begin fun env sigma ->
+  with_env begin fun env sigma ->
     let context = Id.Map.map (Constrextern.extern_constr ~flags:(PrintingFlags.current ()) env sigma) context in
-    Constrintern.interp_constr env sigma (quasiparse_constrexpr s context)
+    return (Constrintern.interp_constr env sigma (quasiparse_constrexpr s context))
   end
 
 let open_constr_of_quasistring s context =
-  Tactics.with_env begin fun env sigma ->
+  with_env begin fun env sigma ->
     let context = Id.Map.map (Constrextern.extern_constr ~flags:(PrintingFlags.current ()) env sigma) context in
-    Constrintern.interp_open_constr env sigma (quasiparse_constrexpr s context)
+    return (Constrintern.interp_open_constr env sigma (quasiparse_constrexpr s context))
   end

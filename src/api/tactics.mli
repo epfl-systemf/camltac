@@ -22,8 +22,8 @@ val user_error : ?loc:Loc.t -> Pp.t -> 'a tactic
 
 (** {2 Utilities} *)
 
-val with_env : (Environ.env -> Evd.evar_map -> 'a) -> 'a tactic
-(** [with_env f] executes [f] in the current environment and evar map, and
+val with_env : (Environ.env -> Evd.evar_map -> 'a tactic) -> 'a tactic
+(** [with_env t] executes [t] in the current environment and evar map, and
     returns the result as a tactic.
 
     The “current environment” is dependent on the context:
