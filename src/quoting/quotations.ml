@@ -5,37 +5,37 @@ open Ppxlib
 let ident_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_ident [%string [%e s]]]
+  [%expr Api.Parsing.parse_ident [%string [%e s]]]
 
 let qualid_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_qualid [%string [%e s]]]
+  [%expr Api.Parsing.parse_qualid [%string [%e s]]]
 
 let constrexpr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_constrexpr [%e s]]
+  [%expr Api.Parsing.parse_constrexpr [%e s]]
 
 let glob_constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.glob_constr_of_string [%e s]]
+  [%expr Api.Parsing.glob_constr_of_string [%e s]]
 
 let constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.constr_of_string [%e s]]
+  [%expr Api.Parsing.constr_of_string [%e s]]
 
 let open_constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.open_constr_of_string [%e s]]
+  [%expr Api.Parsing.open_constr_of_string [%e s]]
 
 let vernac_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr let open Api in Parsing.parse_vernac [%string [%e s]]]
+  [%expr Api.Parsing.parse_vernac [%string [%e s]]]
 
 let ident =
   Extension.V3.declare
