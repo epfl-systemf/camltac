@@ -52,13 +52,13 @@ val glob_constr_of_string : string -> Glob_term.glob_constr Proofview.tactic
     @see [constr_of_string]
  *)
 
-val constr_of_string : string -> EConstr.constr Evd.in_ustate Proofview.tactic
+val constr_of_string : string -> EConstr.constr Proofview.tactic
 (** [constr_of_string s] parses an evar-free Rocq term from string [s].
 
     @see [open_constr_of_string]
  *)
 
-val open_constr_of_string : string -> (Evd.evar_map * Evd.econstr) Proofview.tactic
+val open_constr_of_string : string -> Evd.econstr Proofview.tactic
 (** [open_constr_of_string s] behaves like [constr_of_string], but evars are
     allowed in the resulting term. *)
 
@@ -89,7 +89,7 @@ val glob_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> Glob_term.
     @see [glob_constr_of_string]
  *)
 
-val constr_of_quasistring : string -> EConstr.constr Id.Map.t -> EConstr.constr Evd.in_ustate Proofview.tactic
+val constr_of_quasistring : string -> EConstr.constr Id.Map.t -> EConstr.constr Proofview.tactic
 (** [constr_of_quasistring s context] behaves like [constr_of_string s], except that
     subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
 
@@ -97,7 +97,7 @@ val constr_of_quasistring : string -> EConstr.constr Id.Map.t -> EConstr.constr 
     @see [openconstr_of_quasistring]
  *)
 
-val open_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> (Evd.evar_map * Evd.econstr) Proofview.tactic
+val open_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> Evd.econstr Proofview.tactic
 (** [open_constr_of_quasistring s] behaves like [open_constr_of_string], except that
     subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
 

@@ -20,12 +20,17 @@ let glob_constr_of_string s =
 
 let constr_of_string s =
   with_env begin fun env sigma ->
-    return (Constrintern.interp_constr env sigma (parse_constrexpr s))
+    let constr, ustate = Constrintern.interp_constr env sigma (parse_constrexpr s) in
+    let sigma = Evd.merge_ustate sigma ustate in
+    Proofview.Unsafe.tclEVARS sigma >>
+    return constr
   end
 
 let open_constr_of_string s =
   with_env begin fun env sigma ->
-    return (Constrintern.interp_open_constr env sigma (parse_constrexpr s))
+    let sigma, econstr = Constrintern.interp_open_constr env sigma (parse_constrexpr s) in
+    Proofview.Unsafe.tclEVARS sigma >>
+    return econstr
   end
 
 (** {1 Parsing with antiquotations} *)
@@ -82,11 +87,16 @@ let glob_constr_of_quasistring s context =
 let constr_of_quasistring s context =
   with_env begin fun env sigma ->
     let context = Id.Map.map (Constrextern.extern_constr ~flags:(PrintingFlags.current ()) env sigma) context in
-    return (Constrintern.interp_constr env sigma (quasiparse_constrexpr s context))
+    let constr, ustate = Constrintern.interp_constr env sigma (quasiparse_constrexpr s context) in
+    let sigma = Evd.merge_ustate sigma ustate in
+    Proofview.Unsafe.tclEVARS sigma >>
+    return constr
   end
 
 let open_constr_of_quasistring s context =
   with_env begin fun env sigma ->
     let context = Id.Map.map (Constrextern.extern_constr ~flags:(PrintingFlags.current ()) env sigma) context in
-    return (Constrintern.interp_open_constr env sigma (quasiparse_constrexpr s context))
+    let sigma, econstr = Constrintern.interp_open_constr env sigma (quasiparse_constrexpr s context) in
+    Proofview.Unsafe.tclEVARS sigma >>
+    return econstr
   end
