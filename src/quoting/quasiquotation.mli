@@ -2,8 +2,8 @@ open Ppxlib
 
 (** Types of quasiquotations fragments. *)
 type fragment =
-  | Literal of string           (** A literal string inside the quasiquotation. *)
-  | Antiquotation of expression (** An antiquoted expression inside the quasiquotation. *)
+  | Literal of string        (** A literal string inside the quasiquotation. *)
+  | Antiquoted of expression (** An antiquoted expression inside the quasiquotation. *)
 
 val parse : loc:location -> string -> fragment list
 (** [parse ~loc s] parses the quasiquotation [s] by finding all occurences of {v

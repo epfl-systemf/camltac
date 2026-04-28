@@ -2,7 +2,7 @@ open Ppxlib
 
 type fragment =
 | Literal of string
-| Antiquotation of expression
+| Antiquoted of expression
 
 module CharStream = struct
 
@@ -79,11 +79,11 @@ let rec parse ~loc s =
       let antiquotation, stream = CharStream.located_span ~pattern:"}" stream in
       if CharStream.is_empty stream then
         let error = make_error ~loc:antiquotation.loc "Unclosed antiquotation: %S" antiquotation.txt in
-        [Literal literal.txt; Antiquotation error]
+        [Literal literal.txt; Antiquoted error]
       else
         let stream = CharStream.advance ~n:1 stream in
         let expr = parse_expression antiquotation.txt ~loc:antiquotation.loc in
-        Literal literal.txt :: Antiquotation expr :: parse stream
+        Literal literal.txt :: Antiquoted expr :: parse stream
   in
   parse (CharStream.of_string s ~loc)
 
@@ -94,7 +94,7 @@ let extract_expressions fragments =
     | Literal l :: rest ->
        let bindings, string = process rest next_id in
        bindings, l ^ string
-    | Antiquotation e :: rest ->
+    | Antiquoted e :: rest ->
        let bindings, string = process rest (next_id + 1) in
        let name = Format.sprintf "_%d" next_id in
        (name, e) :: bindings, "%{" ^ name ^ "}" ^ string
