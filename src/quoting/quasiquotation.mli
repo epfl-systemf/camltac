@@ -15,4 +15,7 @@ val parse : loc:location -> string -> fragment list
 val extract_expressions : fragment list -> (string * expression) list * string
 (** [extract_expressions fragments] returns the list of antiquoted expressions
     with synthetic names, as well as the string where every antiquoted
-    expression is replaced by the variable name. *)
+    expression is replaced by the variable name.
+
+    For example, [extract_expressions [Literal "1 + "; Antiquoted [%expr x]]] yields
+    the list [[("_0", x)]] along with the string ["1 + %{_0}"]. *)
