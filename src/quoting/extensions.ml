@@ -50,13 +50,13 @@ let vernac =
 (** Extensions [[%expr]], [[%glob_constr]], and [[%constr]] support term
     antiquotations. *)
 
-let build_context_map bindings ~loc =
+let build_context_map bindings typ ~loc =
   let rec to_expr = function
     | [] -> [%expr []]
     | (name, expr) :: rest ->
        let rest = to_expr rest in
        let name = Ast_builder.Default.estring ~loc name in
-       [%expr (Names.Id.of_string [%e name], [%e expr]) :: [%e rest]]
+       [%expr (Names.Id.of_string [%e name], ([%e expr] : [%t typ])) :: [%e rest]]
   in
   [%expr Names.Id.Map.of_list [%e to_expr bindings]]
 
@@ -69,7 +69,7 @@ let constrexpr_expansion ~ctxt s =
   | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e s]]
   | _ ->
      [%expr
-      let context = [%e build_context_map expressions ~loc] in
+      let context = [%e build_context_map expressions [%type: Constrexpr.constr_expr] ~loc] in
       Runtime.Parsing.quasiparse_constrexpr [%e s] context]
 
 let glob_constr_expansion ~ctxt s =
@@ -81,7 +81,7 @@ let glob_constr_expansion ~ctxt s =
   | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e s]]
   | _ ->
      [%expr
-      let context = [%e build_context_map expressions ~loc] in
+      let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
       Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
 
 let constr_expansion ~ctxt s =
@@ -93,7 +93,7 @@ let constr_expansion ~ctxt s =
   | [] -> [%expr Runtime.Parsing.constr_of_string [%e s]]
   | _ ->
      [%expr
-      let context = [%e build_context_map expressions ~loc] in
+      let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
       Runtime.Parsing.constr_of_quasistring [%e s] context]
 
 let open_constr_expansion ~ctxt s =
@@ -105,7 +105,7 @@ let open_constr_expansion ~ctxt s =
   | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e s]]
   | _ ->
      [%expr
-      let context = [%e build_context_map expressions ~loc] in
+      let context = [%e build_context_map expressions [%type: EConstr.t] ~loc] in
       Runtime.Parsing.open_constr_of_quasistring [%e s] context]
 
 let expr =
