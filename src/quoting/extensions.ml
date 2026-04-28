@@ -60,8 +60,7 @@ let build_context_map bindings typ ~loc =
   in
   [%expr Names.Id.Map.of_list [%e to_expr bindings]]
 
-let constrexpr_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+let constrexpr_expansion ~ctxt ~loc s =
   let fragments = Quasiquotation.parse ~loc s in
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
@@ -72,8 +71,7 @@ let constrexpr_expansion ~ctxt s =
       let context = [%e build_context_map expressions [%type: Constrexpr.constr_expr] ~loc] in
       Runtime.Parsing.quasiparse_constrexpr [%e s] context]
 
-let glob_constr_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+let glob_constr_expansion ~ctxt ~loc s =
   let fragments = Quasiquotation.parse ~loc s in
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
@@ -84,8 +82,7 @@ let glob_constr_expansion ~ctxt s =
       let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
       Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
 
-let constr_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+let constr_expansion ~ctxt ~loc s =
   let fragments = Quasiquotation.parse ~loc s in
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
@@ -96,8 +93,7 @@ let constr_expansion ~ctxt s =
       let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
       Runtime.Parsing.constr_of_quasistring [%e s] context]
 
-let open_constr_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+let open_constr_expansion ~ctxt ~loc s =
   let fragments = Quasiquotation.parse ~loc s in
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
@@ -112,29 +108,29 @@ let expr =
   Extension.V3.declare
     "expr"
     Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    constrexpr_expansion
+    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+    (fun ~ctxt s loc -> constrexpr_expansion ~ctxt ~loc s)
 
 let preterm =
   Extension.V3.declare
     "preterm"
     Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    glob_constr_expansion
+    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+    (fun ~ctxt s loc -> glob_constr_expansion ~ctxt ~loc s)
 
 let constr =
   Extension.V3.declare
     "constr"
     Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    constr_expansion
+    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+    (fun ~ctxt s loc -> constr_expansion ~ctxt ~loc s)
 
 let open_constr =
   Extension.V3.declare
     "open_constr"
     Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    open_constr_expansion
+    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+    (fun ~ctxt s loc -> open_constr_expansion ~ctxt ~loc s)
 
 let () =
   Ppxlib.Driver.register_transformation
