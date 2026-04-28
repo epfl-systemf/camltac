@@ -5,7 +5,7 @@
  (kind ppx_rewriter)
  (modules (:standard \ ppx_mltac))
  (libraries
-   mltac.plugin.api
+   mltac.plugin.runtime
    ppx_string ; For string interpolation
    ppxlib)
  (preprocess (pps ppxlib.metaquot)))

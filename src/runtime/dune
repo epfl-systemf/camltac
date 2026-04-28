@@ -2,5 +2,6 @@
  (name runtime)
  (public_name mltac.plugin.runtime)
  (libraries
+   mltac.plugin.api
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2))

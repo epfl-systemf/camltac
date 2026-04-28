@@ -11,17 +11,17 @@ open Expansion_helpers
 let ident_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr Api.Parsing.parse_ident [%string [%e s]]]
+  [%expr Runtime.Parsing.parse_ident [%string [%e s]]]
 
 let qualid_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr Api.Parsing.parse_qualid [%string [%e s]]]
+  [%expr Runtime.Parsing.parse_qualid [%string [%e s]]]
 
 let vernac_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
   let s = Ast_builder.Default.estring ~loc s in
-  [%expr Api.Parsing.parse_vernac [%string [%e s]]]
+  [%expr Runtime.Parsing.parse_vernac [%string [%e s]]]
 
 let ident =
   Extension.V3.declare
@@ -66,11 +66,11 @@ let constrexpr_expansion ~ctxt s =
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
   match expressions with
-  | [] -> [%expr Api.Parsing.parse_constrexpr [%e s]]
+  | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e s]]
   | _ ->
      [%expr
       let context = [%e build_context_map expressions ~loc] in
-      Api.Parsing.quasiparse_constrexpr [%e s] context]
+      Runtime.Parsing.quasiparse_constrexpr [%e s] context]
 
 let glob_constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
@@ -78,11 +78,11 @@ let glob_constr_expansion ~ctxt s =
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
   match expressions with
-  | [] -> [%expr Api.Parsing.glob_constr_of_string [%e s]]
+  | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e s]]
   | _ ->
      [%expr
       let context = [%e build_context_map expressions ~loc] in
-      Api.Parsing.glob_constr_of_quasistring [%e s] context]
+      Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
 
 let constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
@@ -90,11 +90,11 @@ let constr_expansion ~ctxt s =
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
   match expressions with
-  | [] -> [%expr Api.Parsing.constr_of_string [%e s]]
+  | [] -> [%expr Runtime.Parsing.constr_of_string [%e s]]
   | _ ->
      [%expr
       let context = [%e build_context_map expressions ~loc] in
-      Api.Parsing.constr_of_quasistring [%e s] context]
+      Runtime.Parsing.constr_of_quasistring [%e s] context]
 
 let open_constr_expansion ~ctxt s =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in
@@ -102,11 +102,11 @@ let open_constr_expansion ~ctxt s =
   let expressions, s = Quasiquotation.extract_expressions fragments in
   let s = Ast_builder.Default.estring ~loc s in
   match expressions with
-  | [] -> [%expr Api.Parsing.open_constr_of_string [%e s]]
+  | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e s]]
   | _ ->
      [%expr
       let context = [%e build_context_map expressions ~loc] in
-      Api.Parsing.open_constr_of_quasistring [%e s] context]
+      Runtime.Parsing.open_constr_of_quasistring [%e s] context]
 
 let expr =
   Extension.V3.declare

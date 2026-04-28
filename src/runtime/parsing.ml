@@ -1,6 +1,7 @@
 (** API for parsing terms. *)
 
 open Names
+open Api
 
 let parse entry s = Procq.parse_string entry s
 
