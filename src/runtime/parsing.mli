@@ -58,7 +58,7 @@ val constr_of_string : string -> EConstr.constr Proofview.tactic
     @see [open_constr_of_string]
  *)
 
-val open_constr_of_string : string -> Evd.econstr Proofview.tactic
+val open_constr_of_string : string -> EConstr.t Proofview.tactic
 (** [open_constr_of_string s] behaves like [constr_of_string], but evars are
     allowed in the resulting term. *)
 
@@ -97,7 +97,7 @@ val constr_of_quasistring : string -> EConstr.constr Id.Map.t -> EConstr.constr 
     @see [openconstr_of_quasistring]
  *)
 
-val open_constr_of_quasistring : string -> EConstr.constr Id.Map.t -> Evd.econstr Proofview.tactic
+val open_constr_of_quasistring : string -> EConstr.t Id.Map.t -> EConstr.t Proofview.tactic
 (** [open_constr_of_quasistring s] behaves like [open_constr_of_string], except that
     subterms of the form {v %{x} v} are replaced by [Id.Map.find x context].
 
