@@ -61,7 +61,7 @@ val ( >> ) : unit tactic -> 'a tactic -> 'a tactic
 
 val repeat : ?n:int -> unit tactic -> unit tactic
 (** Repetition: [repeat ?n t] executes tactic [t] until successes have been depleted.
-    If [n] is specified, [repeat n t] performs tactic [t] at most [n] times. *)
+    If [n] is specified, [repeat ~n t] performs tactic [t] at most [n] times. *)
 
 val try_ : unit tactic -> unit tactic
 (** [try_ t] executes tactic [t], catching any error that [t] may produce. *)
