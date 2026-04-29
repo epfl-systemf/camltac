@@ -14,21 +14,24 @@ let parse_ltac       = parse Ltac_plugin.Pltac.tactic
 let parse_ltac2      = parse Ltac2_plugin.G_ltac2.ltac2_expr
 
 let glob_constr_of_string s =
+  let parsed_term = parse_constrexpr s in
   with_env begin fun env sigma ->
-    return (Constrintern.intern_constr env sigma (parse_constrexpr s))
+    return (Constrintern.intern_constr env sigma parsed_term)
   end
 
 let constr_of_string s =
+  let parsed_term = parse_constrexpr s in
   with_env begin fun env sigma ->
-    let constr, ustate = Constrintern.interp_constr env sigma (parse_constrexpr s) in
+    let constr, ustate = Constrintern.interp_constr env sigma parsed_term in
     let sigma = Evd.merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
   end
 
 let open_constr_of_string s =
+  let parsed_term = parse_constrexpr s in
   with_env begin fun env sigma ->
-    let sigma, econstr = Constrintern.interp_open_constr env sigma (parse_constrexpr s) in
+    let sigma, econstr = Constrintern.interp_open_constr env sigma parsed_term in
     Proofview.Unsafe.tclEVARS sigma >>
     return econstr
   end
