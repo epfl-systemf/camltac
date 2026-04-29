@@ -7,7 +7,7 @@ Several projects such as Koika use a trick from C. Pit-Claudel and T. Bourgeat (
 |*)
 
 From Corelib Require Import Init.Byte.
-From Stdlib Require Import NArith.NArith Strings.String List.
+From Stdlib Require Import NArith.NArith Strings.String Ascii List.
 From Ltac2 Require Import Ltac2 Init Notations.
 Open Scope list.
 
@@ -176,41 +176,39 @@ Require Import MLtac.MLtac.
 
 MLtac Run ocaml:{{
   open Names
-  let constr_of_ref str =
-    UnivGen.constr_of_monomorphic_global (Global.env ()) (Rocqlib.lib_ref str)
+  open Api.Tactics
 
-  let empty_string = constr_of_ref "core.string.empty"
-  let string_constructor = constr_of_ref "core.string.string"
-  let ascii_constructor = constr_of_ref "core.ascii.ascii"
-  let t = constr_of_ref "core.bool.true"
-  let f = constr_of_ref "core.bool.false"
-  let to_bool b = if b <> 0 then t else f
+  let to_bool b = if b <> 0 then [%expr "true"] else [%expr "false"]
 
   let byte_to_rocq_ascii (c : int) =
-    Constr.mkApp (ascii_constructor, [|
-                    to_bool (c land 0b00000001);
-                    to_bool (c land 0b00000010);
-                    to_bool (c land 0b00000100);
-                    to_bool (c land 0b00001000);
-                    to_bool (c land 0b00010000);
-                    to_bool (c land 0b00100000);
-                    to_bool (c land 0b01000000);
-                    to_bool (c land 0b10000000);
-                  |])
+    let b1 = to_bool (c land 0b00000001) in
+    let b2 = to_bool (c land 0b00000010) in
+    let b3 = to_bool (c land 0b00000100) in
+    let b4 = to_bool (c land 0b00001000) in
+    let b5 = to_bool (c land 0b00010000) in
+    let b6 = to_bool (c land 0b00100000) in
+    let b7 = to_bool (c land 0b01000000) in
+    let b8 = to_bool (c land 0b10000000) in
+    [%expr "Ascii %{b1} %{b2} %{b3} %{b4} %{b5} %{b6} %{b7} %{b8}"]
 
   let lookup_table = Array.init 256 byte_to_rocq_ascii
   
   let id_to_string (id: Id.t) =
     String.fold_right (fun c str ->
         let ascii_char = lookup_table.(Char.code c) in
-        Constr.mkApp (string_constructor, [| ascii_char; str |])) (Id.to_string id) empty_string
+        [%expr "String %{ascii_char} %{str}"]) (Id.to_string id) [%expr "EmptyString"]
   
   let serialize_binder_in_context =
     let open Proofview in
     Goal.enter begin fun gl ->
       let hyps = Goal.hyps gl in
-      match hyps with 
-      | [LocalDef (binder, _, _)] -> Tactics.exact_no_check @@ EConstr.of_constr (id_to_string (binder.binder_name))
+      let env = Goal.env gl in
+      let sigma = Goal.sigma gl in
+      match hyps with
+      | [LocalDef (binder, _, _)] ->
+        let id = id_to_string (binder.binder_name) in
+        let id, _ = Constrintern.interp_constr env sigma id in
+        Tactics.exact_no_check id
       | _ -> assert false
     end
 
