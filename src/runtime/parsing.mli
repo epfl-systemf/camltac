@@ -26,7 +26,7 @@ val parse_ident : string -> Names.Id.t
 val parse_qualid : string -> Libnames.qualid
 (** [parse_qualid s] parses a qualified identifier from string [s]. *)
 
-val parse_pattern : string -> Constrexpr.cases_pattern_expr
+val parse_pattern : string -> Constrexpr.constr_expr
 (** [parse_pattern s] parse a pattern (from match expressions) from string [s]. *)
 
 val parse_vernac : string -> Vernacexpr.vernac_control
