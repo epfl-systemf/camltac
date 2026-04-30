@@ -8,42 +8,47 @@ open Expansion_helpers
 (** Extensions [[%ident]], [[%qualid]], [[%vernac]] support a limited subset of
     antiquotations in the form of string interpolation. *)
 
-let ident_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
-  let s = Ast_builder.Default.estring ~loc s in
-  [%expr Runtime.Parsing.parse_ident [%string [%e s]]]
+module Ident = struct
+  let expand ~ctxt s =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let s = Ast_builder.Default.estring ~loc s in
+    [%expr Runtime.Parsing.parse_ident [%string [%e s]]]
 
-let qualid_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
-  let s = Ast_builder.Default.estring ~loc s in
-  [%expr Runtime.Parsing.parse_qualid [%string [%e s]]]
+  let extension =
+    Extension.V3.declare
+      "ident"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (estring __))
+      expand
+end
 
-let vernac_expansion ~ctxt s =
-  let loc = Expansion_context.Extension.extension_point_loc ctxt in
-  let s = Ast_builder.Default.estring ~loc s in
-  [%expr Runtime.Parsing.parse_vernac [%string [%e s]]]
+module Qualid = struct
+  let expand ~ctxt s =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let s = Ast_builder.Default.estring ~loc s in
+    [%expr Runtime.Parsing.parse_qualid [%string [%e s]]]
 
-let ident =
-  Extension.V3.declare
-    "ident"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    ident_expansion
+  let extension =
+    Extension.V3.declare
+      "qualid"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (estring __))
+      expand
+end
 
-let qualid =
-  Extension.V3.declare
-    "qualid"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    qualid_expansion
+module Vernac = struct
+  let expand ~ctxt s =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let s = Ast_builder.Default.estring ~loc s in
+    [%expr Runtime.Parsing.parse_vernac [%string [%e s]]]
 
-let vernac =
-  Extension.V3.declare
-    "vernac"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (estring __))
-    vernac_expansion
-
+  let extension =
+    Extension.V3.declare
+      "vernac"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (estring __))
+      expand
+end
 
 (** {1 Extensions with antiquotations} *)
 
@@ -60,79 +65,104 @@ let build_context_map bindings typ ~loc =
   in
   [%expr Names.Id.Map.of_list [%e to_expr bindings]]
 
-let constrexpr_expansion ~ctxt ~loc s =
-  let fragments = Quasiquotation.parse ~loc s in
-  let expressions, s = Quasiquotation.extract_expressions fragments in
-  let s = Ast_builder.Default.estring ~loc s in
-  match expressions with
-  | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e s]]
-  | _ ->
-     [%expr
-      let context = [%e build_context_map expressions [%type: Constrexpr.constr_expr] ~loc] in
-      Runtime.Parsing.quasiparse_constrexpr [%e s] context]
+(** {2 [Constrexpr.constr_expr] *)
 
-let glob_constr_expansion ~ctxt ~loc s =
-  let fragments = Quasiquotation.parse ~loc s in
-  let expressions, s = Quasiquotation.extract_expressions fragments in
-  let s = Ast_builder.Default.estring ~loc s in
-  match expressions with
-  | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e s]]
-  | _ ->
-     [%expr
-      let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
-      Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
+module Expr = struct
+  let expand ~ctxt ~loc s =
+    let fragments = Quasiquotation.parse ~loc s in
+    let expressions, s = Quasiquotation.extract_expressions fragments in
+    let s = Ast_builder.Default.estring ~loc s in
+    match expressions with
+    | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e s]]
+    | _ ->
+       [%expr
+        let context = [%e build_context_map expressions [%type: Constrexpr.constr_expr] ~loc] in
+            Runtime.Parsing.quasiparse_constrexpr [%e s] context]
 
-let constr_expansion ~ctxt ~loc s =
-  let fragments = Quasiquotation.parse ~loc s in
-  let expressions, s = Quasiquotation.extract_expressions fragments in
-  let s = Ast_builder.Default.estring ~loc s in
-  match expressions with
-  | [] -> [%expr Runtime.Parsing.constr_of_string [%e s]]
-  | _ ->
-     [%expr
-      let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
-      Runtime.Parsing.constr_of_quasistring [%e s] context]
+  let extension =
+    Extension.V3.declare
+      "expr"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+end
 
-let open_constr_expansion ~ctxt ~loc s =
-  let fragments = Quasiquotation.parse ~loc s in
-  let expressions, s = Quasiquotation.extract_expressions fragments in
-  let s = Ast_builder.Default.estring ~loc s in
-  match expressions with
-  | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e s]]
-  | _ ->
-     [%expr
-      let context = [%e build_context_map expressions [%type: EConstr.t] ~loc] in
-      Runtime.Parsing.open_constr_of_quasistring [%e s] context]
+(** {2 [Glob_term.glob_constr] *)
 
-let expr =
-  Extension.V3.declare
-    "expr"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-    (fun ~ctxt s loc -> constrexpr_expansion ~ctxt ~loc s)
+module Preterm = struct
+  let expand ~ctxt ~loc s =
+    let fragments = Quasiquotation.parse ~loc s in
+    let expressions, s = Quasiquotation.extract_expressions fragments in
+    let s = Ast_builder.Default.estring ~loc s in
+    match expressions with
+    | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e s]]
+    | _ ->
+       [%expr
+        let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
+            Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
 
-let preterm =
-  Extension.V3.declare
-    "preterm"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-    (fun ~ctxt s loc -> glob_constr_expansion ~ctxt ~loc s)
+  let extension =
+    Extension.V3.declare
+      "preterm"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+end
 
-let constr =
-  Extension.V3.declare
-    "constr"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-    (fun ~ctxt s loc -> constr_expansion ~ctxt ~loc s)
+(** {2 [EConstr.constr] and [EConstr.t] *)
 
-let open_constr =
-  Extension.V3.declare
-    "open_constr"
-    Extension.Context.expression
-    Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-    (fun ~ctxt s loc -> open_constr_expansion ~ctxt ~loc s)
+module Constr = struct
+  let expand ~ctxt ~loc s =
+    let fragments = Quasiquotation.parse ~loc s in
+    let expressions, s = Quasiquotation.extract_expressions fragments in
+    let s = Ast_builder.Default.estring ~loc s in
+    match expressions with
+    | [] -> [%expr Runtime.Parsing.constr_of_string [%e s]]
+    | _ ->
+       [%expr
+        let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
+            Runtime.Parsing.constr_of_quasistring [%e s] context]
+
+  let extension =
+    Extension.V3.declare
+      "constr"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+end
+
+module Open_constr = struct
+  let expand ~ctxt ~loc s =
+    let fragments = Quasiquotation.parse ~loc s in
+    let expressions, s = Quasiquotation.extract_expressions fragments in
+    let s = Ast_builder.Default.estring ~loc s in
+    match expressions with
+    | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e s]]
+    | _ ->
+       [%expr
+        let context = [%e build_context_map expressions [%type: EConstr.t] ~loc] in
+            Runtime.Parsing.open_constr_of_quasistring [%e s] context]
+
+  let extension =
+    Extension.V3.declare
+      "open_constr"
+      Extension.Context.expression
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
+      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+end
+
+(**/**)
 
 let () =
   Ppxlib.Driver.register_transformation
-    ~extensions:[ident; qualid; expr; preterm; constr; open_constr; vernac]
+    ~extensions:[
+      Ident.extension;
+      Qualid.extension;
+      Vernac.extension;
+
+      Expr.extension;
+      Preterm.extension;
+      Constr.extension;
+      Open_constr.extension
+    ]
     "mltac"
