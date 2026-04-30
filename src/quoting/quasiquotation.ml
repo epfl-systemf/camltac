@@ -9,14 +9,12 @@ module CharStream = struct
   type t =
     { contents: string;
       length: int;
-      loc: location;
       pos: position;
       index: int }
 
   let of_string contents ~loc =
     { contents;
       length = String.length contents;
-      loc;
       pos = loc.loc_start;
       index = 0 }
 
