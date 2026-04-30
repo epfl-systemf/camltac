@@ -55,13 +55,19 @@ end
 (** Extensions [[%expr]], [[%glob_constr]], and [[%constr]] support term
     antiquotations. *)
 
-let build_context_map bindings typ ~loc =
+let build_antiquotation_map bindings ~loc =
   let rec to_expr = function
     | [] -> [%expr []]
-    | (name, expr) :: rest ->
+    | (name, expr, typ) :: rest ->
        let rest = to_expr rest in
        let name = Ast_builder.Default.estring ~loc name in
-       [%expr (Names.Id.of_string [%e name], ([%e expr] : [%t typ])) :: [%e rest]]
+       let expr =
+         match typ with
+         | Quasiquotation.Unspecified | Constr -> [%expr Runtime.Parsing.Constr [%e expr]]
+         | Preterm -> [%expr Runtime.Parsing.Preterm [%e expr]]
+         | Expr -> [%expr Runtime.Parsing.Expr [%e expr]]
+       in
+       [%expr (Names.Id.of_string [%e name], [%e expr]) :: [%e rest]]
   in
   [%expr Names.Id.Map.of_list [%e to_expr bindings]]
 
@@ -76,8 +82,8 @@ module Expr = struct
     | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map bindings [%type: Constrexpr.constr_expr] ~loc] in
-            Runtime.Parsing.quasiparse_constrexpr [%e template] context]
+         let context = [%e build_antiquotation_map bindings ~loc] in
+         Runtime.Parsing.quasiparse_constrexpr [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -98,8 +104,8 @@ module Preterm = struct
     | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map bindings [%type: EConstr.constr] ~loc] in
-            Runtime.Parsing.glob_constr_of_quasistring [%e template] context]
+         let context = [%e build_antiquotation_map bindings ~loc] in
+         Runtime.Parsing.glob_constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -120,8 +126,8 @@ module Constr = struct
     | [] -> [%expr Runtime.Parsing.constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map bindings [%type: EConstr.constr] ~loc] in
-            Runtime.Parsing.constr_of_quasistring [%e template] context]
+         let context = [%e build_antiquotation_map bindings ~loc] in
+         Runtime.Parsing.constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -140,8 +146,8 @@ module Open_constr = struct
     | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map bindings [%type: EConstr.t] ~loc] in
-            Runtime.Parsing.open_constr_of_quasistring [%e template] context]
+          let context = [%e build_antiquotation_map bindings ~loc] in
+          Runtime.Parsing.open_constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare

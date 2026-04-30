@@ -1,8 +1,14 @@
 open Ppxlib
 
+type antiquotation_kind =
+  | Unspecified
+  | Constr
+  | Preterm
+  | Expr
+
 type fragment =
 | Literal of string
-| Antiquoted of expression
+| Antiquoted of antiquotation_kind * expression
 
 module CharStream = struct
 
@@ -48,7 +54,7 @@ module CharStream = struct
   let span ~pattern stream =
     if is_empty stream then "", stream
     else
-      let regexp = Str.regexp_string pattern in
+      let regexp = Str.regexp pattern in
       let until =
         try Str.search_forward regexp stream.contents stream.index
         with Not_found -> stream.length
@@ -74,21 +80,32 @@ let parse_expression s ~loc =
   try Parse.expression lexbuf
   with _ -> make_error ~loc "Invalid antiquotation: %S" s
 
+let parse_antiquotation_kind = function
+  | "constr:" -> Constr
+  | "preterm:" -> Preterm
+  | "expr:" -> Expr
+  | _ -> assert false
+
 let rec parse ~loc s =
   let rec parse stream =
-    let literal, stream = CharStream.span ~pattern:"%{" stream in
+    let literal, stream = CharStream.span ~pattern:{|%\(\(constr:\)\|\(preterm:\)\|\(expr:\)\)?{|} stream in
     if CharStream.is_empty stream then
       [Literal literal]
     else
-      let stream = CharStream.advance ~n:2 stream in
+      let matched_start = Str.matched_group 0 stream.contents in
+      let antiquotation_kind =
+        try parse_antiquotation_kind (Str.matched_group 1 stream.contents)
+        with Not_found -> Unspecified
+      in
+      let stream = CharStream.advance ~n:(String.length matched_start) stream in
       let antiquotation, stream = CharStream.located_span ~pattern:"}" stream in
       if CharStream.is_empty stream then
         let error = make_error ~loc:antiquotation.loc "Unclosed antiquotation: %S" antiquotation.txt in
-        [Literal literal; Antiquoted error]
+        [Literal literal; Antiquoted (antiquotation_kind, error)]
       else
         let stream = CharStream.advance ~n:1 stream in
         let expr = parse_expression antiquotation.txt ~loc:antiquotation.loc in
-        Literal literal :: Antiquoted expr :: parse stream
+        Literal literal :: Antiquoted (antiquotation_kind, expr) :: parse stream
   in
   parse (CharStream.of_string s ~loc)
 
@@ -99,8 +116,8 @@ let generate_template fragments =
     | Literal l :: rest ->
        let template, bindings = process rest next_id in
        l ^ template, bindings
-    | Antiquoted e :: rest ->
+    | Antiquoted (kind, e) :: rest ->
        let template, bindings = process rest (next_id + 1) in
        let name = Format.sprintf "_%d" next_id in
-       "%{" ^ name ^ "}" ^ template, (name, e) :: bindings
+       "%{" ^ name ^ "}" ^ template, (name, e, kind) :: bindings
   in process fragments 0
