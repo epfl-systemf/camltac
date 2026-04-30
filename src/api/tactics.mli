@@ -32,6 +32,16 @@ val with_env : (Environ.env -> Evd.evar_map -> 'a tactic) -> 'a tactic
     - Otherwise, if there is more than one goal in focus, the tactic fails with an error.
  *)
 
+(** {2 Lifting operations} *)
+
+val of_list : 'a tactic list -> 'a list tactic
+(** [of_list tacs] creates a tactic that returns the list of all results,
+    evaluated in sequence. *)
+
+val of_array : 'a tactic array -> 'a array tactic
+(** [of_array tacs] creates a tactic that returns the array of all tactic
+    results evaluated in sequence. *)
+
 (** {1 Tactic syntax} *)
 
 (** {2 Goal selection} *)

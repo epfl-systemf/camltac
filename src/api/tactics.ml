@@ -72,6 +72,23 @@ let timeout = Tacticals.tclTIMEOUT
 
 let abstract ?opaque ?name t = Abstract.tclABSTRACT ?opaque name t
 
+(** {2 Lifting operations} *)
+
+let of_list tacs =
+  CList.fold_right (fun t acc ->
+      let* v = t in
+      let* acc in
+      return (v :: acc)
+  ) tacs (return [])
+
+let of_array tacs =
+  let* list = CArray.fold_right (fun t acc ->
+    let* v = t in
+    let* acc in
+    return (v :: acc)
+  ) tacs (return [])
+  in return (Array.of_list list)
+
 (** {1 Basic tactics} *)
 
 open Ltac2_plugin
