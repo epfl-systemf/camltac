@@ -7,16 +7,18 @@ type fragment =
 module CharStream = struct
 
   type t =
-    { contents: string;
-      length: int;
-      pos: position;
-      index: int }
+    { contents: string; (** Contents of the stream. *)
+      pos: position;    (** Current position of the stream inside the file. *)
+      index: int;       (** Index of the current position in the stream contents. *)
+      length: int;      (** Length of the stream. *)
+    }
 
   let of_string contents ~loc =
     { contents;
-      length = String.length contents;
       pos = loc.loc_start;
-      index = 0 }
+      index = 0;
+      length = String.length contents;
+    }
 
   let is_empty stream =
     stream.index >= stream.length
