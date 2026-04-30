@@ -86,28 +86,28 @@ type antiquotation =
   | `Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
   ]
 
-val quasiparse_constrexpr : string -> antiquotation Id.Map.t -> Constrexpr.constr_expr
+val quasiparse_constrexpr : string -> antiquotation list -> Constrexpr.constr_expr
 (** [quasiparse_constrexpr s context] behaves like [parse_constexpr s], except that
-    antiquotations of the form {v %{x} v} are replaced by [Id.Map.find x context]. *)
+    antiquotations of the form {v %{n} v} are replaced by [List.nth context n]. *)
 
-val glob_constr_of_quasistring : string -> antiquotation Id.Map.t -> Glob_term.glob_constr Proofview.tactic
+val glob_constr_of_quasistring : string -> antiquotation list -> Glob_term.glob_constr Proofview.tactic
 (** [glob_constr_of_quasistring s context] behaves like [glob_constr_of_string s],
-    except that antiquotations of the form {v %{x} v} are replaced by [Id.Map.find x context].
+    except that antiquotations of the form {v %{n} v} are replaced by [List.nth context n].
 
     @see [glob_constr_of_string]
  *)
 
-val constr_of_quasistring : string -> antiquotation Id.Map.t -> EConstr.constr Proofview.tactic
+val constr_of_quasistring : string -> antiquotation list -> EConstr.constr Proofview.tactic
 (** [constr_of_quasistring s context] behaves like [constr_of_string s], except that
-    antiquotations of the form {v %{x} v} are replaced by [Id.Map.find x context].
+    antiquotations of the form {v %{0} v} are replaced by [List.nth context n].
 
     @see [constr_of_string]
     @see [openconstr_of_quasistring]
  *)
 
-val open_constr_of_quasistring : string -> antiquotation Id.Map.t -> EConstr.t Proofview.tactic
+val open_constr_of_quasistring : string -> antiquotation list -> EConstr.t Proofview.tactic
 (** [open_constr_of_quasistring s] behaves like [open_constr_of_string], except that
-    antiquotations of the form {v %{x} v} are replaced by [Id.Map.find x context].
+    antiquotations of the form {v %{n} v} are replaced by [List.nth context n].
 
     @see [open_constr_of_string]
  *)

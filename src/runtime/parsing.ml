@@ -125,9 +125,9 @@ let antiquotation_production f =
        (Rule.next
           (Rule.next (Procq.Rule.stop)
              ((Symbol.token (Tok.PKEYWORD ("%{")))))
-          ((Symbol.nterm Constr.ident)))
+          ((Symbol.nterm Prim.natural)))
        ((Symbol.token (Tok.PKEYWORD ("}")))))
-    (fun _ x _ loc -> f ~loc x)
+    (fun _ n _ loc -> f ~loc n)
 
 (** Execute function [f] in synterp phase. This function is a hack that tricks
     Rocq by temporarily setting the [Flags.in_synterp] flag. *)
@@ -164,7 +164,7 @@ let quasiparse_constrexpr s context =
        CAst.make ~loc genarg
   in
   with_antiquotations Procq.Constr.term
-    (fun ~loc x -> antiquotation_to_constrexpr ~loc (Id.Map.find x context))
+    (fun ~loc n -> antiquotation_to_constrexpr ~loc (List.nth context n))
     (fun () -> parse_constrexpr s)
 
 let glob_constr_of_quasistring s context =

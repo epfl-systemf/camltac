@@ -22,13 +22,14 @@ val parse : loc:location -> string -> fragment list
     Currently, the implementation does not allow the "}" character to appear inside
     an antiquotation. *)
 
-val generate_template : fragment list -> string * (string * expression * antiquotation_kind) list
-(** [generate_template fragments] creates a template string with a list of
-    bindings from the list of fragments by assigning a synthetic name to
-    each antiquoted expression.
+val generate_template : fragment list -> string * (expression * antiquotation_kind) list
+(** [generate_template fragments] creates a template string along with a list of
+    bindings from the list of fragments by assigning a natural number to each
+    antiquoted expression.
 
     For example, [generate_template [Literal "1 + "; Antiquoted (Expr, .)]]
-    returns the template string ["1 + %{_0}"] along with the list [[("_0", ., Expr)]].
+    returns the template string ["1 + %{0}"] along with the list [[(., Expr)]].
     Note that the returned template simplifies all antiquotations to use the
-    format {v %{…} v}, which is simpler for Rocq's parser to recognize.
+    format {v %{n} v} for some natural number [n], which is very easily recognized
+    by Rocq's parser.
  *)

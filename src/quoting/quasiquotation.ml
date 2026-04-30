@@ -124,6 +124,6 @@ let generate_template fragments =
        l ^ template, bindings
     | Antiquoted (kind, e) :: rest ->
        let template, bindings = process rest (next_id + 1) in
-       let name = Format.sprintf "_%d" next_id in
-       "%{" ^ name ^ "}" ^ template, (name, e, kind) :: bindings
-  in process fragments 0
+       "%{" ^ string_of_int next_id ^ "}" ^ template, (e, kind) :: bindings
+  in
+  process fragments 0
