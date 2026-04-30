@@ -70,14 +70,14 @@ let build_context_map bindings typ ~loc =
 module Expr = struct
   let expand ~ctxt ~loc s =
     let fragments = Quasiquotation.parse ~loc s in
-    let expressions, s = Quasiquotation.extract_expressions fragments in
-    let s = Ast_builder.Default.estring ~loc s in
-    match expressions with
-    | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e s]]
+    let template, bindings = Quasiquotation.generate_template fragments in
+    let template = Ast_builder.Default.estring ~loc template in
+    match bindings with
+    | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map expressions [%type: Constrexpr.constr_expr] ~loc] in
-            Runtime.Parsing.quasiparse_constrexpr [%e s] context]
+        let context = [%e build_context_map bindings [%type: Constrexpr.constr_expr] ~loc] in
+            Runtime.Parsing.quasiparse_constrexpr [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -92,14 +92,14 @@ end
 module Preterm = struct
   let expand ~ctxt ~loc s =
     let fragments = Quasiquotation.parse ~loc s in
-    let expressions, s = Quasiquotation.extract_expressions fragments in
-    let s = Ast_builder.Default.estring ~loc s in
-    match expressions with
-    | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e s]]
+    let template, bindings = Quasiquotation.generate_template fragments in
+    let template = Ast_builder.Default.estring ~loc template in
+    match bindings with
+    | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
-            Runtime.Parsing.glob_constr_of_quasistring [%e s] context]
+        let context = [%e build_context_map bindings [%type: EConstr.constr] ~loc] in
+            Runtime.Parsing.glob_constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -114,14 +114,14 @@ end
 module Constr = struct
   let expand ~ctxt ~loc s =
     let fragments = Quasiquotation.parse ~loc s in
-    let expressions, s = Quasiquotation.extract_expressions fragments in
-    let s = Ast_builder.Default.estring ~loc s in
-    match expressions with
-    | [] -> [%expr Runtime.Parsing.constr_of_string [%e s]]
+    let template, bindings = Quasiquotation.generate_template fragments in
+    let template = Ast_builder.Default.estring ~loc template in
+    match bindings with
+    | [] -> [%expr Runtime.Parsing.constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map expressions [%type: EConstr.constr] ~loc] in
-            Runtime.Parsing.constr_of_quasistring [%e s] context]
+        let context = [%e build_context_map bindings [%type: EConstr.constr] ~loc] in
+            Runtime.Parsing.constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare
@@ -134,14 +134,14 @@ end
 module Open_constr = struct
   let expand ~ctxt ~loc s =
     let fragments = Quasiquotation.parse ~loc s in
-    let expressions, s = Quasiquotation.extract_expressions fragments in
-    let s = Ast_builder.Default.estring ~loc s in
-    match expressions with
-    | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e s]]
+    let template, bindings = Quasiquotation.generate_template fragments in
+    let template = Ast_builder.Default.estring ~loc template in
+    match bindings with
+    | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e template]]
     | _ ->
        [%expr
-        let context = [%e build_context_map expressions [%type: EConstr.t] ~loc] in
-            Runtime.Parsing.open_constr_of_quasistring [%e s] context]
+        let context = [%e build_context_map bindings [%type: EConstr.t] ~loc] in
+            Runtime.Parsing.open_constr_of_quasistring [%e template] context]
 
   let extension =
     Extension.V3.declare

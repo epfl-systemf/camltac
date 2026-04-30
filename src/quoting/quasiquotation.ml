@@ -87,15 +87,15 @@ let rec parse ~loc s =
   in
   parse (CharStream.of_string s ~loc)
 
-let extract_expressions fragments =
+let generate_template fragments =
   let rec process fragments next_id =
     match fragments with
-    | [] -> [], ""
+    | [] -> "", []
     | Literal l :: rest ->
-       let bindings, string = process rest next_id in
-       bindings, l ^ string
+       let template, bindings = process rest next_id in
+       l ^ template, bindings
     | Antiquoted e :: rest ->
-       let bindings, string = process rest (next_id + 1) in
+       let template, bindings = process rest (next_id + 1) in
        let name = Format.sprintf "_%d" next_id in
-       (name, e) :: bindings, "%{" ^ name ^ "}" ^ string
+       "%{" ^ name ^ "}" ^ template, (name, e) :: bindings
   in process fragments 0

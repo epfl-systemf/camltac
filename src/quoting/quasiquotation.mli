@@ -12,10 +12,10 @@ val parse : loc:location -> string -> fragment list
     Currently, the implementation does not allow the "}" character to appear inside
     an antiquotation. *)
 
-val extract_expressions : fragment list -> (string * expression) list * string
-(** [extract_expressions fragments] returns the list of antiquoted expressions
-    with synthetic names, as well as the string where every antiquoted
-    expression is replaced by the variable name.
+val generate_template : fragment list -> string * (string * expression) list
+(** [generate_template fragments] creates a template string with a list of
+    bindings from the list of fragments by assigning a synthetic name to
+    each antiquoted expression.
 
-    For example, [extract_expressions [Literal "1 + "; Antiquoted [%expr x]]] yields
-    the list [[("_0", x)]] along with the string ["1 + %{_0}"]. *)
+    For example, [generate_template [Literal "1 + "; Antiquoted [%expr x]]]
+    returns the template string ["1 + %{_0}"] along with the list [[("_0", x)]]. *)
