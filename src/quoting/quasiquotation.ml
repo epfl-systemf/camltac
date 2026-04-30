@@ -49,6 +49,12 @@ module CharStream = struct
     let pos = advance_pos ~n ~pos:stream.pos ~index:stream.index in
     { stream with pos; index = stream.index + n }
 
+  (** [take ~n] returns the next [n] characters of the stream. *)
+  let take ~n stream =
+    assert (n >= 0);
+    if is_empty stream then ""
+    else String.sub stream.contents stream.index n
+
   (** [span ~pattern stream] return the prefix of [stream] until the first
       occurrence of [pattern], as well as the remaining stream. *)
   let span ~pattern stream =
@@ -59,9 +65,9 @@ module CharStream = struct
         try Str.search_forward regexp stream.contents stream.index
         with Not_found -> stream.length
       in
-      let step_size = until - stream.index in
-      String.sub stream.contents stream.index step_size,
-      advance ~n:step_size stream
+      let prefix_size = until - stream.index in
+      take ~n:prefix_size stream,
+      advance ~n:prefix_size stream
 
   let located_span ~pattern stream =
     let prefix, tail = span ~pattern stream in
