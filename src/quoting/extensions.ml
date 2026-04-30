@@ -63,9 +63,9 @@ let build_antiquotation_map bindings ~loc =
        let name = Ast_builder.Default.estring ~loc name in
        let expr =
          match typ with
-         | Quasiquotation.Unspecified | Constr -> [%expr Runtime.Parsing.Constr [%e expr]]
-         | Preterm -> [%expr Runtime.Parsing.Preterm [%e expr]]
-         | Expr -> [%expr Runtime.Parsing.Expr [%e expr]]
+         | Quasiquotation.Unspecified | Constr -> [%expr Runtime.Parsing.(`Constr [%e expr])]
+         | Preterm -> [%expr Runtime.Parsing.(`Preterm [%e expr])]
+         | Expr -> [%expr Runtime.Parsing.(`Expr [%e expr])]
        in
        [%expr (Names.Id.of_string [%e name], [%e expr]) :: [%e rest]]
   in

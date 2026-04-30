@@ -81,9 +81,10 @@ val open_constr_of_string : string -> EConstr.t Proofview.tactic
 
 (** Types of antiquotations. *)
 type antiquotation =
-  | Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
-  | Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
-  | Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  [ `Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
+  | `Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
+  | `Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  ]
 
 val quasiparse_constrexpr : string -> antiquotation Id.Map.t -> Constrexpr.constr_expr
 (** [quasiparse_constrexpr s context] behaves like [parse_constexpr s], except that

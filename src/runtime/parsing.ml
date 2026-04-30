@@ -38,10 +38,15 @@ let open_constr_of_string s =
 
 (** {1 Parsing with antiquotations} *)
 
+type genarg_antiquotation =
+  [ `Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
+  | `Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
+  ]
+
 type antiquotation =
-  | Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
-  | Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
-  | Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  [ genarg_antiquotation
+  | `Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  ]
 
 (** {2 Generic arguments} *)
 
@@ -49,7 +54,8 @@ type antiquotation =
     {v %constr:{…} v} as generic arguments, so that we don't have to
     re-globalize/re-typecheck the given terms. *)
 
-let wit_antiquotation : (antiquotation, antiquotation) GenConstr.tag = GenConstr.create "mltac:antiquotation"
+let wit_antiquotation : (genarg_antiquotation, genarg_antiquotation) GenConstr.tag =
+  GenConstr.create "mltac:antiquotation"
 
 (* Internalization is the identity function. *)
 let () =
@@ -87,9 +93,8 @@ let () =
   let interp ?loc ~poly env sigma tycon =
     let env = GlobEnv.renamed_env env in
     function
-    | Constr c -> interp_constr_antiquotation ?loc env sigma tycon c
-    | Preterm t -> interp_preterm_antiquotation env sigma tycon t
-    | Expr _ -> assert false (* Checked at parsing time. *)
+    | `Constr c -> interp_constr_antiquotation ?loc env sigma tycon c
+    | `Preterm t -> interp_preterm_antiquotation env sigma tycon t
   in
   GlobEnv.register_constr_interp0 wit_antiquotation interp
 
@@ -102,9 +107,8 @@ let () =
     let open Pp in
     Genprint.PrinterBasic (fun env sigma ->
       match antiquotation with
-      | Constr c -> str "%{"
-      | Preterm t -> str "%preterm:{"
-      | Expr _ -> assert false
+      | `Constr c -> str "%{"
+      | `Preterm t -> str "%preterm:{"
     )
   in
   Genprint.register_constr_print wit_antiquotation print_antiquotation print_antiquotation
@@ -153,8 +157,8 @@ let with_antiquotations entry antiquotation_to_constrexpr f =
 
 let quasiparse_constrexpr s context =
   let antiquotation_to_constrexpr ~loc = function
-    | Expr e -> e
-    | antiquotation ->
+    | `Expr e -> e
+    | #genarg_antiquotation as antiquotation ->
        let open Constrexpr in
        let genarg = CGenarg (GenConstr.Raw (wit_antiquotation, antiquotation)) in
        CAst.make ~loc genarg
