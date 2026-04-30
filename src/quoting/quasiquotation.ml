@@ -76,19 +76,19 @@ let parse_expression s ~loc =
 
 let rec parse ~loc s =
   let rec parse stream =
-    let literal, stream = CharStream.located_span ~pattern:"%{" stream in
+    let literal, stream = CharStream.span ~pattern:"%{" stream in
     if CharStream.is_empty stream then
-      [Literal literal.txt]
+      [Literal literal]
     else
       let stream = CharStream.advance ~n:2 stream in
       let antiquotation, stream = CharStream.located_span ~pattern:"}" stream in
       if CharStream.is_empty stream then
         let error = make_error ~loc:antiquotation.loc "Unclosed antiquotation: %S" antiquotation.txt in
-        [Literal literal.txt; Antiquoted error]
+        [Literal literal; Antiquoted error]
       else
         let stream = CharStream.advance ~n:1 stream in
         let expr = parse_expression antiquotation.txt ~loc:antiquotation.loc in
-        Literal literal.txt :: Antiquoted expr :: parse stream
+        Literal literal :: Antiquoted expr :: parse stream
   in
   parse (CharStream.of_string s ~loc)
 
