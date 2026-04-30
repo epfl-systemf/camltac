@@ -23,20 +23,25 @@ module CharStream = struct
   let is_empty stream =
     stream.index >= stream.length
 
-  let advance_char pos char =
-    let pos_cnum = pos.pos_cnum + 1 in
-    match char with
-    | '\n' ->
-      { pos with pos_lnum = pos.pos_lnum + 1; pos_bol = pos_cnum; pos_cnum }
-    | _ -> { pos with pos_cnum }
-
+  (** [advance ~n stream] consumes [n] characters of the stream. *)
   let advance ~n stream =
     assert (n >= 0);
-    let pos = ref stream.pos in
-    for i = 0 to n - 1 do
-      pos := advance_char !pos stream.contents.[stream.index + i]
-    done;
-    { stream with pos = !pos; index = stream.index + n }
+    let rec advance_pos ~n ~pos ~index =
+      if n = 0 then pos
+      else
+        let next_cnum = pos.pos_cnum + 1 in
+        let next_pos =
+          match stream.contents.[index] with
+          | '\n' ->
+             { pos with pos_lnum = pos.pos_lnum + 1;
+                        pos_cnum = next_cnum;
+                        pos_bol  = next_cnum }
+          | _ -> { pos with pos_cnum = next_cnum }
+        in
+        advance_pos ~n:(n - 1) ~pos:next_pos ~index:(index + 1)
+    in
+    let pos = advance_pos ~n ~pos:stream.pos ~index:stream.index in
+    { stream with pos; index = stream.index + n }
 
   (** [span ~pattern stream] return the prefix of [stream] until the first
       occurrence of [pattern], as well as the remaining stream. *)
