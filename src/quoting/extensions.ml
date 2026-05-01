@@ -62,9 +62,9 @@ let build_antiquotation_list bindings ~loc =
        let rest = to_expr rest in
        let expr =
          match typ with
-         | Quasiquotation.Unspecified | Constr -> [%expr Runtime.Parsing.(`Constr [%e expr])]
-         | Preterm -> [%expr Runtime.Parsing.(`Preterm [%e expr])]
-         | Expr -> [%expr Runtime.Parsing.(`Expr [%e expr])]
+         | Quasiquotation.Unspecified | Constr -> [%expr `Constr [%e expr]]
+         | Preterm -> [%expr `Preterm [%e expr]]
+         | Expr -> [%expr `Expr [%e expr]]
        in
        [%expr [%e expr] :: [%e rest]]
   in
