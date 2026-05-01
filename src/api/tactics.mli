@@ -65,6 +65,9 @@ val all : unit tactic -> unit tactic
 
 (** {2 Tacticals} *)
 
+val ignore : 'a tactic -> unit tactic
+(** [ignore t] ignores the result of tactic [t]. *)
+
 val ( >> ) : unit tactic -> 'a tactic -> 'a tactic
 (** Sequencing operator: [t1 >> t2] executes tactic [t1] and [t2] in sequence,
     where [t2] is applied to all goals produced by [t1]. *)

@@ -47,6 +47,8 @@ let all = Proofview.tclINDEPENDENT
 let (let*) = (let*)
 let (>>) = Proofview.Monad.(>>)
 
+let ignore t = Proofview.tclIGNORE t
+
 let repeat ?n t =
   match n with
   | Some n -> Tacticals.tclDO n t
