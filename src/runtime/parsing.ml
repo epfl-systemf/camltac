@@ -156,7 +156,7 @@ let with_antiquotations entry antiquotation_to_constrexpr f =
 (** {2 Quasiparsing methods} *)
 
 let quasiparse_constrexpr s context =
-  let antiquotation_to_constrexpr ~loc = function
+  let antiquotation_to_constrexpr ~loc : antiquotation -> Constrexpr.constr_expr = function
     | `Expr e -> e
     | #genarg_antiquotation as antiquotation ->
        let open Constrexpr in
