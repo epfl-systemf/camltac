@@ -56,19 +56,14 @@ end
     antiquotations. *)
 
 let build_antiquotation_list bindings ~loc =
-  let rec to_expr = function
-    | [] -> [%expr []]
-    | (expr, typ) :: rest ->
-       let rest = to_expr rest in
-       let expr =
-         match typ with
-         | Quasiquotation.Unspecified | Constr -> [%expr `Constr [%e expr]]
-         | Preterm -> [%expr `Preterm [%e expr]]
-         | Expr -> [%expr `Expr [%e expr]]
-       in
-       [%expr [%e expr] :: [%e rest]]
+  let binding_to_expr (expr, typ) =
+    match typ with
+    | Quasiquotation.Unspecified | Constr -> [%expr `Constr [%e expr]]
+    | Preterm -> [%expr `Preterm [%e expr]]
+    | Expr -> [%expr `Expr [%e expr]]
   in
-  to_expr bindings
+  let bindings = List.map binding_to_expr bindings in
+  Ppx_utils.expr_of_list ~loc bindings
 
 (** {2 [Constrexpr.constr_expr] *)
 
