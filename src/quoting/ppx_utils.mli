@@ -1,5 +1,8 @@
 (** Utility methods for manipulation PPX expressions and locations. *)
 
+val loc_of_rocq_loc : Loc.t -> Ppxlib.Location.t
+(** [loc_of_rocq_loc loc] converts a Rocq [Loc.t] into a Ppxlib [Location.t]. *)
+
 open Ppxlib
 
 val expr_of_list : loc:location -> expression list -> expression
