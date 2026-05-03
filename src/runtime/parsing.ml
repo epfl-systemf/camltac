@@ -5,13 +5,22 @@ open Api.Tactics
 
 let parse entry s = Procq.parse_string entry s
 
-let parse_constrexpr = parse Procq.Constr.term
-let parse_ident      = parse Procq.Constr.ident
-let parse_qualid     = parse Procq.Prim.qualid
-let parse_pattern    = parse Procq.Constr.cpattern
-let parse_vernac     = parse Pvernac.Vernac_.vernac_control
-let parse_ltac       = parse Ltac_plugin.Pltac.tactic
-let parse_ltac2      = parse Ltac2_plugin.G_ltac2.ltac2_expr
+(* Entries registered at synterp time. *)
+let constrexpr     = Procq.eoi_entry Procq.Constr.term
+let ident          = Procq.eoi_entry Procq.Constr.ident
+let qualid         = Procq.eoi_entry Procq.Prim.qualid
+let cpattern       = Procq.eoi_entry Procq.Constr.cpattern
+let vernac_control = Procq.eoi_entry Pvernac.Vernac_.vernac_control
+let ltac           = Procq.eoi_entry Ltac_plugin.Pltac.tactic
+let ltac2          = Procq.eoi_entry Ltac2_plugin.G_ltac2.ltac2_expr
+
+let parse_constrexpr = parse constrexpr
+let parse_ident      = parse ident
+let parse_qualid     = parse qualid
+let parse_pattern    = parse cpattern
+let parse_vernac     = parse vernac_control
+let parse_ltac       = parse ltac
+let parse_ltac2      = parse ltac2
 
 let glob_constr_of_string s =
   let parsed_term = parse_constrexpr s in
