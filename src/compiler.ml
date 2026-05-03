@@ -76,7 +76,7 @@ let preprocessing_args input out =
 (** Run the MLtac preprocessor on the given file. *)
 let preprocess file =
   let ppx_program = "ppx-mltac" in
-  let out = Filename.remove_extension file ^ ".preprocessed.ml" in
+  let out = Filename.remove_extension file ^ ".pp.ml" in
   let args = preprocessing_args file out in
   match run_command ppx_program args with
   | Ok () -> Ok out
