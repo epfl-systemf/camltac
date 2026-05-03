@@ -58,9 +58,9 @@ end
 let build_antiquotation_list bindings ~loc =
   let binding_to_expr (expr, typ) =
     match typ with
-    | Quasiquotation.Unspecified | Constr -> [%expr `Constr [%e expr]]
-    | Preterm -> [%expr `Preterm [%e expr]]
-    | Expr -> [%expr `Expr [%e expr]]
+    | Quasiquotation.Unspecified | Constr -> [%expr `Constr ([%e expr]: EConstr.t)]
+    | Preterm -> [%expr `Preterm ([%e expr]: Glob_term.glob_constr)]
+    | Expr -> [%expr `Expr ([%e expr]: Constrexpr.constr_expr)]
   in
   let bindings = List.map binding_to_expr bindings in
   Ppx_utils.expr_of_list ~loc bindings
