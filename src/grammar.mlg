@@ -6,6 +6,7 @@ DECLARE PLUGIN "mltac.plugin"
 
   (* Term grammar *)
   open Procq.Constr
+  open Procq.Prim
 
   let ocaml_code = Procq.Entry.make "ocaml_code"
 }
@@ -45,9 +46,22 @@ VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }
 END
 
+VERNAC ARGUMENT EXTEND located_string
+| [ string(s) ] -> { (s, loc) }
+END
+
 VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
-| [ "MLtac" "Load" string(file) ] ->
-   { Runner.run_file file }
+| [ "MLtac" "Load" located_string(file) ] ->
+   { let file, (loc : Loc.t) = file in
+     let full_path =
+       if Filename.is_relative file then
+         let base_dir =
+           match loc.fname with
+           | InFile { file } -> Filename.concat (Sys.getcwd()) (Filename.dirname file)
+           | ToplevelInput -> Sys.getcwd()
+         in Filename.concat base_dir file
+       else file
+     in Runner.run_file full_path }
 END
 
 VERNAC COMMAND EXTEND MltacRun CLASSIFIED AS SIDEFF
