@@ -4,7 +4,7 @@ open Names
 open Api
 open Api.Tactics
 
-let parse entry s = Procq.parse_string entry s
+let parse ?loc entry s = Procq.parse_string ?loc entry s
 
 (* Entries registered at synterp time. *)
 let constrexpr     = Procq.eoi_entry Procq.Constr.term
@@ -15,24 +15,24 @@ let vernac_control = Procq.eoi_entry Pvernac.Vernac_.vernac_control
 let ltac           = Procq.eoi_entry Ltac_plugin.Pltac.tactic
 let ltac2          = Procq.eoi_entry Ltac2_plugin.G_ltac2.ltac2_expr
 
-let parse_constrexpr = parse constrexpr
-let parse_ident      = parse ident
-let parse_qualid     = parse qualid
-let parse_pattern    = parse cpattern
-let parse_vernac     = parse vernac_control
-let parse_ltac       = parse ltac
-let parse_ltac2      = parse ltac2
+let parse_constrexpr ?loc = parse ?loc constrexpr
+let parse_ident ?loc      = parse ?loc ident
+let parse_qualid ?loc     = parse ?loc qualid
+let parse_pattern ?loc    = parse ?loc cpattern
+let parse_vernac ?loc     = parse ?loc vernac_control
+let parse_ltac ?loc       = parse ?loc ltac
+let parse_ltac2 ?loc      = parse ?loc ltac2
 
-let glob_constr_of_string s =
-  let parsed_term = parse_constrexpr s in
+let glob_constr_of_string ?loc s =
+  let parsed_term = parse_constrexpr ?loc s in
   Term_conversions.Glob_constr.of_expr parsed_term
 
-let constr_of_string s =
-  let parsed_term = parse_constrexpr s in
+let constr_of_string ?loc s =
+  let parsed_term = parse_constrexpr ?loc s in
   Term_conversions.Constr.of_expr parsed_term
 
-let open_constr_of_string s =
-  let parsed_term = parse_constrexpr s in
+let open_constr_of_string ?loc s =
+  let parsed_term = parse_constrexpr ?loc s in
   Term_conversions.Open_constr.of_expr parsed_term
 
 (** {1 Parsing with antiquotations} *)
@@ -154,7 +154,7 @@ let with_antiquotations entry antiquotation_to_constrexpr f =
 
 (** {2 Quasiparsing methods} *)
 
-let quasiparse_constrexpr s context =
+let quasiparse_constrexpr ?loc s context =
   let antiquotation_to_constrexpr ~loc : antiquotation -> Constrexpr.constr_expr = function
     | `Expr e -> e
     | #genarg_antiquotation as antiquotation ->
@@ -164,16 +164,16 @@ let quasiparse_constrexpr s context =
   in
   with_antiquotations Procq.Constr.term
     (fun ~loc n -> antiquotation_to_constrexpr ~loc (List.nth context n))
-    (fun () -> parse_constrexpr s)
+    (fun () -> parse_constrexpr ?loc s)
 
-let glob_constr_of_quasistring s context =
-  let parsed_term = quasiparse_constrexpr s context in
+let glob_constr_of_quasistring ?loc s context =
+  let parsed_term = quasiparse_constrexpr ?loc s context in
   Term_conversions.Glob_constr.of_expr parsed_term
 
-let constr_of_quasistring s context =
-  let parsed_term = quasiparse_constrexpr s context in
+let constr_of_quasistring ?loc s context =
+  let parsed_term = quasiparse_constrexpr ?loc s context in
   Term_conversions.Constr.of_expr parsed_term
 
-let open_constr_of_quasistring s context =
-  let parsed_term = quasiparse_constrexpr s context in
+let open_constr_of_quasistring ?loc s context =
+  let parsed_term = quasiparse_constrexpr ?loc s context in
   Term_conversions.Open_constr.of_expr parsed_term
