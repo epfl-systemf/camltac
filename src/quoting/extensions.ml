@@ -65,48 +65,52 @@ let build_antiquotation_list bindings ~loc =
   let bindings = List.map binding_to_expr bindings in
   Ppx_utils.expr_of_list ~loc bindings
 
+let expand_antiquotation parser quasiparser ~ctxt string string_loc =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let template, bindings =
+    Quasiquotation.parse ~loc:string_loc string |>
+    Quasiquotation.generate_template
+  in
+  let template = Ast_builder.Default.estring ~loc:string_loc template in
+  match bindings with
+  | [] -> [%expr [%e parser] [%e template]]
+  | _ ->
+     [%expr
+      let context = [%e build_antiquotation_list bindings ~loc] in
+      [%e quasiparser] [%e template] context]
+
 (** {2 [Constrexpr.constr_expr] *)
 
 module Expr = struct
-  let expand ~ctxt ~loc s =
-    let fragments = Quasiquotation.parse ~loc s in
-    let template, bindings = Quasiquotation.generate_template fragments in
-    let template = Ast_builder.Default.estring ~loc template in
-    match bindings with
-    | [] -> [%expr Runtime.Parsing.parse_constrexpr [%e template]]
-    | _ ->
-       [%expr
-         let context = [%e build_antiquotation_list bindings ~loc] in
-         Runtime.Parsing.quasiparse_constrexpr [%e template] context]
+  let expand ~ctxt =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let parser = [%expr Runtime.Parsing.parse_constrexpr] in
+    let quasiparser = [%expr Runtime.Parsing.quasiparse_constrexpr] in
+    expand_antiquotation parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
       "expr"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+      expand
 end
 
 (** {2 [Glob_term.glob_constr] *)
 
 module Preterm = struct
-  let expand ~ctxt ~loc s =
-    let fragments = Quasiquotation.parse ~loc s in
-    let template, bindings = Quasiquotation.generate_template fragments in
-    let template = Ast_builder.Default.estring ~loc template in
-    match bindings with
-    | [] -> [%expr Runtime.Parsing.glob_constr_of_string [%e template]]
-    | _ ->
-       [%expr
-         let context = [%e build_antiquotation_list bindings ~loc] in
-         Runtime.Parsing.glob_constr_of_quasistring [%e template] context]
+  let expand ~ctxt =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let parser = [%expr Runtime.Parsing.glob_constr_of_string] in
+    let quasiparser = [%expr Runtime.Parsing.glob_constr_of_quasistring] in
+    expand_antiquotation parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
       "preterm"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+      expand
 end
 
 (** {2 [EConstr.constr] and [EConstr.t] *)
@@ -184,23 +188,18 @@ module Constr = struct
 end
 
 module Open_constr = struct
-  let expand ~ctxt ~loc s =
-    let fragments = Quasiquotation.parse ~loc s in
-    let template, bindings = Quasiquotation.generate_template fragments in
-    let template = Ast_builder.Default.estring ~loc template in
-    match bindings with
-    | [] -> [%expr Runtime.Parsing.open_constr_of_string [%e template]]
-    | _ ->
-       [%expr
-          let context = [%e build_antiquotation_list bindings ~loc] in
-          Runtime.Parsing.open_constr_of_quasistring [%e template] context]
+  let expand ~ctxt =
+    let loc = Expansion_context.Extension.extension_point_loc ctxt in
+    let parser = [%expr Runtime.Parsing.open_constr_of_string] in
+    let quasiparser = [%expr Runtime.Parsing.open_constr_of_quasistring] in
+    expand_antiquotation parser quasiparser ~ctxt
 
   let extension =
     Extension.V3.declare
       "open_constr"
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
-      (fun ~ctxt s loc -> expand ~ctxt ~loc s)
+      expand
 end
 
 (**/**)
