@@ -19,7 +19,10 @@ val advance : n:int -> t -> t
 (** [advance ~n stream] consumes [n] characters of the stream. *)
 
 val take : n:int -> t -> string
-(** [take ~n] returns the next [n] characters of the stream. *)
+(** [take ~n stream] returns the next [n] characters of the stream. *)
+
+val take_all : t -> string
+(** [take_all stream] returns the rest of the stream as a string. *)
 
 val span : pattern:string -> t -> string * t
 (** [span ~pattern stream] return the prefix of [stream] until the first

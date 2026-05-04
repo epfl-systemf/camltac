@@ -137,27 +137,43 @@ module Constr = struct
     let pattern = Ast_pattern.(pexp_constant (pconst_string __ __ drop)) in
     Ast_pattern.(map ~f:(fun f label loc -> f (String { txt = label; loc })) pattern)
 
-  let expand_pattern_var ~pattern_loc { CAst.v = id; loc } =
-    let id = Names.Id.to_string id in
-    let loc =
-      match loc with
-      | Some loc -> Ppx_utils.loc_of_rocq_loc loc
-      | None -> pattern_loc (* Fallback to using a imprecise location *)
-    in
+  let expand_pattern_var { txt = id; loc } =
     let id_expr = Ast_builder.Default.estring ~loc id in
     { txt = id; loc }, [%expr Names.Id.Map.find (Names.Id.of_string [%e id_expr]) subst]
+
+  let find_all_pattern_vars ~loc pattern =
+    let rec find_all_in_stream stream =
+      let _, stream = CharStream.span ~pattern:{|@?\?|} stream in
+      if CharStream.is_empty stream then []
+      else
+        let prefix = Str.matched_string stream.contents in
+        let loc_start = stream.pos in
+        let stream = CharStream.advance ~n:(String.length prefix) stream in
+        (* Attempt to parse an identifier from the rest of the stream *)
+        try
+          let rest = CharStream.take_all stream in
+          let id = Names.Id.to_string (Runtime.Parsing.parse Procq.Prim.ident rest) in
+          let stream = CharStream.advance ~n:(String.length id) stream in
+          let loc_end = stream.pos in
+          let loc = { loc_start; loc_end; loc_ghost = false } in
+          { txt = id; loc } :: find_all_in_stream stream
+        with Gramlib.Grammar.ParseError _ ->
+          (* Failed to parse an identifier: most likely a false positive. *)
+          find_all_in_stream stream
+    in
+    let stream = CharStream.of_string ~loc pattern in
+    find_all_in_stream stream
 
   let expand_case ~loc { lhs = { txt = lhs; loc = lhs_loc }; rhs = { txt = rhs; loc = rhs_loc } } =
     let lhs, bindings =
       match lhs with
       | Some pattern ->
-         (* Compute the set of metavariables used by [pattern] at
-            compilation-time by parsing it. Note that we reparse the
-            pattern at runtime, since there is no easy way to splice the
-            obtained pattern AST into the source code. *)
-         let parsed_pattern = Runtime.Parsing.parse_pattern ~loc:(Ppx_utils.rocq_loc_of_loc lhs_loc) pattern in
-         let bindings = Runtime.Pattern_matching.pattern_variables parsed_pattern in
-         let bindings = List.map (expand_pattern_var ~pattern_loc:lhs_loc) bindings in
+         (** Approximate the set of metavariables used by [pattern] at
+             compilation-time by finding all occurrences of {v ?x v} or {v @?x v}.
+             Note that parsing is not available since Rocq is not loaded,
+             and therefore patterns such as {v ?x + ?y v} would fail to parse correctly. *)
+         let bindings = find_all_pattern_vars ~loc:lhs_loc pattern in
+         let bindings = List.map expand_pattern_var bindings in
          let pattern_expr = Ast_builder.Default.estring ~loc:lhs_loc pattern in
          [%expr Runtime.Parsing.parse_pattern [%e pattern_expr]], bindings
       | None -> [%expr Runtime.Parsing.parse_pattern "_"], []

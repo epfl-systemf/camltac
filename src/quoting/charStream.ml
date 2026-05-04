@@ -41,6 +41,8 @@ let take ~n stream =
   if is_empty stream then ""
   else String.sub stream.contents stream.index n
 
+let take_all stream = take ~n:(stream.length - stream.index) stream
+
 let span ~pattern stream =
   if is_empty stream then "", stream
   else
