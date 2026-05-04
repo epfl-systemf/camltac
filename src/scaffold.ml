@@ -49,12 +49,6 @@ let pad_initial_line ~start_col code =
   String.make start_col ' ' ^ code
 
 let contents { header; snippet = { loc; contents }; footer } =
-  let scaffold_name = "<scaffold>" in
-  (* Insert a line directive for the header. *)
-  let header = add_line_number_directive ~line_number:1 ~source_file:scaffold_name header in
-  (* Insert a line directive for the snippet. *)
-  let start_line = loc.line_nb in
-  let start_col = loc.bp - loc.bol_pos in
   let source_file =
     match loc.fname with
     | Loc.ToplevelInput -> "Toplevel"
@@ -65,6 +59,12 @@ let contents { header; snippet = { loc; contents }; footer } =
               under ProofGeneral, we should use the original file name. *)
     | Loc.InFile { file } -> file
   in
+  let scaffold_name = "<scaffold for " ^ source_file ^ ">" in
+  (* Insert a line directive for the header. *)
+  let header = add_line_number_directive ~line_number:1 ~source_file:scaffold_name header in
+  (* Insert a line directive for the snippet. *)
+  let start_line = loc.line_nb in
+  let start_col = loc.bp - loc.bol_pos in
   let contents =
     contents
     |> pad_initial_line ~start_col
