@@ -63,7 +63,7 @@ let build_antiquotation_list bindings ~loc =
     | Expr -> [%expr `Expr ([%e expr]: Constrexpr.constr_expr)]
   in
   let bindings = List.map binding_to_expr bindings in
-  Ppx_utils.expr_of_list ~loc bindings
+  Ast_builder.Default.elist ~loc bindings
 
 let expand_antiquotation parser quasiparser ~ctxt string string_loc =
   let loc = Expansion_context.Extension.extension_point_loc ctxt in

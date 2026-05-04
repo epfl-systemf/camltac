@@ -36,12 +36,6 @@ let rocq_loc_of_loc loc: Loc.t =
 open Ppxlib
 open Expansion_helpers
 
-let rec expr_of_list ~loc = function
-  | [] -> [%expr []]
-  | head :: tail ->
-     let tail_expr = expr_of_list ~loc tail in
-     [%expr [%e head] :: [%e tail_expr]]
-
 let with_let_bindings ~loc bindings expr =
   let quoter = Quoter.create () in
   let rec with_let_bindings = function
