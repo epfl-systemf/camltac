@@ -9,44 +9,44 @@ open Expansion_helpers
     antiquotations in the form of string interpolation. *)
 
 module Ident = struct
-  let expand ~ctxt s =
+  let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let s = Ast_builder.Default.estring ~loc s in
-    [%expr Runtime.Parsing.parse_ident [%string [%e s]]]
+    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
+    [%expr Runtime.Parsing.parse_ident [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
       "ident"
       Extension.Context.expression
-      Ast_pattern.(single_expr_payload (estring __))
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
 end
 
 module Qualid = struct
-  let expand ~ctxt s =
+  let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let s = Ast_builder.Default.estring ~loc s in
-    [%expr Runtime.Parsing.parse_qualid [%string [%e s]]]
+    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
+    [%expr Runtime.Parsing.parse_qualid [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
       "qualid"
       Extension.Context.expression
-      Ast_pattern.(single_expr_payload (estring __))
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
 end
 
 module Vernac = struct
-  let expand ~ctxt s =
+  let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let s = Ast_builder.Default.estring ~loc s in
-    [%expr Runtime.Parsing.parse_vernac [%string [%e s]]]
+    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
+    [%expr Runtime.Parsing.parse_vernac [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
       "vernac"
       Extension.Context.expression
-      Ast_pattern.(single_expr_payload (estring __))
+      Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
 end
 
