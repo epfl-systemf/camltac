@@ -1,6 +1,7 @@
 (** API for parsing terms. *)
 
 open Names
+open Api
 open Api.Tactics
 
 let parse entry s = Procq.parse_string entry s
@@ -24,26 +25,15 @@ let parse_ltac2      = parse ltac2
 
 let glob_constr_of_string s =
   let parsed_term = parse_constrexpr s in
-  with_env begin fun env sigma ->
-    return (Constrintern.intern_constr env sigma parsed_term)
-  end
+  Term_conversions.Glob_constr.of_expr parsed_term
 
 let constr_of_string s =
   let parsed_term = parse_constrexpr s in
-  with_env begin fun env sigma ->
-    let constr, ustate = Constrintern.interp_constr env sigma parsed_term in
-    let sigma = Evd.merge_ustate sigma ustate in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return constr
-  end
+  Term_conversions.Constr.of_expr parsed_term
 
 let open_constr_of_string s =
   let parsed_term = parse_constrexpr s in
-  with_env begin fun env sigma ->
-    let sigma, econstr = Constrintern.interp_open_constr env sigma parsed_term in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return econstr
-  end
+  Term_conversions.Open_constr.of_expr parsed_term
 
 (** {1 Parsing with antiquotations} *)
 
@@ -177,21 +167,13 @@ let quasiparse_constrexpr s context =
     (fun () -> parse_constrexpr s)
 
 let glob_constr_of_quasistring s context =
-  with_env begin fun env sigma ->
-    return (Constrintern.intern_constr env sigma (quasiparse_constrexpr s context))
-  end
+  let parsed_term = quasiparse_constrexpr s context in
+  Term_conversions.Glob_constr.of_expr parsed_term
 
 let constr_of_quasistring s context =
-  with_env begin fun env sigma ->
-    let constr, ustate = Constrintern.interp_constr env sigma (quasiparse_constrexpr s context) in
-    let sigma = Evd.merge_ustate sigma ustate in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return constr
-  end
+  let parsed_term = quasiparse_constrexpr s context in
+  Term_conversions.Constr.of_expr parsed_term
 
 let open_constr_of_quasistring s context =
-  with_env begin fun env sigma ->
-    let sigma, econstr = Constrintern.interp_open_constr env sigma (quasiparse_constrexpr s context) in
-    Proofview.Unsafe.tclEVARS sigma >>
-    return econstr
-  end
+  let parsed_term = quasiparse_constrexpr s context in
+  Term_conversions.Open_constr.of_expr parsed_term
