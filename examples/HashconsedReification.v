@@ -79,7 +79,7 @@ Now, compare it to the hashconsed reification procedure:
 Section MLReification.
   MLtac Run ocaml:{{
     let rec reify t =
-      match%pat t with
+      match%constr t with
       | "true" -> [%constr "Literal true"]
       | "false" -> [%constr "Literal false"]
       | "negb ?x" ->
