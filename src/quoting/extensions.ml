@@ -155,7 +155,7 @@ module Constr = struct
             compilation-time by parsing it. Note that we reparse the
             pattern at runtime, since there is no easy way to splice the
             obtained pattern AST into the source code. *)
-         let parsed_pattern = Runtime.Parsing.parse_pattern pattern in
+         let parsed_pattern = Runtime.Parsing.parse_pattern ~loc:(Ppx_utils.rocq_loc_of_loc lhs_loc) pattern in
          let bindings = Runtime.Pattern_matching.pattern_variables parsed_pattern in
          let bindings = List.map (expand_pattern_var ~pattern_loc:lhs_loc) bindings in
          let pattern_expr = Ast_builder.Default.estring ~loc:lhs_loc pattern in
@@ -172,9 +172,17 @@ module Constr = struct
     [%expr Runtime.Pattern_matching.match_term [%e scrutinee] ~cases:[%e cases]]
 
   let match_pattern =
+    let regular_pattern = Ast_pattern.(
+        map ~f:(fun f s loc -> f { txt = Some s; loc }) @@
+          ppat_constant (pconst_string __ __ drop))
+    in
+    let any_pattern = Ast_pattern.(
+        map ~f:(fun f loc -> f { txt = None; loc }) @@
+          ppat_loc __ ppat_any)
+    in
     let case_pattern = Ast_pattern.(
         case
-          ~lhs:(map' ~f:(fun loc f x -> f { txt = x; loc }) (alt_option (pstring __) ppat_any))
+          ~lhs:(alt regular_pattern any_pattern)
           ~guard:(none)
           ~rhs:(__'))
     in
