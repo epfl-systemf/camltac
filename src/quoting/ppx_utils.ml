@@ -34,6 +34,7 @@ let rocq_loc_of_loc loc: Loc.t =
   }
 
 open Ppxlib
+open Expansion_helpers
 
 let rec expr_of_list ~loc = function
   | [] -> [%expr []]
@@ -41,11 +42,14 @@ let rec expr_of_list ~loc = function
      let tail_expr = expr_of_list ~loc tail in
      [%expr [%e head] :: [%e tail_expr]]
 
-let rec with_let_bindings ~loc bindings expr =
-  match bindings with
-  | [] -> expr
-  | (name, binding) :: rest ->
-     let expr = with_let_bindings ~loc rest expr in
-     let name = Ast_builder.Default.ppat_var ~loc:name.loc name in
-     [%expr let [%p name] = [%e binding] in [%e expr]]
-
+let with_let_bindings ~loc bindings expr =
+  let quoter = Quoter.create () in
+  let rec with_let_bindings = function
+    | [] -> expr
+    | (name, binding) :: rest ->
+       let expr = with_let_bindings rest in
+       let name = Ast_builder.Default.ppat_var ~loc:name.loc name in
+       let binding = Quoter.quote quoter binding in
+       [%expr let [%p name] = [%e binding] in [%e expr]]
+  in
+  Quoter.sanitize quoter (with_let_bindings bindings)
