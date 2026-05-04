@@ -50,17 +50,7 @@ MLtac Run ocaml:{{
                 tclUNIT ()
         end
 
-
-    let () =
-        let open Ltac_plugin in
-        let open Tacexpr in
-        let mltac _ _ = apply_search in
-        let name = { mltac_plugin = "mltac.plugin.runtime"; mltac_tactic = "apply_search"; } in
-        let () = Tacenv.register_ml_tactic name [|mltac|] in
-  let tac = CAst.make (TacML ({ mltac_name = name; mltac_index = 0 }, [])) in
-  let obj () =
-    Tacenv.register_ltac true false (Id.of_string "apply_search") tac in
-  Mltop.(declare_cache_obj_full (interp_only_obj obj) "mltac.plugin.runtime")
+   let () = Ltac.FFI.define "apply_search" apply_search
 }}.
 
 (* TODO: This is a work-around, I've yet to find a way to register tactics

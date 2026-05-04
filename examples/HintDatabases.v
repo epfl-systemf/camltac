@@ -12,19 +12,13 @@ Require Import MLtac.MLtac.
 Require Import Ltac2.Ltac2.
 
 MLtac Run ocaml:{{
-  open Tacticals
-  open Api
-  open Ltac2_plugin
-  open Tac2ffi
-  open Tac2externals
-
   let with_hint_db dbs tacK =
     let dbs = List.map HintDb.get_db dbs in
     (* [dbs] : list of hint databases *)
     (* [tacK] : tactic to run on a hint *)
     Proofview.Goal.enter begin fun gl ->
       let hints = List.concat_map HintDb.all_hints dbs in
-      let tac = tclFAIL (Pp.str "No applicable tactic!") in
+      let tac = fail (Pp.str "No applicable tactic!") in
       List.fold_left begin fun tac hint ->
         HintDb.Hint.run hint begin fun hint_ast ->
           match hint_ast with
@@ -32,7 +26,7 @@ MLtac Run ocaml:{{
           | Apply h
           | EApply h ->
              let _, lem = Hints.hint_as_term h in
-             tclORELSE (tacK lem) tac
+             (tacK lem) || tac
           | _ -> tac
           end
         end tac hints
@@ -47,12 +41,12 @@ MLtac Run ocaml:{{
       match EConstr.destRef sigma lem with
       | lem, _ ->
          let _ = HintDb.hint_resolve ~cost:1 lem db in
-         tclIDTAC
-      | exception Constr.DestKO -> tclFAIL (Pp.str "Cannot add non-global to hint database")
+         return ()
+      | exception Constr.DestKO -> fail (Pp.str "Cannot add non-global to hint database")
       end
 
-  let () = Runtime.Registry.register_ltac2 "add_resolve_to_db" (constr @-> string @-> tac unit) add_resolve_to_db
-  let () = Runtime.Registry.register_ltac2 "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db
+  let () = Ltac2.FFI.(define "add_resolve_to_db" (constr @-> string @-> tac unit) add_resolve_to_db)
+  let () = Ltac2.FFI.(define "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db)
 }}.
 
 Ltac2 @external add_to_db : constr -> string -> unit := "mltac.plugin.runtime" "add_resolve_to_db".

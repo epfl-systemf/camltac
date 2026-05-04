@@ -176,7 +176,6 @@ Require Import MLtac.MLtac.
 
 MLtac Run ocaml:{{
   open Names
-  open Api.Tactics
 
   let lookup_table = of_array [|
        [%constr "x00"]; [%constr "x01"]; [%constr "x02"]; [%constr "x03"]
@@ -261,8 +260,8 @@ MLtac Run ocaml:{{
       | [LocalDef (binder, _, _)] ->
         let* bytes = id_to_byte_list (binder.binder_name) in
         let* id = [%constr "string_of_list_byte %{bytes}"] in
-        let* id = eval (Red.native None) id in
-        Tactics.exact_no_check id
+        let* id = Ltac2.eval (Ltac2.Red.native None) id in
+        Ltac2.exact_no_check id
       | _ -> assert false
     end
 

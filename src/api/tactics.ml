@@ -90,10 +90,3 @@ let of_array tacs =
     return (v :: acc)
   ) tacs (return [])
   in return (Array.of_list list)
-
-(** {1 Basic tactics} *)
-
-open Ltac2_plugin
-open Tac2api
-
-include Ltac2.Std

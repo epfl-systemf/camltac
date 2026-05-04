@@ -78,106 +78,36 @@ Now, compare it to the hashconsed reification procedure:
 
 Section MLReification.
   MLtac Run ocaml:{{
-    open Ltac2_plugin
-    open Tac2externals
-    open Tac2ffi
-
-    (* Let us define our own data type in OCaml, and convert it from/to constr when necessary. *)
-    type bool_expr =
-      | Literal of bool
-      | Neg of bool_expr
-      | And of bool_expr * bool_expr
-      | Or of bool_expr * bool_expr
-    
-    type constructors = {
-      literal_cons: bool -> bool_expr;
-      neg_cons: bool_expr -> bool_expr;
-      and_cons: bool_expr -> bool_expr -> bool_expr;
-      or_cons: bool_expr -> bool_expr -> bool_expr;
-    }
-    
-    let rec quote factories t =
+    let rec reify t =
       match%pat t with
-      | "true" -> return (factories.literal_cons true)
-      | "false" -> return (factories.literal_cons false)
+      | "true" -> [%constr "Literal true"]
+      | "false" -> [%constr "Literal false"]
       | "negb ?x" ->
-         let* x = quote factories x in
-         return (factories.neg_cons x)
+         let* x = reify x in
+         [%constr "Neg %{x}"]
       | "andb ?x ?y" ->
-         let* left = quote factories x in
-         let* right = quote factories y in
-         return (factories.and_cons left right)
+         let* left = reify x in
+         let* right = reify y in
+         [%constr "And %{left} %{right}"]
       | "orb ?x ?y" ->
-         let* left = quote factories x in
-         let* right = quote factories y in
-         return (factories.or_cons left right)
+         let* left = reify x in
+         let* right = reify y in
+         [%constr "Or %{left} %{right}"]
       | _ -> user_error (Pp.str "Unrecognized term.")
-    
-    let rec unquote e =
-      match e with
-      | Literal true -> [%constr "Literal true"]
-      | Literal false -> [%constr "Literal false"]
-      | Neg e' ->
-        let* e' = unquote e' in [%constr "Neg %{e'}"]
-      | And (e1, e2) ->
-        let* e1 = unquote e1 in
-        let* e2 = unquote e2 in
-        [%constr "And %{e1} %{e2}"]
-      | Or (e1, e2) ->
-        let* e1 = unquote e1 in
-        let* e2 = unquote e2 in
-        [%constr "Or %{e1} %{e2}"]
 
-    (* Our reification function is parametrized by how we construct new applied terms.
-       For simple reification, taking [factories = default_factories] works.
-       If we want hashconsing, we must use a memoizing variant. *)
-    let reify factories t =
-      let* quoted = quote factories t in
-      unquote quoted
-    
-    let default_factories = {
-        literal_cons = (fun b -> Literal b);
-        neg_cons = (fun a -> Neg a);
-        and_cons = (fun a b -> And (a, b));
-        or_cons = (fun a b -> Or (a, b));
-    }
-    
-    let cache: (bool_expr, bool_expr) Hashtbl.t = Hashtbl.create 97
-    let memoized_factories =
-      let get_cached value =
-        try Hashtbl.find cache value
-        with Not_found -> Hashtbl.add cache value value; value
-      in {
-        literal_cons = (fun b -> get_cached (Literal b));
-        neg_cons = (fun a -> get_cached (Neg a));
-        and_cons = (fun a b -> get_cached (And (a, b)));
-        or_cons = (fun a b -> get_cached (Or (a, b)));
-      }
-    
-    let () = Runtime.Registry.register_ltac2 "reify" (constr @-> tac constr) @@ (reify default_factories)
-    let () = Runtime.Registry.register_ltac2 "hashcons_reify" (constr @-> tac constr) @@ (reify memoized_factories)
+    let () = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
   }}.
 
-  (** A function that reifies the given boolean term using OCaml. *)
   Ltac2 @external ml_reify : constr -> constr := "mltac.plugin.runtime" "reify".
-  
-  (** A function that reifies and hashconses the given boolean term using OCaml. *)
-  Ltac2 @external hashcons_reify : constr -> constr := "mltac.plugin.runtime" "hashcons_reify".
-  
+
   Goal True.
   Proof.
     pose (large_term := exp 18).
     unfold exp in large_term.
 
-    (* Without hashconsing: *)
     Time Ltac2 Eval (
         let t := eval unfold &large_term in &large_term in
           let _ := ml_reify t in ()).
-
-    (* With hashconsing: *)
-    Time Ltac2 Eval (
-        let t := eval unfold &large_term in &large_term in
-          let _ := hashcons_reify t in ()).
 
 (*|
 Completely instant!

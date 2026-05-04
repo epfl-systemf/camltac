@@ -130,8 +130,3 @@ val timeout : int -> unit tactic -> unit tactic
 val abstract : ?opaque:bool -> ?name:Names.Id.t -> unit tactic -> unit tactic
 (** [abstract ?opaque ?name t] saves the result of the execution of tactic [t]
     as an optionally named subproof. *)
-
-(** {1 Tactics} *)
-
-open Ltac2_plugin.Tac2api
-include module type of Ltac2.Std
