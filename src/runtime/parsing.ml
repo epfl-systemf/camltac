@@ -102,12 +102,12 @@ let () =
   Gensubst.register_constr_subst wit_antiquotation (fun _ v -> v)
 
 let () =
-  let print_antiquotation antiquotation =
+  let print_antiquotation (antiquotation: genarg_antiquotation) =
     let open Pp in
     Genprint.PrinterBasic (fun env sigma ->
       match antiquotation with
-      | `Constr c -> str "%{"
-      | `Preterm t -> str "%preterm:{"
+      | `Constr c -> str "%{" ++ Printer.pr_econstr_env env sigma c ++ str "}"
+      | `Preterm t -> str "%preterm:{" ++ Printer.pr_glob_constr_env env sigma t ++ str "}"
     )
   in
   Genprint.register_constr_print wit_antiquotation print_antiquotation print_antiquotation
