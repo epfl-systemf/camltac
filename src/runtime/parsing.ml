@@ -115,7 +115,7 @@ let () =
 (** {2 Camlp5 grammar tricks} *)
 
 (** Generic production rule for antiquotations:
-    [[ [ "%{"; x = ident; "}" -> { f x } ] ]]
+    [[ [ "%{"; n = natural; "}" -> { f n } ] ]]
  *)
 let antiquotation_production f =
   let open Procq in
