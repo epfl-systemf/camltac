@@ -1,0 +1,16 @@
+(rocq.theory
+ (name MLtac.Tests)
+ (plugins mltac.plugin)
+ (flags (:standard -quiet))
+ (theories MLtac))
+
+ ;; We cannot declare ML files loaded using "MLtac Load" as dependencies to Dune
+ ;; using the "Extra Dependency" command, as it relies on the load path to
+ ;; locate files, which is set to a subdirectory of _build. This dummy target is
+ ;; thus a work-around that copies all .ml files to Dune's _build to make them available
+ ;; to Dune. See also https://rocq-prover.zulipchat.com/#narrow/channel/240550-Dune-devs-.26-users/topic/Extra.20Dependency
+ ;; for more discussion.
+(rule
+ (targets _dummy_target)
+ (deps (glob_files *.ml))
+ (action (write-file _dummy_target "This is a dummy target used to copy .ml files to _build/default.")))
