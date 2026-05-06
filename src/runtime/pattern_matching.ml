@@ -7,16 +7,6 @@ and pattern = Constrexpr.constr_expr
 and 'a continuation = substitution -> 'a tactic
 and substitution = Ltac_pretype.patvar_map
 
-let pattern_variables t =
-  let open Constrexpr in
-  let open Names in
-  let rec f _ l = function
-    | { CAst.v = CEvar (var, _) }   -> var :: l                  (** First-order pattern variable ({v ?n v}) *)
-    | { CAst.v = CPatVar var; loc } -> CAst.make ?loc var :: l   (** Second-order pattern variable ({v @?n v}) *)
-    | c -> Constrexpr_ops.fold_constr_expr_with_binders
-             (fun _ () -> ())
-             f () l c
-  in f () [] t
 
 let match_term t ~cases =
   with_env begin fun env sigma ->
