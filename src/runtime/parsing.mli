@@ -67,11 +67,11 @@ val open_constr_of_string : ?loc:Loc.t -> string -> open_constr Proofview.tactic
 
 (** An antiquotation is a hole that is substituted by an expression at parsing time.
     They are denoted by {v %{x} v} or {v %kind:{x} v}, where [x] is a valid
-    OCaml identifier. Methods that can handle antiquotations are called {i
+    OCaml expression. Methods that can handle antiquotations are called {i
     quasi-parsing methods}.
 
     For example, while ["1 + 1"] can be immediately parsed to a term, parsing
-    ["1 + %{x}"] requires substituting the value of the OCaml variable [x]
+    ["1 + %{x}"] requires interpreting and substituting the OCaml value [x]
     before continuing.
 
     All quasi-parsing methods below therefore take an additional argument,
