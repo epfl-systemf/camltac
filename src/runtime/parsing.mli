@@ -27,9 +27,6 @@ val parse_ident : ?loc:Loc.t -> string -> Names.Id.t
 val parse_qualid : ?loc:Loc.t -> string -> Libnames.qualid
 (** [parse_qualid s] parses a qualified identifier from string [s]. *)
 
-val parse_pattern : ?loc:Loc.t -> string -> constrexpr
-(** [parse_pattern s] parse a pattern (from match expressions) from string [s]. *)
-
 val parse_vernac : ?loc:Loc.t -> string -> Vernacexpr.vernac_control
 (** [parse_vernac s] parse the vernacular command [s].
 
@@ -40,6 +37,9 @@ val parse_ltac : ?loc:Loc.t -> string -> Ltac_plugin.Tacexpr.raw_tactic_expr
 
 val parse_ltac2 : ?loc:Loc.t -> string -> Ltac2_plugin.Tac2expr.raw_tacexpr
 (** [parse_ltac2 s] parses an Ltac2 expression from string [s]. *)
+
+val parse_match_pattern : ?loc:Loc.t -> string -> constrexpr
+(** [parse_match_pattern s] parse an Ltac/Ltac2 match pattern from string [s]. *)
 
 (** {1 Parsing tactics} *)
 

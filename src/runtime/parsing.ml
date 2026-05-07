@@ -10,18 +10,18 @@ let parse ?loc entry s = Procq.parse_string ?loc entry s
 let constrexpr     = Procq.eoi_entry Procq.Constr.term
 let ident          = Procq.eoi_entry Procq.Constr.ident
 let qualid         = Procq.eoi_entry Procq.Prim.qualid
-let cpattern       = Procq.eoi_entry Procq.Constr.cpattern
+let match_pattern  = Procq.eoi_entry Procq.Constr.cpattern
 let vernac_control = Procq.eoi_entry Pvernac.Vernac_.vernac_control
 let ltac           = Procq.eoi_entry Ltac_plugin.Pltac.tactic
 let ltac2          = Procq.eoi_entry Ltac2_plugin.G_ltac2.ltac2_expr
 
-let parse_constrexpr ?loc = parse ?loc constrexpr
-let parse_ident ?loc      = parse ?loc ident
-let parse_qualid ?loc     = parse ?loc qualid
-let parse_pattern ?loc    = parse ?loc cpattern
-let parse_vernac ?loc     = parse ?loc vernac_control
-let parse_ltac ?loc       = parse ?loc ltac
-let parse_ltac2 ?loc      = parse ?loc ltac2
+let parse_constrexpr ?loc    = parse ?loc constrexpr
+let parse_ident ?loc         = parse ?loc ident
+let parse_qualid ?loc        = parse ?loc qualid
+let parse_vernac ?loc        = parse ?loc vernac_control
+let parse_ltac ?loc          = parse ?loc ltac
+let parse_ltac2 ?loc         = parse ?loc ltac2
+let parse_match_pattern ?loc = parse ?loc match_pattern
 
 let glob_constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
