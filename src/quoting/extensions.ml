@@ -12,7 +12,8 @@ module Ident = struct
   let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    [%expr Runtime.Parsing.parse_ident [%string [%e string_expr]]]
+    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
+    [%expr Runtime.Parsing.parse_ident ~loc:[%e rocq_loc] [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
@@ -26,7 +27,8 @@ module Qualid = struct
   let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    [%expr Runtime.Parsing.parse_qualid [%string [%e string_expr]]]
+    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
+    [%expr Runtime.Parsing.parse_qualid ~loc:[%e rocq_loc] [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
@@ -40,7 +42,8 @@ module Vernac = struct
   let expand ~ctxt string string_loc =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
     let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    [%expr Runtime.Parsing.parse_vernac [%string [%e string_expr]]]
+    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
+    [%expr Runtime.Parsing.parse_vernac ~loc:[%e rocq_loc] [%string [%e string_expr]]]
 
   let extension =
     Extension.V3.declare
@@ -72,12 +75,13 @@ let expand_antiquotation parser quasiparser ~ctxt string string_loc =
     Quasiquotation.generate_template
   in
   let template = Ast_builder.Default.estring ~loc:string_loc template in
+  let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
   match bindings with
-  | [] -> [%expr [%e parser] [%e template]]
+  | [] -> [%expr [%e parser] ~loc:[%e rocq_loc] [%e template]]
   | _ ->
      [%expr
       let context = [%e build_antiquotation_list bindings ~loc] in
-      [%e quasiparser] [%e template] context]
+      [%e quasiparser] ~loc:[%e rocq_loc] [%e template] context]
 
 (** {2 [Constrexpr.constr_expr]} *)
 
@@ -165,6 +169,7 @@ module Constr = struct
     find_all_in_stream stream
 
   let expand_case ~loc { lhs = { txt = lhs; loc = lhs_loc }; rhs = { txt = rhs; loc = rhs_loc } } =
+    let rocq_loc = Ppx_utils.rocq_loc_of_loc lhs_loc in
     let lhs, bindings =
       match lhs with
       | Some pattern ->
@@ -175,8 +180,8 @@ module Constr = struct
          let bindings = find_all_pattern_vars ~loc:lhs_loc pattern in
          let bindings = List.map expand_pattern_var bindings in
          let pattern_expr = Ast_builder.Default.estring ~loc:lhs_loc pattern in
-         [%expr Runtime.Parsing.parse_match_pattern [%e pattern_expr]], bindings
-      | None -> [%expr Runtime.Parsing.parse_match_pattern "_"], []
+         [%expr Runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] [%e pattern_expr]], bindings
+      | None -> [%expr Runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] "_"], []
     in
     let rhs = [%expr fun subst -> [%e Ppx_utils.with_let_bindings ~loc bindings rhs]] in
     [%expr ([%e lhs], [%e rhs])]
