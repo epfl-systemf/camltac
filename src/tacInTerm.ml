@@ -53,9 +53,9 @@ let of_snippet snippet =
   let open Constrexpr in
   (* Create a scaffold over the snippet *)
   let scaffold = Scaffold.make snippet in
-  let scaffold = Scaffold.wrap ~before:"Runtime.Registry.register_output begin" ~after:"end" scaffold in
   (* Add type cast to catch type errors *)
   let scaffold = Scaffold.wrap ~before:"let tac : _ Proofview.tactic = " ~after:"in tac" scaffold in
+  let scaffold = Scaffold.wrap ~before:"Runtime.Registry.register_output begin" ~after:"end" scaffold in
   (* Compile the code *)
   let file = Tempfile.with_content (Scaffold.contents scaffold) ~prefix:"snippet" ~suffix:".ml" in
   match Compiler.preprocess_and_compile file with
