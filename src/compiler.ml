@@ -102,7 +102,8 @@ let compilation_args file out =
     "-package";
     "mltac.plugin.quoting";
     "-open"; "Api";
-    "-open"; "Api.Tactics";
+    "-open"; "Tactics";
+    "-open"; "Tactics.Syntax";
     "-O3";
     "-o";
     out;
