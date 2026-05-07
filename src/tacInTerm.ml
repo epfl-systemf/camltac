@@ -58,11 +58,14 @@ let of_snippet snippet =
   let scaffold = Scaffold.wrap ~before:"let tac : _ Proofview.tactic = " ~after:"in tac" scaffold in
   (* Compile the code *)
   let file = Tempfile.with_content (Scaffold.contents scaffold) ~prefix:"snippet" ~suffix:".ml" in
-  match Compiler.compile file with
+  match Compiler.preprocess_and_compile file with
   | Ok out ->
      { source_code = snippet;
        compiled_file = out }
-  | Error err ->
+  | Error (Preprocessing_failed err) ->
+     let loc = Snippet.loc snippet in
+     CErrors.user_err ~loc (Pp.fmt "Preprocessing snippet exited with error code %d." err)
+  | Error (Compilation_failed err) ->
      let loc = Snippet.loc snippet in
      CErrors.user_err ~loc (Pp.fmt "Compilation of snippet exited with error code %d." err)
 
