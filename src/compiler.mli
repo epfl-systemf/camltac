@@ -10,3 +10,12 @@ val compile : string -> (string, int) result
 (** [compile file] compiles the given OCaml [file] to a shared library,
     returning either the path to the compiled file on success, or the error code
     if compilation failed. *)
+
+(** Type of errors raised by [preprocessed_and_compile]. *)
+type error =
+  | Preprocessing_failed of int
+  | Compilation_failed of int
+
+val preprocess_and_compile : string -> (string, error) result
+(** [preprocess_and_compile file] runs [preprocess file] and [compile] the
+    resulting file. *)

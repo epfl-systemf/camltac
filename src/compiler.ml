@@ -120,3 +120,13 @@ let compile file =
      (* TODO: Capture OCaml compilation errors to avoid printing them, e.g., when using [Fail].
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
      Error err
+
+type error =
+  | Preprocessing_failed of int
+  | Compilation_failed of int
+
+let preprocess_and_compile file =
+  match preprocess file with
+  | Error err -> Error (Preprocessing_failed err)
+  | Ok preprocessed_file ->
+     Result.map_error (fun err -> Compilation_failed err) (compile preprocessed_file)
