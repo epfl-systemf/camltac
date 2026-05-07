@@ -19,7 +19,6 @@ Module Unsafe.
 
   Ltac2 string_to_coq_list type coq_of_char s :=
     let cons := constr:(@cons) in
-    let dummy_constr := constr:(tt) in
     let rec to_list acc pos :=
         match Int.equal pos 0 with
         | true => acc
