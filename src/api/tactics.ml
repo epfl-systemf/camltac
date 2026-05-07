@@ -27,7 +27,7 @@ module Syntax = struct
     let qualid = Libnames.qualid_of_string id in
     Proofview.IdSelector qualid
 
-  let with_focus selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
+  let only selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
 
   let all = Proofview.tclINDEPENDENT
 

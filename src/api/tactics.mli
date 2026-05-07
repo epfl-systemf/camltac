@@ -47,8 +47,8 @@ module Syntax : sig
   val id : string -> goal_selector
   (** [id name] focuses on the goal named [id]. *)
 
-  val with_focus : goal_selector list -> 'a tactic -> 'a tactic
-  (** [with_focus selectors tac] applies tactic [tac] to goal selected by [selectors]. *)
+  val only : goal_selector list -> 'a tactic -> 'a tactic
+  (** [only selectors tac] applies tactic [tac] to goal selected by [selectors]. *)
 
   val all : unit tactic -> unit tactic
   (** [all tac] applies tactic [tac] to all goals. *)
