@@ -1,5 +1,5 @@
-(** This file wraps the OCaml native compiler (ocamlopt), providing utilities to
-    compile OCaml files to shared libraries that can be dynlinked. *)
+(** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
+    to compile to shared libraries that can be dynlinked. *)
 
 val preprocess : string -> (string, int) result
 (** [preprocess file] runs the MLtac preprocessor on the given file,

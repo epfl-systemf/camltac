@@ -1,5 +1,5 @@
-(** This file wraps the OCaml compiler (ocamlc & ocamlopt),
-    providing utilities to compile to shared libraries that can be dynlinked. *)
+(** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
+    to compile to shared libraries that can be dynlinked. *)
 
 
 (** List of Rocq packages that are automatically linked in.
