@@ -15,13 +15,13 @@ let vernac_control = Procq.eoi_entry Pvernac.Vernac_.vernac_control
 let ltac           = Procq.eoi_entry Ltac_plugin.Pltac.tactic
 let ltac2          = Procq.eoi_entry Ltac2_plugin.G_ltac2.ltac2_expr
 
-let parse_constrexpr ?loc    = parse ?loc constrexpr
-let parse_ident ?loc         = parse ?loc ident
-let parse_qualid ?loc        = parse ?loc qualid
-let parse_vernac ?loc        = parse ?loc vernac_control
-let parse_ltac ?loc          = parse ?loc ltac
-let parse_ltac2 ?loc         = parse ?loc ltac2
-let parse_match_pattern ?loc = parse ?loc match_pattern
+let parse_constrexpr ?loc s    = parse ?loc constrexpr s
+let parse_ident ?loc s         = parse ?loc ident s
+let parse_qualid ?loc s        = parse ?loc qualid s
+let parse_vernac ?loc s        = parse ?loc vernac_control s
+let parse_ltac ?loc s          = parse ?loc ltac s
+let parse_ltac2 ?loc s         = parse ?loc ltac2 s
+let parse_match_pattern ?loc s = parse ?loc match_pattern s
 
 let glob_constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
