@@ -1,3 +1,10 @@
+(*|
+Tactic suggestion
+=================
+
+Here's the implementation of a tactic that suggests lemmas to apply in the current goal, similarly to `apply?` in Lean.
+|*)
+
 Require Import MLtac.MLtac.
 
 MLtac Run ocaml:{{
