@@ -14,17 +14,6 @@ Open Scope list.
 Ltac2 compute c :=
   Std.eval_vm None c.
 
-Ltac2 rec array_blit_list pos ls arr :=
-  match ls with
-  | [] => ()
-  | h :: ls => Array.set arr pos h; array_blit_list (Int.add pos 1) ls arr
-  end.
-
-Ltac2 array_of_list default len ls :=
-  let arr := Array.make len default in
-  array_blit_list 0 ls arr;
-    arr.
-
 Module Unsafe.
   Module U := Ltac2.Constr.Unsafe.
 
@@ -37,7 +26,7 @@ Module Unsafe.
         | false =>
           let pos := Int.sub pos 1 in
           let b := coq_of_char (String.get s pos) in
-          to_list (U.make (U.App cons (array_of_list dummy_constr 3 [type; b; acc]))) pos
+          to_list (U.make (U.App cons [| type; b; acc |])) pos
         end in
     match U.check (to_list constr:(@List.nil $type) (String.length s)) with
     | Val v => v
@@ -58,8 +47,8 @@ Here's the implementation of the lookup table:
 Module LookupTable.
   (* char → int →[O(1)] byte *)
 
-  Ltac2 bytes_list () :=
-    [constr:(x00); constr:(x01); constr:(x02); constr:(x03)
+  Ltac2 bytes_table () :=
+    [| constr:(x00); constr:(x01); constr:(x02); constr:(x03)
      ; constr:(x04); constr:(x05); constr:(x06); constr:(x07)
      ; constr:(x08); constr:(x09); constr:(x0a); constr:(x0b)
      ; constr:(x0c); constr:(x0d); constr:(x0e); constr:(x0f)
@@ -122,10 +111,7 @@ Module LookupTable.
      ; constr:(xf0); constr:(xf1); constr:(xf2); constr:(xf3)
      ; constr:(xf4); constr:(xf5); constr:(xf6); constr:(xf7)
      ; constr:(xf8); constr:(xf9); constr:(xfa); constr:(xfb)
-     ; constr:(xfc); constr:(xfd); constr:(xfe); constr:(xff)].
-
-  Ltac2 bytes_table () :=
-    array_of_list constr:(Byte.x00) 256 (bytes_list ()).
+     ; constr:(xfc); constr:(xfd); constr:(xfe); constr:(xff) |].
 
   Ltac2 byte_of_char bytes_table chr :=
     Array.get bytes_table (Char.to_int chr).
