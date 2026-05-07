@@ -9,16 +9,16 @@ val parse : ?loc:Loc.t -> 'a Procq.Entry.t -> string -> 'a
 (** [parse entry s] parses string [s] using the grammar rule associated to the
     [entry].
 
-    @see [Procq.Constr] Main list of pre-defined entries.
+    See {!module:Procq.Constr} for a list of pre-defined entries.
  *)
 
 val parse_constrexpr : ?loc:Loc.t -> string -> constrexpr
 (** [parse_constrexpr s] parses the AST of a Rocq term from string [s].
 
-    [parse_constrexpr] is the most basic method for parsing terms: it does not
+    {!parse_constrexpr} is the most basic method for parsing terms: it does not
     resolve names or implicit arguments, nor does it not type-check the term
     obtained by the parser. To obtain terms with more guarantees, use
-    [glob_constr_of_string] or [constr_of_string] instead.
+    {!glob_constr_of_string} or {!constr_of_string} instead.
   *)
 
 val parse_ident : ?loc:Loc.t -> string -> Names.Id.t
@@ -48,26 +48,21 @@ val glob_constr_of_string : ?loc:Loc.t -> string -> glob_constr Proofview.tactic
     names and resolving notations.
 
     The resulting term is not type-checked. To type-check it, use
-    [Terms.Constr.of_glob_constr].
-
-    @see [constr_of_string]
+    {!Terms.Constr.of_glob_constr} instead.
  *)
 
 val constr_of_string : ?loc:Loc.t -> string -> constr Proofview.tactic
-(** [constr_of_string s] parses an evar-free Rocq term from string [s].
-
-    @see [open_constr_of_string]
- *)
+(** [constr_of_string s] parses an evar-free Rocq term from string [s]. *)
 
 val open_constr_of_string : ?loc:Loc.t -> string -> open_constr Proofview.tactic
-(** [open_constr_of_string s] behaves like [constr_of_string], but evars are
+(** [open_constr_of_string s] behaves like {!constr_of_string}, but evars are
     allowed in the resulting term. *)
 
 (** {1 Parsing with antiquotations} *)
 
-(** An antiquotation is a hole that is substituted by an expression at parsing time.
-    They are denoted by {v %{x} v} or {v %kind:{x} v}, where [x] is a valid
-    OCaml expression. Methods that can handle antiquotations are called {i
+(** An antiquotation is a hole that is substituted by an expression at parsing
+    time. They are denoted by [%{x}] or [%kind:{x}], where [x] is a valid OCaml
+    expression. Methods that can handle antiquotations are called {i
     quasi-parsing methods}.
 
     For example, while ["1 + 1"] can be immediately parsed to a term, parsing
@@ -82,33 +77,23 @@ val open_constr_of_string : ?loc:Loc.t -> string -> open_constr Proofview.tactic
 
 (** Types of antiquotations. *)
 type antiquotation =
-  [ `Constr of constr       (** {v %{…} v} or {v %constr:{…} v} *)
-  | `Preterm of glob_constr (** {v %preterm:{…} v} *)
-  | `Expr of constrexpr     (** {v %expr:{…} v} *)
+  [ `Constr of constr       (** [%{…}] or [%constr:{…}] *)
+  | `Preterm of glob_constr (** [%preterm:{…}] *)
+  | `Expr of constrexpr     (** [%expr:{…}] *)
   ]
 
-val quasiparse_constrexpr : ?loc:Loc.t -> string -> antiquotation list -> Constrexpr.constr_expr
+val quasiparse_constrexpr : ?loc:Loc.t -> string -> antiquotation list -> constrexpr
 (** [quasiparse_constrexpr s context] behaves like [parse_constexpr s], except that
-    antiquotations of the form {v %{n} v} are replaced by [List.nth context n]. *)
+    antiquotations of the form [%{n}] are replaced by [List.nth context n]. *)
 
-val glob_constr_of_quasistring : ?loc: Loc.t -> string -> antiquotation list -> Glob_term.glob_constr Proofview.tactic
+val glob_constr_of_quasistring : ?loc: Loc.t -> string -> antiquotation list -> glob_constr Proofview.tactic
 (** [glob_constr_of_quasistring s context] behaves like [glob_constr_of_string s],
-    except that antiquotations of the form {v %{n} v} are replaced by [List.nth context n].
+    except that antiquotations of the form [%{n}] are replaced by [List.nth context n]. *)
 
-    @see [glob_constr_of_string]
- *)
-
-val constr_of_quasistring : ?loc:Loc.t -> string -> antiquotation list -> EConstr.constr Proofview.tactic
+val constr_of_quasistring : ?loc:Loc.t -> string -> antiquotation list -> constr Proofview.tactic
 (** [constr_of_quasistring s context] behaves like [constr_of_string s], except that
-    antiquotations of the form {v %{0} v} are replaced by [List.nth context n].
+    antiquotations of the form [%{n}] are replaced by [List.nth context n]. *)
 
-    @see [constr_of_string]
-    @see [openconstr_of_quasistring]
- *)
-
-val open_constr_of_quasistring : ?loc:Loc.t -> string -> antiquotation list -> EConstr.t Proofview.tactic
+val open_constr_of_quasistring : ?loc:Loc.t -> string -> antiquotation list -> open_constr Proofview.tactic
 (** [open_constr_of_quasistring s] behaves like [open_constr_of_string], except that
-    antiquotations of the form {v %{n} v} are replaced by [List.nth context n].
-
-    @see [open_constr_of_string]
- *)
+    antiquotations of the form [%{n}] are replaced by [List.nth context n]. *)

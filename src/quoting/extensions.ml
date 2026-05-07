@@ -79,7 +79,7 @@ let expand_antiquotation parser quasiparser ~ctxt string string_loc =
       let context = [%e build_antiquotation_list bindings ~loc] in
       [%e quasiparser] [%e template] context]
 
-(** {2 [Constrexpr.constr_expr] *)
+(** {2 [Constrexpr.constr_expr]} *)
 
 module Expr = struct
   let expand ~ctxt =
@@ -96,7 +96,7 @@ module Expr = struct
       expand
 end
 
-(** {2 [Glob_term.glob_constr] *)
+(** {2 [Glob_term.glob_constr]} *)
 
 module Preterm = struct
   let expand ~ctxt =
@@ -113,7 +113,7 @@ module Preterm = struct
       expand
 end
 
-(** {2 [EConstr.constr] and [EConstr.t] *)
+(** {2 [EConstr.constr] and [EConstr.t]} *)
 
 module Constr = struct
   type constr_payload =

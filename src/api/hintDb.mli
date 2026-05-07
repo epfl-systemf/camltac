@@ -32,7 +32,7 @@ module Hint : sig
   (** [pattern hint] returns the pattern that the conclusion of the goal must
       match for the hint to be applicable.
 
-      Patterns can be specified in the {v Hint Extern v} and {v Hint Resolve v}
+      Patterns can be specified in the [Hint Extern] and [Hint Resolve]
       vernacular commands. *)
 
   val cost : t -> int
@@ -42,7 +42,7 @@ module Hint : sig
   val name : t -> GlobRef.t option
   (** [name hint] returns the name of the hint, if any.
 
-      Hints registered through {v Hint Extern v} do not get a name. *)
+      Hints registered through [Hint Extern] do not get a name. *)
 
   val database : t -> string option
   (** [database hint] returns the name of the database associated to the hint. *)
@@ -74,10 +74,7 @@ val discriminated : t -> bool
     net. *)
 
 val transparent_state : t -> TransparentState.t
-(** [transparent_state db] returns the transparency state of the database.
-
-    @see [TransparentState]
- *)
+(** [transparent_state db] returns the transparency state of the database. *)
 
 val set_transparent_state : TransparentState.t -> t -> t
 (** [set_transparent_state state db] sets the transparency state of the
@@ -132,7 +129,7 @@ val all_hints : t -> Hint.t list
 
 val hint_resolve : ?locality:Hints.hint_locality -> ?cost:int -> ?pattern:(Id.Set.t * Pattern.constr_pattern) -> GlobRef.t -> t -> t
 (** [hint_resolve ?locality ?cost ?pattern qualid db] behaves like the vernacular
-    {v [locality] Hint Resolve qualid | cost pattern : db. v}.
+    {v [locality] Hint Resolve qualid | cost pattern : db. v}
 
     @param locality
       Locality of the hint (local, global, export).
@@ -154,7 +151,7 @@ val hint_resolve : ?locality:Hints.hint_locality -> ?cost:int -> ?pattern:(Id.Se
 
 val hint_extern : ?locality:Hints.hint_locality -> cost:int -> ?pattern:(Id.Set.t * Pattern.constr_pattern) -> Gentactic.glob_generic_tactic -> t -> t
 (** [hint_extern ?locality ~cost ?pattern tac db] behaves like the vernacular
-    {v [locality] Hint Extern cost pattern => tactic : db v. v}.
+    {v [locality] Hint Extern cost pattern => tactic : db v. v}
 
     @param locality
       Locality of the hint (local, global, export).
@@ -178,7 +175,7 @@ val hint_extern : ?locality:Hints.hint_locality -> cost:int -> ?pattern:(Id.Set.
 
 val hint_cut : ?locality:Hints.hint_locality -> Hints.hints_path -> t -> t
 (** [hint_cut ?locality regex db] behaves like the vernacular
-    {v [locality] Hint Cut [ regex ] : db. v}.
+    {v [locality] Hint Cut [ regex ] : db. v}
 
     @param locality
       Locality of the hint (local, global, export).
@@ -195,7 +192,7 @@ val hint_cut : ?locality:Hints.hint_locality -> Hints.hints_path -> t -> t
 
 val hint_modes : ?locality:Hints.hint_locality -> GlobRef.t -> modes:string -> t -> t
 (** [hint_modes ?locality qualid ~modes db] behaves like the vernacular command
-    {v [locality] Hint Mode qualid modes : db v}.
+    {v [locality] Hint Mode qualid modes : db v}
 
     @param locality
       Locality of the hint (local, global, export).
@@ -219,7 +216,7 @@ val get_modes : Environ.env -> GlobRef.t -> t -> Hints.hint_mode list list
 
 val hint_unfold : ?locality:Libobject.locality -> Names.GlobRef.t list -> t -> t
 (** [hint_unfold ?locality qualids db] behaves like the vernacular command
-    {v [locality] Hint Unfold qualids : db. v}.
+    {v [locality] Hint Unfold qualids : db. v}
 
     @param locality
       Locality of the hint (local, global, export).
@@ -253,7 +250,7 @@ val print_reference : GlobRef.t -> Pp.t Proofview.tactic
 val get_db : string -> t
 (** [get_db name] returns the database with the given name.
 
-    @raise [Not_found] if no such database with the given name exist. *)
+    @raise Not_found if no such database with the given name exist. *)
 
 val databases : unit -> t list
 (** [databases ()] returns the list of registered databases. *)
