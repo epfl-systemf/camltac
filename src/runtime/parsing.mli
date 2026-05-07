@@ -1,6 +1,7 @@
 (** API for parsing terms, tactics, etc. *)
 
 open Names
+open Api.Terms
 
 (** {1 Parsing functions} *)
 
@@ -11,7 +12,7 @@ val parse : ?loc:Loc.t -> 'a Procq.Entry.t -> string -> 'a
     @see [Procq.Constr] Main list of pre-defined entries.
  *)
 
-val parse_constrexpr : ?loc:Loc.t -> string -> Constrexpr.constr_expr
+val parse_constrexpr : ?loc:Loc.t -> string -> constrexpr
 (** [parse_constrexpr s] parses the AST of a Rocq term from string [s].
 
     [parse_constrexpr] is the most basic method for parsing terms: it does not
@@ -26,7 +27,7 @@ val parse_ident : ?loc:Loc.t -> string -> Names.Id.t
 val parse_qualid : ?loc:Loc.t -> string -> Libnames.qualid
 (** [parse_qualid s] parses a qualified identifier from string [s]. *)
 
-val parse_pattern : ?loc:Loc.t -> string -> Constrexpr.constr_expr
+val parse_pattern : ?loc:Loc.t -> string -> constrexpr
 (** [parse_pattern s] parse a pattern (from match expressions) from string [s]. *)
 
 val parse_vernac : ?loc:Loc.t -> string -> Vernacexpr.vernac_control
@@ -42,23 +43,23 @@ val parse_ltac2 : ?loc:Loc.t -> string -> Ltac2_plugin.Tac2expr.raw_tacexpr
 
 (** {1 Parsing tactics} *)
 
-val glob_constr_of_string : ?loc:Loc.t -> string -> Glob_term.glob_constr Proofview.tactic
+val glob_constr_of_string : ?loc:Loc.t -> string -> glob_constr Proofview.tactic
 (** [glob_constr_of_string s] parses a Rocq term from string [s], globalizing
     names and resolving notations.
 
     The resulting term is not type-checked. To type-check it, use
-    [Term_conversions.Constr.of_glob_constr].
+    [Terms.Constr.of_glob_constr].
 
     @see [constr_of_string]
  *)
 
-val constr_of_string : ?loc:Loc.t -> string -> EConstr.constr Proofview.tactic
+val constr_of_string : ?loc:Loc.t -> string -> constr Proofview.tactic
 (** [constr_of_string s] parses an evar-free Rocq term from string [s].
 
     @see [open_constr_of_string]
  *)
 
-val open_constr_of_string : ?loc:Loc.t -> string -> EConstr.t Proofview.tactic
+val open_constr_of_string : ?loc:Loc.t -> string -> open_constr Proofview.tactic
 (** [open_constr_of_string s] behaves like [constr_of_string], but evars are
     allowed in the resulting term. *)
 
@@ -81,9 +82,9 @@ val open_constr_of_string : ?loc:Loc.t -> string -> EConstr.t Proofview.tactic
 
 (** Types of antiquotations. *)
 type antiquotation =
-  [ `Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
-  | `Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
-  | `Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  [ `Constr of constr       (** {v %{…} v} or {v %constr:{…} v} *)
+  | `Preterm of glob_constr (** {v %preterm:{…} v} *)
+  | `Expr of constrexpr     (** {v %expr:{…} v} *)
   ]
 
 val quasiparse_constrexpr : ?loc:Loc.t -> string -> antiquotation list -> Constrexpr.constr_expr

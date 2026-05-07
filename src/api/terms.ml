@@ -1,11 +1,18 @@
-(** Operations on terms. *)
+(** Term API. *)
 
 open Tactics.Syntax
+
+(** {1 Term representations} *)
+
+type constrexpr = Constrexpr.constr_expr
+type glob_constr = Glob_term.glob_constr
+type constr = EConstr.constr
+type open_constr = EConstr.t
 
 (** {1 Conversions} *)
 
 module Expr = struct
-  type t = Constrexpr.constr_expr
+  type t = constrexpr
 
   let of_glob_constr c =
     Tactics.with_env begin fun env sigma ->
@@ -22,9 +29,9 @@ module Expr = struct
 end
 
 module Glob_constr = struct
-  type t = Glob_term.glob_constr
+  type t = glob_constr
 
-  let of_expr e =
+  let of_constrexpr e =
     Tactics.with_env begin fun env sigma ->
       return (Constrintern.intern_constr env sigma e)
     end
@@ -37,9 +44,9 @@ module Glob_constr = struct
 end
 
 module Constr = struct
-  type t = EConstr.constr
+  type t = constr
 
-  let of_expr e =
+  let of_constrexpr e =
     Tactics.with_env begin fun env sigma ->
       let constr, ustate = Constrintern.interp_constr env sigma e in
       let sigma = Evd.merge_ustate sigma ustate in
@@ -57,9 +64,9 @@ module Constr = struct
 end
 
 module Open_constr = struct
-  type t = EConstr.t
+  type t = open_constr
 
-  let of_expr e =
+  let of_constrexpr e =
     Tactics.with_env begin fun env sigma ->
       let sigma, constr = Constrintern.interp_open_constr env sigma e in
       Proofview.Unsafe.tclEVARS sigma >>

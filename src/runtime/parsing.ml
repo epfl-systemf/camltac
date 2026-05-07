@@ -2,7 +2,7 @@
 
 open Names
 open Api
-open Api.Tactics
+open Terms
 
 let parse ?loc entry s = Procq.parse_string ?loc entry s
 
@@ -25,26 +25,26 @@ let parse_ltac2 ?loc      = parse ?loc ltac2
 
 let glob_constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
-  Term_conversions.Glob_constr.of_expr parsed_term
+  Glob_constr.of_constrexpr parsed_term
 
 let constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
-  Term_conversions.Constr.of_expr parsed_term
+  Constr.of_constrexpr parsed_term
 
 let open_constr_of_string ?loc s =
   let parsed_term = parse_constrexpr ?loc s in
-  Term_conversions.Open_constr.of_expr parsed_term
+  Open_constr.of_constrexpr parsed_term
 
 (** {1 Parsing with antiquotations} *)
 
 type genarg_antiquotation =
-  [ `Constr of EConstr.constr         (** {v %{…} v} or {v %constr:{…} v} *)
-  | `Preterm of Glob_term.glob_constr (** {v %preterm:{…} v} *)
+  [ `Constr of constr       (** {v %{…} v} or {v %constr:{…} v} *)
+  | `Preterm of glob_constr (** {v %preterm:{…} v} *)
   ]
 
 type antiquotation =
   [ genarg_antiquotation
-  | `Expr of Constrexpr.constr_expr   (** {v %expr:{…} v} *)
+  | `Expr of constrexpr (** {v %expr:{…} v} *)
   ]
 
 (** {2 Generic arguments} *)
@@ -155,7 +155,7 @@ let with_antiquotations entry antiquotation_to_constrexpr f =
 (** {2 Quasiparsing methods} *)
 
 let quasiparse_constrexpr ?loc s context =
-  let antiquotation_to_constrexpr ~loc : antiquotation -> Constrexpr.constr_expr = function
+  let antiquotation_to_constrexpr ~loc : antiquotation -> constrexpr = function
     | `Expr e -> e
     | #genarg_antiquotation as antiquotation ->
        let open Constrexpr in
@@ -168,12 +168,12 @@ let quasiparse_constrexpr ?loc s context =
 
 let glob_constr_of_quasistring ?loc s context =
   let parsed_term = quasiparse_constrexpr ?loc s context in
-  Term_conversions.Glob_constr.of_expr parsed_term
+  Glob_constr.of_constrexpr parsed_term
 
 let constr_of_quasistring ?loc s context =
   let parsed_term = quasiparse_constrexpr ?loc s context in
-  Term_conversions.Constr.of_expr parsed_term
+  Constr.of_constrexpr parsed_term
 
 let open_constr_of_quasistring ?loc s context =
   let parsed_term = quasiparse_constrexpr ?loc s context in
-  Term_conversions.Open_constr.of_expr parsed_term
+  Open_constr.of_constrexpr parsed_term
