@@ -8,12 +8,16 @@ open Expansion_helpers
 (** Extensions [[%ident]], [[%qualid]], [[%vernac]] support a limited subset of
     antiquotations in the form of string interpolation. *)
 
+let expand_string_interpolation ~ctxt interpolator string string_loc =
+  let loc = Expansion_context.Extension.extension_point_loc ctxt in
+  let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
+  let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
+  [%expr [%e interpolator] ~loc:[%e rocq_loc] [%string [%e string_expr]]]
+
 module Ident = struct
-  let expand ~ctxt string string_loc =
+  let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
-    [%expr Runtime.Parsing.parse_ident ~loc:[%e rocq_loc] [%string [%e string_expr]]]
+    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_ident]
 
   let extension =
     Extension.V3.declare
@@ -24,11 +28,9 @@ module Ident = struct
 end
 
 module Qualid = struct
-  let expand ~ctxt string string_loc =
+  let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
-    [%expr Runtime.Parsing.parse_qualid ~loc:[%e rocq_loc] [%string [%e string_expr]]]
+    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_qualid]
 
   let extension =
     Extension.V3.declare
@@ -39,11 +41,9 @@ module Qualid = struct
 end
 
 module Vernac = struct
-  let expand ~ctxt string string_loc =
+  let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let string_expr = Ast_builder.Default.estring ~loc:string_loc string in
-    let rocq_loc = Ppx_utils.rocq_loc_of_loc string_loc in
-    [%expr Runtime.Parsing.parse_vernac ~loc:[%e rocq_loc] [%string [%e string_expr]]]
+    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_vernac]
 
   let extension =
     Extension.V3.declare
