@@ -8,6 +8,7 @@
    mltac.plugin.runtime
    ppx_string ; For string interpolation
    ppxlib)
+ (ppx_runtime_libraries mltac.plugin.runtime)
  (preprocess (pps ppxlib.metaquot)))
 
 ; Produce an executable that can be depended on by the plugin at runtime
