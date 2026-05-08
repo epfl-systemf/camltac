@@ -5,12 +5,7 @@
  (libraries
    dynlink
    mltac.plugin.runtime
-   mltac.plugin.api)
-
- ; FIXME: Adding quoting to the libraries stanza fails with "Invalid ELF
- ;        header", so the dependency is added through `preprocess` instead (even
- ;        though we're not pre-processing anything).
- (preprocess (pps mltac.plugin.quoting)))
+   mltac.plugin.api))
 
 (rocq.pp
  (modules grammar))

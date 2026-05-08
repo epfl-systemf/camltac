@@ -1,6 +1,7 @@
-(** Registration of PPX rewriters for quoting Rocq code. *)
+(** Extension nodes for quoting Rocq code. *)
 
 open Ppxlib
+open Ppx_mltac_lib
 open Expansion_helpers
 
 (** {1 Extensions with string interpolation} *)
@@ -17,7 +18,7 @@ let expand_string_interpolation ~ctxt interpolator string string_loc =
 module Ident = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_ident]
+    expand_string_interpolation ~ctxt [%expr Ppx_mltac_runtime.Parsing.parse_ident]
 
   let extension =
     Extension.V3.declare
@@ -30,7 +31,7 @@ end
 module Qualid = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_qualid]
+    expand_string_interpolation ~ctxt [%expr Ppx_mltac_runtime.Parsing.parse_qualid]
 
   let extension =
     Extension.V3.declare
@@ -43,7 +44,7 @@ end
 module Vernac = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    expand_string_interpolation ~ctxt [%expr Runtime.Parsing.parse_vernac]
+    expand_string_interpolation ~ctxt [%expr Ppx_mltac_runtime.Parsing.parse_vernac]
 
   let extension =
     Extension.V3.declare
@@ -88,8 +89,8 @@ let expand_antiquotation parser quasiparser ~ctxt string string_loc =
 module Expr = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Runtime.Parsing.parse_constrexpr] in
-    let quasiparser = [%expr Runtime.Parsing.quasiparse_constrexpr] in
+    let parser = [%expr Ppx_mltac_runtime.Parsing.parse_constrexpr] in
+    let quasiparser = [%expr Ppx_mltac_runtime.Parsing.quasiparse_constrexpr] in
     expand_antiquotation parser quasiparser ~ctxt
 
   let extension =
@@ -105,8 +106,8 @@ end
 module Preterm = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Runtime.Parsing.glob_constr_of_string] in
-    let quasiparser = [%expr Runtime.Parsing.glob_constr_of_quasistring] in
+    let parser = [%expr Ppx_mltac_runtime.Parsing.glob_constr_of_string] in
+    let quasiparser = [%expr Ppx_mltac_runtime.Parsing.glob_constr_of_quasistring] in
     expand_antiquotation parser quasiparser ~ctxt
 
   let extension =
@@ -133,8 +134,8 @@ module Constr = struct
 
   let expand_string ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Runtime.Parsing.constr_of_string] in
-    let quasiparser = [%expr Runtime.Parsing.constr_of_quasistring] in
+    let parser = [%expr Ppx_mltac_runtime.Parsing.constr_of_string] in
+    let quasiparser = [%expr Ppx_mltac_runtime.Parsing.constr_of_quasistring] in
     expand_antiquotation parser quasiparser ~ctxt
 
   let string_pattern =
@@ -156,7 +157,7 @@ module Constr = struct
         (* Attempt to parse an identifier from the rest of the stream *)
         try
           let rest = CharStream.take_all stream in
-          let id = Names.Id.to_string (Runtime.Parsing.parse Procq.Prim.ident rest) in
+          let id = Names.Id.to_string (Ppx_mltac_runtime.Parsing.parse Procq.Prim.ident rest) in
           let stream = CharStream.advance ~n:(String.length id) stream in
           let loc_end = stream.pos in
           let loc = { loc_start; loc_end; loc_ghost = false } in
@@ -180,8 +181,8 @@ module Constr = struct
          let bindings = find_all_pattern_vars ~loc:lhs_loc pattern in
          let bindings = List.map expand_pattern_var bindings in
          let pattern_expr = Ast_builder.Default.estring ~loc:lhs_loc pattern in
-         [%expr Runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] [%e pattern_expr]], bindings
-      | None -> [%expr Runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] "_"], []
+         [%expr Ppx_mltac_runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] [%e pattern_expr]], bindings
+      | None -> [%expr Ppx_mltac_runtime.Parsing.parse_match_pattern ~loc:[%e rocq_loc] "_"], []
     in
     let rhs = [%expr fun subst -> [%e Ppx_utils.with_let_bindings ~loc bindings rhs]] in
     [%expr ([%e lhs], [%e rhs])]
@@ -225,8 +226,8 @@ end
 module Open_constr = struct
   let expand ~ctxt =
     let loc = Expansion_context.Extension.extension_point_loc ctxt in
-    let parser = [%expr Runtime.Parsing.open_constr_of_string] in
-    let quasiparser = [%expr Runtime.Parsing.open_constr_of_quasistring] in
+    let parser = [%expr Ppx_mltac_runtime.Parsing.open_constr_of_string] in
+    let quasiparser = [%expr Ppx_mltac_runtime.Parsing.open_constr_of_quasistring] in
     expand_antiquotation parser quasiparser ~ctxt
 
   let extension =

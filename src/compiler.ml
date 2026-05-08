@@ -75,7 +75,7 @@ let preprocessing_args input out =
 
 (** Run the MLtac preprocessor on the given file. *)
 let preprocess file =
-  let ppx_program = "ppx-mltac" in
+  let ppx_program = "ppx_mltac" in
   let out = Filename.remove_extension file ^ ".pp.ml" in
   let args = preprocessing_args file out in
   match run_command ppx_program args with
@@ -100,7 +100,7 @@ let compilation_args file out =
     "-package";
     "mltac.plugin.api";
     "-package";
-    "mltac.plugin.quoting";
+    "mltac.ppx";
     "-open"; "Api";
     "-open"; "Tactics";
     "-open"; "Tactics.Syntax";

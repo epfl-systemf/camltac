@@ -1,0 +1,6 @@
+(library
+ (name ppx_mltac_lib)
+ (public_name mltac.ppx.lib)
+ (synopsis "Library for ppx_mltac")
+ (libraries ppxlib str)
+ (preprocess (pps ppxlib.metaquot)))

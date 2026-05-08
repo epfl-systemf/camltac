@@ -1,8 +1,7 @@
 (** API for parsing terms. *)
 
 open Names
-open Api
-open Terms
+open Api.Terms
 
 let parse ?loc entry s = Procq.parse_string ?loc entry s
 

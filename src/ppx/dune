@@ -1,0 +1,11 @@
+(library
+ (name ppx_mltac)
+ (public_name mltac.ppx)
+ (kind ppx_rewriter)
+ (synopsis "A PPX rewriter for quoting Rocq terms in OCaml")
+ (libraries
+   ppxlib
+   mltac.ppx.lib
+   mltac.ppx.runtime)
+ (ppx_runtime_libraries mltac.ppx.runtime)
+ (preprocess (pps ppxlib.metaquot ppx_string)))
