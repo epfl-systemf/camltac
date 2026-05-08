@@ -1,13 +1,10 @@
 (** Utility methods for manipulation PPX expressions and locations. *)
 
-val loc_of_rocq_loc : Loc.t -> Ppxlib.Location.t
-(** [loc_of_rocq_loc loc] converts a Rocq [Loc.t] into a Ppxlib [Location.t]. *)
-
-val rocq_loc_of_loc : Ppxlib.Location.t -> Ppxlib.expression
-(** [rocq_loc_of_loc loc] converts a Ppxlib [Location.t] to an expression
-    representation a Rocq [Loc.t]. *)
-
 open Ppxlib
+
+val rocq_loc_of_loc : location -> expression
+(** [rocq_loc_of_loc loc] converts a Ppxlib [location] to an expression
+    representing a Rocq [Loc.t]. *)
 
 val with_let_bindings : loc:location -> (string loc * expression) list -> expression -> expression
 (** [with_let_bindings ~loc bindings expr] wraps expression [expr] with the

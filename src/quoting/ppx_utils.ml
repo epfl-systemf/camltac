@@ -1,29 +1,9 @@
 (** Utility methods for manipulation PPX expressions and locations. *)
 
-let loc_of_rocq_loc (loc: Loc.t) =
-  let open Loc in
-  let fname =
-    match loc.fname with
-    | InFile { file } -> file
-    | ToplevelInput -> "_toplevel_"
-  in
-  let loc_start = Lexing.{
-    pos_fname = fname;
-    pos_lnum = loc.line_nb;
-    pos_bol = loc.bol_pos;
-    pos_cnum = loc.bp
-  }
-  in
-  let loc_end = Lexing.{
-    pos_fname = fname;
-    pos_lnum = loc.line_nb_last;
-    pos_bol = loc.bol_pos_last;
-    pos_cnum = loc.ep
-  }
-  in Ppxlib.Location.{ loc_start; loc_end; loc_ghost = false }
+open Ppxlib
+open Expansion_helpers
 
 let rocq_loc_of_loc loc =
-  let open Ppxlib in
   let Location.{ loc_start; loc_end } = loc in
   let file         = Ast_builder.Default.estring ~loc loc_start.pos_fname in
   let line_nb      = Ast_builder.Default.eint ~loc loc_start.pos_lnum in
@@ -42,9 +22,6 @@ let rocq_loc_of_loc loc =
       ep           = [%e ep];
     }
   ]
-
-open Ppxlib
-open Expansion_helpers
 
 let with_let_bindings ~loc bindings expr =
   let quoter = Quoter.create () in
