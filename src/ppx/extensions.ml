@@ -26,6 +26,8 @@ module Ident = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 module Qualid = struct
@@ -39,6 +41,8 @@ module Qualid = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 module Vernac = struct
@@ -52,6 +56,8 @@ module Vernac = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 (** {1 Extensions with antiquotations} *)
@@ -99,6 +105,8 @@ module Expr = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 (** {2 [Glob_term.glob_constr]} *)
@@ -116,6 +124,8 @@ module Preterm = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 (** {2 [EConstr.constr] and [EConstr.t]} *)
@@ -221,6 +231,8 @@ module Constr = struct
         match payload with
         | String { txt = s; loc = s_loc } -> expand_string ~ctxt s s_loc
         | Match { scrutinee; cases } -> expand_match ~ctxt ~scrutinee ~cases)
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 module Open_constr = struct
@@ -236,20 +248,22 @@ module Open_constr = struct
       Extension.Context.expression
       Ast_pattern.(single_expr_payload (pexp_constant (pconst_string __ __ drop)))
       expand
+
+  let rule = Ppxlib.Context_free.Rule.extension extension
 end
 
 (**/**)
 
 let () =
   Ppxlib.Driver.register_transformation
-    ~extensions:[
-      Ident.extension;
-      Qualid.extension;
-      Vernac.extension;
+    ~rules:[
+      Ident.rule;
+      Qualid.rule;
+      Vernac.rule;
 
-      Expr.extension;
-      Preterm.extension;
-      Constr.extension;
-      Open_constr.extension
+      Expr.rule;
+      Preterm.rule;
+      Constr.rule;
+      Open_constr.rule
     ]
     "mltac"
