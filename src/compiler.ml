@@ -100,7 +100,7 @@ let compilation_args file out =
     "-package";
     "mltac.plugin.api";
     "-package";
-    "mltac.ppx";
+    "mltac.quot";
     "-open"; "Api";
     "-open"; "Tactics";
     "-open"; "Tactics.Syntax";
