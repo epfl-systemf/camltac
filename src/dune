@@ -5,7 +5,8 @@
  (libraries
    dynlink
    mltac.plugin.runtime
-   mltac.plugin.api))
+   mltac.plugin.api
+   ppx_rocq.runtime))
 
 (rocq.pp
  (modules grammar))
