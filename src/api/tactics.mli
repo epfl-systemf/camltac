@@ -124,15 +124,16 @@ end
 
 (** {2 Utilities} *)
 
-val with_env : (Environ.env -> Evd.evar_map -> 'a tactic) -> 'a tactic
-(** [with_env t] executes [t] in the current environment and evar map, and
-    returns the result as a tactic.
+val env : Environ.env tactic
+(** [env] returns the current environment.
 
     The “current environment” is dependent on the context:
-    - If there are no goals in focus, the current environment is the global environment.
     - If there is a single goal in focus, the current environment is the goal's environment.
-    - Otherwise, if there is more than one goal in focus, the tactic fails with an error.
+    - Otherwise, the current environment is the global environment.
  *)
+
+val sigma : Evd.evar_map tactic
+(** [sigma] returns the current evar map. *)
 
 (** {3 Lifting operations} *)
 

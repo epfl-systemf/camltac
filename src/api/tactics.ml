@@ -67,20 +67,17 @@ open Syntax
 
 (** {2 Utilities} *)
 
-let with_env t =
+let env =
   let* goals = Proofview.Goal.goals in
   match goals with
-  | [] ->
-     let* env = Proofview.tclENV in
-     let* sigma = Proofview.tclEVARMAP in
-     t env sigma
-  | [goal] ->
-     let* goal in
-     let env = Proofview.Goal.env goal in
-     let sigma = Proofview.Goal.sigma goal in
-     t env sigma
-  | _ :: _ ->
-     user_error (Pp.str "More than one goal is focussed.")
+  | [goal] -> let* goal in return (Proofview.Goal.env goal)
+  | _ -> Proofview.tclENV
+
+let sigma =
+  let* goals = Proofview.Goal.goals in
+  match goals with
+  | [goal] -> let* goal in return (Proofview.Goal.sigma goal)
+  | _ -> Proofview.tclEVARMAP
 
 (** {3 Lifting operations} *)
 
