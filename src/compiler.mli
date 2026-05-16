@@ -1,17 +1,13 @@
 (** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
     to compile to shared libraries that can be dynlinked. *)
 
-val preprocess : string -> (string, int) result
-(** [preprocess file] runs the MLtac preprocessor on the given file,
-    returning the path to the preprocessed file, or the error code if
-    preprocessing failed. *)
-
-val compile : string -> (string, int) result
-(** [compile file] compiles the given OCaml [file] to a shared library,
+val compile : ?extra_args:string list -> string -> (string, int) result
+(** [compile ?extra_args file] compiles the given OCaml [file] to a shared library,
     returning either the path to the compiled file on success, or the error code
-    if compilation failed. *)
+    if compilation failed. [extra_args] is a list of additional arguments to
+    pass to the compiler. *)
 
-(** Type of errors raised by [preprocessed_and_compile]. *)
+(** Type of errors raised by [preprocess_and_compile]. *)
 type error =
   | Preprocessing_failed of int
   | Compilation_failed of int

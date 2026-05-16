@@ -65,23 +65,6 @@ let run_command prog args =
   let err = Sys.command command in
   if err = 0 then Ok () else Error err
 
-let preprocessing_args input out =
-  [
-    (* TODO: Add [-loc-filename] argument *)
-    "-as-pp";
-    "-impl"; input;
-    "-o"; out
-  ]
-
-(** Run the MLtac preprocessor on the given file. *)
-let preprocess file =
-  let ppx_program = "ppx_rocq" in
-  let out = Filename.remove_extension file ^ ".pp.ml" in
-  let args = preprocessing_args file out in
-  match run_command ppx_program args with
-  | Ok () -> Ok out
-  | Error err -> Error err
-
 (** Call the OCaml compiler with the given arguments, returning [Ok ()] if the
     compilation was successful, or [Error code] if the compilation failed. *)
 let call_compiler args =
@@ -111,10 +94,9 @@ let compilation_args file out =
     file
   ]
 
-
-let compile file =
+let compile ?(extra_args = []) file =
   let out = Dynlink.adapt_filename (Filename.remove_extension file ^ ".cmo") in
-  let args = compilation_args file out in
+  let args = compilation_args file out @ extra_args in
   match call_compiler args with
   | Ok () -> Ok out
   | Error err ->
@@ -126,8 +108,19 @@ type error =
   | Preprocessing_failed of int
   | Compilation_failed of int
 
+(** Convert metadata from preprocessing to a list of arguments for the compiler. *)
+let translate_metadata_to_compiler_args (metadata: Preprocessor.metadata) =
+  let translate_option option = String.split_on_char ' ' option in
+  let translate_lib lib = ["-I"; lib] in
+  List.concat
+    [
+      List.concat_map translate_option metadata.compiler_options;
+      List.concat_map translate_lib metadata.libraries
+    ]
+
 let preprocess_and_compile file =
-  match preprocess file with
+  match Preprocessor.preprocess file with
   | Error err -> Error (Preprocessing_failed err)
-  | Ok preprocessed_file ->
-     Result.map_error (fun err -> Compilation_failed err) (compile preprocessed_file)
+  | Ok (preprocessed_file, metadata) ->
+     let extra_args = translate_metadata_to_compiler_args metadata in
+     Result.map_error (fun err -> Compilation_failed err) (compile ~extra_args preprocessed_file)

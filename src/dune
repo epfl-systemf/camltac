@@ -6,7 +6,9 @@
    dynlink
    mltac.plugin.runtime
    mltac.plugin.api
-   ppx_rocq.runtime))
+   ppx_rocq.runtime
+   sexplib)
+  (preprocess (pps ppx_sexp_conv)))
 
 (rocq.pp
  (modules grammar))
