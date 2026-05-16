@@ -162,7 +162,7 @@ Require Import MLtac.MLtac.
 MLtac Run ocaml:{{
   open Names
 
-  let lookup_table = of_array [|
+  let lookup_table = [|
        [%constr "x00"]; [%constr "x01"]; [%constr "x02"]; [%constr "x03"]
      ; [%constr "x04"]; [%constr "x05"]; [%constr "x06"]; [%constr "x07"]
      ; [%constr "x08"]; [%constr "x09"]; [%constr "x0a"]; [%constr "x0b"]
@@ -229,12 +229,10 @@ MLtac Run ocaml:{{
      ; [%constr "xfc"]; [%constr "xfd"]; [%constr "xfe"]; [%constr "xff"] |]
 
   let id_to_byte_list (id: Id.t) =
-    let* lookup_table in
-    let* cons = [%constr "@cons Byte.byte"] in
     String.fold_right (fun c tail ->
         let* tail in
-        let byte = lookup_table.(Char.code c) in
-        return (EConstr.mkApp (cons, [| byte; tail |])))
+        let* byte = lookup_table.(Char.code c) in
+        [%constr "%{byte} :: %{tail}"])
     (Id.to_string id) [%constr "@nil Byte.byte"]
   
   let serialize_binder_in_context =
