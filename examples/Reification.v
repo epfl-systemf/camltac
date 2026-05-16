@@ -1,9 +1,9 @@
 (*|
-======================
-Hashconsed reification
-======================
+===========
+Reification
+===========
 
-This plugin demonstrates how one can perform reification with hash-consing, which is currently not possible with Ltac2, and painful with an OCaml plugin.
+This plugin demonstrates how one can perform reification in Camltac versus Ltac2.
 |*)
 
 From Camltac Require Import Camltac.
@@ -51,7 +51,7 @@ Section Ltac2Reification.
     end.
 
 (*|
-This reification will perform poorly when subterms are shared, as in the following formula:
+This reification will perform poorly when terms are large, as in the following formula:
 |*)
 
   Fixpoint exp (n : nat) : bool :=
@@ -73,7 +73,7 @@ This reification will perform poorly when subterms are shared, as in the followi
 End Ltac2Reification.
 
 (*|
-Now, compare it to the hashconsed reification procedure:
+Now, we reimplement it in Camltac:
 |*)
 
 Section MLReification.
@@ -93,10 +93,21 @@ Section MLReification.
          let* left = reify x in
          let* right = reify y in
          [%constr "Or %{left} %{right}"]
-      | _ -> user_error (Pp.str "Unrecognized term.")
+      | _ ->
+         match Constr.kind (EConstr.Unsafe.to_constr t) with
+         | Var v ->
+            (* Use our ident parsing function defined in [IdentParsing.v]. *)
+            let id_to_rocq_string: Names.Id.t -> EConstr.constr Proofview.tactic = Runtime.Registry.find "id_to_rocq_string" in
+            let* v = id_to_rocq_string v in
+            [%constr "Var %{v}"]
+         | _ -> user_error (Pp.str "Unrecognized term.")
 
     let () = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
   }}.
+
+(*|
+… and export it to Ltac2:
+|*)
 
   Ltac2 @external ml_reify : constr -> constr := "camltac.plugin.runtime" "reify".
 
@@ -110,7 +121,7 @@ Section MLReification.
           let _ := ml_reify t in ()).
 
 (*|
-Completely instant!
+For the same code, Camltac is roughly 5x faster (~1.3s versus ~7.2s).
 
 .. coq:: none
 |*)

@@ -3,7 +3,7 @@
 Identifier parsing
 ==================
 
-Several projects such as Koika use a trick from C. Pit-Claudel and T. Bourgeat (CoqPL 21) for converting unbound Rocq identifiers to Rocq strings.  Implementing it naively in Ltac2 is very slow, and therefore one has to resort to a lookup table to get decent performance.
+Several projects such as Koika use a trick from C. Pit-Claudel and T. Bourgeat (CoqPL 21) for converting unbound Rocq identifiers to Rocq strings. Implementing it naively in Ltac2 is very slow, and therefore one has to resort to a lookup table to get decent performance.
 |*)
 
 From Corelib Require Import Init.Byte.
@@ -147,7 +147,7 @@ Notation ident_to_string a :=
   (binder_to_string true a) (only parsing).
 
 (*|
-Let's benchmark it!
+Let's benchmark it:
 |*)
 
 (* 1000 A *)
@@ -234,20 +234,24 @@ Camltac Run ocaml:{{
         let* byte = lookup_table.(Char.code c) in
         [%constr "%{byte} :: %{tail}"])
     (Id.to_string id) [%constr "@nil Byte.byte"]
-  
+
+  let id_to_rocq_string (id: Id.t) =
+    let* bytes = id_to_byte_list id in
+    let* id = [%constr "string_of_list_byte %{bytes}"] in
+    Ltac2.eval (Ltac2.Red.native None) id
+
   let serialize_binder_in_context =
     let open Proofview in
     Goal.enter begin fun gl ->
       let hyps = Goal.hyps gl in
       match hyps with
       | [LocalDef (binder, _, _)] ->
-        let* bytes = id_to_byte_list (binder.binder_name) in
-        let* id = [%constr "string_of_list_byte %{bytes}"] in
-        let* id = Ltac2.eval (Ltac2.Red.native None) id in
-        Ltac2.exact_no_check id
+        let* rocq_string = id_to_rocq_string (binder.binder_name) in
+        Ltac2.exact_no_check rocq_string
       | _ -> assert false
     end
 
+  let () = Runtime.Registry.register "id_to_rocq_string" id_to_rocq_string
   let () = Runtime.Registry.register "serialize_binder_in_context" serialize_binder_in_context
 }}.
 
@@ -262,7 +266,3 @@ Here are the results:
 
 (* 1000 A *)
 Time Compute (let x := ml_ident_to_string AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA in String.length x).
-
-(*|
-Infinitely faster!
-|*)
