@@ -1,10 +1,10 @@
 (rocq.theory
- (name MLtac.Tests)
- (plugins mltac.plugin)
+ (name Camltac.Tests)
+ (plugins camltac.plugin)
  (flags (:standard -quiet))
- (theories MLtac))
+ (theories Camltac))
 
- ;; We cannot declare ML files loaded using "MLtac Load" as dependencies to Dune
+ ;; We cannot declare ML files loaded using "Camltac Load" as dependencies to Dune
  ;; using the "Extra Dependency" command, as it relies on the load path to
  ;; locate files, which is set to a subdirectory of _build. This dummy target is
  ;; thus a work-around that copies all .ml files to Dune's _build to make them available

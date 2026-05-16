@@ -79,9 +79,9 @@ let compilation_args file out =
     "-package";
     String.concat "," rocq_packages;
     "-package";
-    "mltac.plugin.runtime";
+    "camltac.plugin.runtime";
     "-package";
-    "mltac.plugin.api";
+    "camltac.plugin.api";
     "-package";
     "ppx_rocq.runtime";
     "-open"; "Api";

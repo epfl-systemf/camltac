@@ -2,7 +2,7 @@
 (using rocq 0.12)
 
 (package
- (name mltac)
+ (name camltac)
  (synopsis "OCaml as a Tactic Language for Rocq")
  (depends
    rocq-core

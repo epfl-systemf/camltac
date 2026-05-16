@@ -1,4 +1,4 @@
 (rocq.theory
- (name MLtac)
- (package mltac)
- (plugins mltac.plugin))
+ (name Camltac)
+ (package camltac)
+ (plugins camltac.plugin))

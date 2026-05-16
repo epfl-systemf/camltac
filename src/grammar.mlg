@@ -1,4 +1,4 @@
-DECLARE PLUGIN "mltac.plugin"
+DECLARE PLUGIN "camltac.plugin"
 
 {
   (* Required for wit_* functions *)
@@ -50,8 +50,8 @@ VERNAC ARGUMENT EXTEND located_string
 | [ string(s) ] -> { (s, loc) }
 END
 
-VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
-| [ "MLtac" "Load" located_string(file) ] ->
+VERNAC COMMAND EXTEND CamltacLoad CLASSIFIED AS SIDEFF
+| [ "Camltac" "Load" located_string(file) ] ->
    { let file, (loc : Loc.t) = file in
      let full_path =
        if Filename.is_relative file then
@@ -64,8 +64,8 @@ VERNAC COMMAND EXTEND MltacLoad CLASSIFIED AS SIDEFF
      in Runner.run_file full_path }
 END
 
-VERNAC COMMAND EXTEND MltacRun CLASSIFIED AS SIDEFF
-| [ "MLtac" "Run" ocaml(snippet) ] ->
+VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
+| [ "Camltac" "Run" ocaml(snippet) ] ->
    { let scaffold = Scaffold.make snippet in
      Runner.run_code (Scaffold.contents scaffold) }
 END

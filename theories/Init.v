@@ -1,1 +1,1 @@
-Declare ML Module "mltac.plugin".
+Declare ML Module "camltac.plugin".

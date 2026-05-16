@@ -1,7 +1,7 @@
-From MLtac Require Import MLtac.
+From Camltac Require Import Camltac.
 
 Goal True.
-  (* The "MLtac Run" command is marked as a kernel side-effect, so it gets run twice:
+  (* The "Camltac Run" command is marked as a kernel side-effect, so it gets run twice:
      - Once during the proof
      - Once at Qed time.
      This is because Qed backtracks the global state to the state before the
@@ -10,6 +10,6 @@ Goal True.
 
      See https://rocq-prover.zulipchat.com/#narrow/channel/237658-MetaRocq/topic/running.20TemplateMonad.20inside.20a.20tactic/near/321351073
    *)
-  MLtac Run ocaml:(Feedback.msg_info (Pp.str "This message is printed twice.")).
+  Camltac Run ocaml:(Feedback.msg_info (Pp.str "This message is printed twice.")).
   exact I.
 Qed.

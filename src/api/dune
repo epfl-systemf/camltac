@@ -1,6 +1,6 @@
 (library
  (name api)
- (public_name mltac.plugin.api)
+ (public_name camltac.plugin.api)
  (synopsis "Stable APIs for interacting with Rocq")
  (libraries
    rocq-runtime.vernac

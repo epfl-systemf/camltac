@@ -100,7 +100,7 @@ let interp ?loc ~poly genv sigma tycon { env; snippet = { source_code; compiled_
   (* Interpret the result as a tactic *)
   let tac: 'a Proofview.tactic = Runtime.Registry.get_last_output () in
   let tac = Proofview.tclIGNORE tac in
-  let name = Names.Id.of_string "mltac" in
+  let name = Names.Id.of_string "camltac" in
   let sigma, concl = match tycon with
     | Some ty -> sigma, ty
     | None -> GlobEnv.new_type_evar genv sigma ~src:(Some (Snippet.loc source_code), Evar_kinds.InternalHole)

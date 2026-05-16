@@ -6,7 +6,7 @@ Hashconsed reification
 This plugin demonstrates how one can perform reification with hash-consing, which is currently not possible with Ltac2, and painful with an OCaml plugin.
 |*)
 
-From MLtac Require Import MLtac.
+From Camltac Require Import Camltac.
 From Ltac2 Require Import Ltac2.
 Require Import IdentParsing.
 
@@ -77,7 +77,7 @@ Now, compare it to the hashconsed reification procedure:
 |*)
 
 Section MLReification.
-  MLtac Run ocaml:{{
+  Camltac Run ocaml:{{
     let rec reify t =
       match%constr t with
       | "true" -> [%constr "Literal true"]
@@ -98,7 +98,7 @@ Section MLReification.
     let () = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
   }}.
 
-  Ltac2 @external ml_reify : constr -> constr := "mltac.plugin.runtime" "reify".
+  Ltac2 @external ml_reify : constr -> constr := "camltac.plugin.runtime" "reify".
 
   Goal True.
   Proof.

@@ -1,4 +1,4 @@
-Require Import MLtac.MLtac.
+Require Import Camltac.Camltac.
 
 (** Tests for OCaml-in-term quotations. *)
 

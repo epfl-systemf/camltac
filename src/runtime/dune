@@ -1,6 +1,6 @@
 (library
  (name runtime)
- (public_name mltac.plugin.runtime)
+ (public_name camltac.plugin.runtime)
  (libraries
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2))

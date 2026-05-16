@@ -8,10 +8,10 @@ Currently, there's no API for accessing hint databases from Ltac2: there's an op
 In the meantime, you can access them from OCaml, as Fiat does:
 |*)
 
-Require Import MLtac.MLtac.
+Require Import Camltac.Camltac.
 Require Import Ltac2.Ltac2.
 
-MLtac Run ocaml:{{
+Camltac Run ocaml:{{
   let with_hint_db dbs tacK =
     let dbs = List.map HintDb.get_db dbs in
     (* [dbs] : list of hint databases *)
@@ -49,8 +49,8 @@ MLtac Run ocaml:{{
   let () = Ltac2.FFI.(define "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db)
 }}.
 
-Ltac2 @external add_to_db : constr -> string -> unit := "mltac.plugin.runtime" "add_resolve_to_db".
-Ltac2 @external with_hint_db : string list -> (constr -> unit) -> unit := "mltac.plugin.runtime" "with_hint_db".
+Ltac2 @external add_to_db : constr -> string -> unit := "camltac.plugin.runtime" "add_resolve_to_db".
+Ltac2 @external with_hint_db : string list -> (constr -> unit) -> unit := "camltac.plugin.runtime" "with_hint_db".
 
 (*|
 Demo:

@@ -1,11 +1,11 @@
 (library
- (name mltac_plugin)
- (public_name mltac.plugin)
+ (name camltac_plugin)
+ (public_name camltac.plugin)
  (synopsis "OCaml as a Tactic Language")
  (libraries
    dynlink
-   mltac.plugin.runtime
-   mltac.plugin.api
+   camltac.plugin.runtime
+   camltac.plugin.api
    ppx_rocq.runtime
    sexplib)
   (preprocess (pps ppx_sexp_conv)))

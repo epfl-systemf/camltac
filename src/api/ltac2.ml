@@ -9,7 +9,7 @@ module FFI = struct
   include Tac2externals
 
   let define name spec f =
-    let full_name = Tac2expr.{ mltac_plugin = "mltac.plugin.runtime"; mltac_tactic = name } in
+    let full_name = Tac2expr.{ mltac_plugin = "camltac.plugin.runtime"; mltac_tactic = name } in
     Tac2externals.define full_name spec f
 end
 

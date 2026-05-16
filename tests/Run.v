@@ -1,10 +1,10 @@
-Require Import MLtac.MLtac.
+Require Import Camltac.Camltac.
 
-(** Test for the "MLTac Run" command. *)
+(** Test for the "Camltac Run" command. *)
 
-MLtac Run ocaml:(Feedback.msg_info (Pp.str "This message should be printed!")).
-Fail MLtac Run ocaml:(CErrors.user_err (Pp.str "This message should be an error!")).
+Camltac Run ocaml:(Feedback.msg_info (Pp.str "This message should be printed!")).
+Fail Camltac Run ocaml:(CErrors.user_err (Pp.str "This message should be an error!")).
 
 (** Tests for failing compilations. *)
 (* TODO: Uncomment once we capture OCaml errors. *)
-(* Fail MLtac Run ocaml:(1 ^ "x"). *)
+(* Fail Camltac Run ocaml:(1 ^ "x"). *)

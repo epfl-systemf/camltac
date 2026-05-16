@@ -1,28 +1,28 @@
-# MLtac: OCaml as a Tactic Language
+# Camltac: OCaml as a Tactic Language
 
-MLtac enables Rocq users to write OCaml tactics directly inside their Rocq files. It supports all constructs from Ltac2, including term construction (`constr:(…)`), pattern matching, antiquotations, and more. Moreover, MLtac ships with most of the [Ltac2 API](https://rocq-prover.org/doc/master/corelib/index.html#Ltac2), so that your knowledge of Ltac is not lost.
+Camltac enables Rocq users to write OCaml tactics directly inside their Rocq files. It supports all constructs from Ltac2, including term construction (`constr:(…)`), pattern matching, antiquotations, and more. Moreover, Camltac ships with most of the [Ltac2 API](https://rocq-prover.org/doc/master/corelib/index.html#Ltac2), so that your knowledge of Ltac is not lost.
 
 See the [quickstart](#quickstart) section for ready-to-use examples.
 
 ## Setup
 
-To install MLtac, clone the repo and run `dune install`, as follows:
+To install Camltac, clone the repo and run `dune install`, as follows:
 
 ```sh
-git clone git@gitlab.epfl.ch:dhalilov/mltac.git
-cd mltac
+git clone git@github.com:epfl-systemf/camltac.git
+cd camltac
 dune build
 dune install
 ```
 
-Then, add `From MLtac Require Import MLtac.` to the top of your Rocq files, and you're ready to go!
+Then, add `From Camltac Require Import Camltac.` to the top of your Rocq files, and you're ready to go!
 
 ## Quickstart
 
-Here's how you define a simple reification procedure for natural numbers in MLtac, and use it in Ltac2:
+Here's how you define a simple reification procedure for natural numbers in Camltac, and use it in Ltac2:
 
 ```coq
-From MLtac Require Import MLtac.
+From Camltac Require Import Camltac.
 From Ltac2 Require Import Ltac2.
 
 Inductive expr :=
@@ -30,7 +30,7 @@ Inductive expr :=
 | NatSucc (e : expr)
 | NatMul (e1 e2 : expr).
 
-MLtac Run ocaml:{{
+Camltac Run ocaml:{{
   let rec reify t =
     match%constr t with
     | "0" -> [%constr "NatZero"]
@@ -45,7 +45,7 @@ MLtac Run ocaml:{{
 }}.
 
 (* … and we can immediately use it! *)
-Ltac2 @external reify : constr -> constr := "mltac.plugin.runtime" "reify".
+Ltac2 @external reify : constr -> constr := "camltac.plugin.runtime" "reify".
 
 Ltac2 Eval (reify constr:(100 * 100 * 100 * 100 * 100)). (* constr:(NatMul (NatMul (…))) *)
 ```

@@ -157,9 +157,9 @@ Time Compute (let x := ident_to_string AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 Now, let's reimplement it in OCaml!
 |*)
 
-Require Import MLtac.MLtac.
+Require Import Camltac.Camltac.
 
-MLtac Run ocaml:{{
+Camltac Run ocaml:{{
   open Names
 
   let lookup_table = [|
