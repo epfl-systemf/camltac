@@ -1,0 +1,7 @@
+(library
+ (name annotations)
+ (public_name camltac.plugin.annotations)
+ (kind ppx_rewriter)
+ (synopsis "Small PPX to parse annotations ([@@@using/ppx/compiler]) from Camltac snippets")
+ (libraries ppxlib findlib sexplib)
+ (preprocess (pps ppx_sexp_conv)))
