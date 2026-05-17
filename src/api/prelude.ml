@@ -10,5 +10,4 @@
  *)
 
 include Tactics
-include Tactics.Syntax
 include Ltac2.Std

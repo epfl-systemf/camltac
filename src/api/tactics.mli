@@ -3,13 +3,13 @@
 type +'a tactic = 'a Proofview.tactic
 (** The tactic monad. *)
 
-val unit : 'a -> 'a tactic
+val return : 'a -> 'a tactic
 (** “Unit” operation of the tactic monad: [unit x] is a tactic that produces
     the value [x]. *)
 
-val bind : 'a tactic -> ('a -> 'b tactic) -> 'b tactic
-(** “Bind” operation of the tactic monad: [bind t f] sequentially performs [t],
-    followed by [f] applied to the result of [t]. *)
+val (let*) : 'a tactic -> ('a -> 'b tactic) -> 'b tactic
+(** “Bind” operation of the tactic monad: [let* x = t in f] sequentially performs [t],
+    binding its result to [x], followed by [f]. *)
 
 val fail : ?level:int -> Pp.t -> 'a tactic
 (** Backtracking “zero” operation of the tactic monad: [fail ?level msg] creates
@@ -21,108 +21,115 @@ val user_error : ?loc:Loc.t -> Pp.t -> 'a tactic
     creates an error message. This method is typically used when the error is
     not recoverable. *)
 
-(** {1 Tactic syntax} *)
+(** {1 Goal selection} *)
 
+type goal_selector = Proofview.goal_range_selector
+(** Type of goal selectors. *)
+
+val nth : int -> goal_selector
+(** [nth n] focuses on the [n]-th goal. *)
+
+val range : int -> int -> goal_selector
+(** [range i j] focuses on goals [i] to [j], inclusive. *)
+
+val id : string -> goal_selector
+(** [id name] focuses on the goal named [id]. *)
+
+val only : goal_selector list -> 'a tactic -> 'a tactic
+(** [only selectors tac] applies tactic [tac] to goal selected by [selectors]. *)
+
+val all : unit tactic -> unit tactic
+(** [all tac] applies tactic [tac] to all goals. *)
+
+(** {1 Tacticals} *)
+
+val ( >> ) : unit tactic -> 'a tactic -> 'a tactic
+(** Sequencing operator: [t1 >> t2] executes tactic [t1] and [t2] in sequence,
+    where [t2] is applied to all goals produced by [t1]. *)
+
+val repeat : ?n:int -> unit tactic -> unit tactic
+(** Repetition: [repeat ?n t] executes tactic [t] until successes have been depleted.
+    If [n] is specified, [repeat ~n t] performs tactic [t] at most [n] times. *)
+
+val try_ : unit tactic -> unit tactic
+(** [try_ t] executes tactic [t], catching any error that [t] may produce. *)
+
+val tryif : unit tactic -> then_:(unit tactic) -> else_:(unit tactic) -> unit tactic
+(** [tryif t ~then_ ~else_] executes tactic [then_] if [t] is successful, or
+    [else_] otherwise. *)
+
+val branch : unit tactic -> unit tactic -> unit tactic
+(** Branching with backtracking: [branch t1 t2] first evaluates [t1] to each focused
+    goal independently, inserting a backtracking point. If [t1] fails, [t2] is
+    evaluated. *)
+
+val branch' : unit tactic -> unit tactic -> unit tactic
+(** Branching without backtracking: [branch' t1 t2] evaluates [t1] to each focused
+    goal independently. If [t1] fails immediately, [t2] is tried. *)
+
+val first : unit tactic list -> unit tactic
+(** [first tacs] independently applies to each goal the first tactic in [tacs]
+    that succeeds. *)
+
+val solve : unit tactic list -> unit tactic
+(** [solve tacs] independently applies to each goal the first tactic in [tacs]
+    that solves the goal. *)
+
+val progress : 'a tactic -> 'a tactic
+(** [progress t] behaves like [t], except that [progress t] fails if [t]
+    did not make progress on the goal. *)
+
+val once : unit tactic -> unit tactic
+(** [once t] behaves like [t], except that it fails if [t] has more than one
+    success. *)
+
+val exactly_once : unit tactic -> unit tactic
+(** [exactly_once t] behaves like [t], except that it fails if [t] does not have
+    exactly one success.
+
+    Warning: [exactly_once] is considered experimental.
+    @see https://rocq-prover.org/doc/master/refman/proof-engine/ltac.html#rocq:tacn.exactly_once
+ *)
+
+val dispatch : unit tactic -> 'a tactic list -> 'a list tactic
+(** Dispatch tactical: [dispatch t [t1; t2; …]] executes tactic [t], followed by
+    dispatching [t1], …, [tn] to each of the resulting goals. *)
+
+val time : ?name:string -> 'a tactic -> 'a tactic
+(** [time ?name t] times the execution of tactic [t]. *)
+
+val timeout : int -> unit tactic -> unit tactic
+(** [timeout n t] executes tactic [t] for at most [n] seconds, failing if [t]
+    did not complete in [n] seconds. *)
+
+val abstract : ?opaque:bool -> ?name:Names.Id.t -> unit tactic -> unit tactic
+(** [abstract ?opaque ?name t] saves the result of the execution of tactic [t]
+    as an optionally named subproof. *)
+
+val ignore : 'a tactic -> unit tactic
+(** [ignore t] ignores the result of tactic [t]. *)
+
+(** {2 Syntax} *)
+
+(** This module defines syntax for tacticals that conflicts usual arithmetic
+    operators. This module should therefore be opened locally. *)
 module Syntax : sig
 
-  val return : 'a -> 'a tactic
-  (** Notation for the “unit” operation of the tactic monad:
-      [return x] equals [unit x]. *)
-
-  val ( let* ) : 'a tactic -> ('a -> 'b tactic) -> 'b tactic
-  (** Notation for the “bind” operation of the tactic monad:
-      [let* x = t in y] desugars to [bind t (fun x -> y)]. *)
-
-  (** {2 Goal selection} *)
-
-  type goal_selector = Proofview.goal_range_selector
-  (** Type of goal selectors. *)
-
-  val nth : int -> goal_selector
-  (** [nth n] focuses on the [n]-th goal. *)
-
-  val range : int -> int -> goal_selector
-  (** [range i j] focuses on goals [i] to [j], inclusive. *)
-
-  val id : string -> goal_selector
-  (** [id name] focuses on the goal named [id]. *)
-
-  val only : goal_selector list -> 'a tactic -> 'a tactic
-  (** [only selectors tac] applies tactic [tac] to goal selected by [selectors]. *)
-
-  val all : unit tactic -> unit tactic
-  (** [all tac] applies tactic [tac] to all goals. *)
-
-  (** {2 Tacticals} *)
-
-  val ( >> ) : unit tactic -> 'a tactic -> 'a tactic
-  (** Sequencing operator: [t1 >> t2] executes tactic [t1] and [t2] in sequence,
-      where [t2] is applied to all goals produced by [t1]. *)
-
-  val repeat : ?n:int -> unit tactic -> unit tactic
-  (** Repetition: [repeat ?n t] executes tactic [t] until successes have been depleted.
-      If [n] is specified, [repeat ~n t] performs tactic [t] at most [n] times. *)
-
-  val try_ : unit tactic -> unit tactic
-  (** [try_ t] executes tactic [t], catching any error that [t] may produce. *)
-
-  val tryif : unit tactic -> then_:(unit tactic) -> else_:(unit tactic) -> unit tactic
-  (** [tryif t ~then_ ~else_] executes tactic [then_] if [t] is successful, or
-      [else_] otherwise. *)
-
   val (+) : unit tactic -> unit tactic -> unit tactic
-  (** Branching with backtracking: [t1 + t2] first evaluates [t1] to each focused
+  (** Notation for [branch]: [t1 + t2] first evaluates [t1] to each focused
       goal independently, inserting a backtracking point. If [t1] fails, [t2] is
       evaluated. *)
 
   val (||) : unit tactic -> unit tactic -> unit tactic
-  (** Branching without backtracking: [t1 || t2] evaluates [t1] to each focused
+  (** Notation for [branch']: [t1 || t2] evaluates [t1] to each focused
       goal independently. If [t1] fails immediately, [t2] is tried. *)
 
-  val first : unit tactic list -> unit tactic
-  (** [first tacs] independently applies to each goal the first tactic in [tacs]
-      that succeeds. *)
-
-  val solve : unit tactic list -> unit tactic
-  (** [solve tacs] independently applies to each goal the first tactic in [tacs]
-      that solves the goal. *)
-
-  val progress : 'a tactic -> 'a tactic
-  (** [progress t] behaves like [t], except that [progress t] fails if [t]
-      did not make progress on the goal. *)
-
-  val once : unit tactic -> unit tactic
-  (** [once t] behaves like [t], except that it fails if [t] has more than one
-      success. *)
-
-  val exactly_once : unit tactic -> unit tactic
-  (** [exactly_once t] behaves like [t], except that it fails if [t] does not have
-      exactly one success.
-
-      Warning: [exactly_once] is considered experimental.
-      @see https://rocq-prover.org/doc/master/refman/proof-engine/ltac.html#rocq:tacn.exactly_once
-   *)
-
   val (>) : unit tactic -> 'a tactic list -> 'a list tactic
-  (** Dispatch tactical: [t > [t1; t2; …]] executes tactic [t], followed by
+  (** Notation for dispatch: [t > [t1; t2; …]] executes tactic [t], followed by
       dispatching [t1], …, [tn] to each of the resulting goals. *)
-
-  val time : ?name:string -> 'a tactic -> 'a tactic
-  (** [time ?name t] times the execution of tactic [t]. *)
-
-  val timeout : int -> unit tactic -> unit tactic
-  (** [timeout n t] executes tactic [t] for at most [n] seconds, failing if [t]
-      did not complete in [n] seconds. *)
-
-  val abstract : ?opaque:bool -> ?name:Names.Id.t -> unit tactic -> unit tactic
-  (** [abstract ?opaque ?name t] saves the result of the execution of tactic [t]
-      as an optionally named subproof. *)
-
-  val ignore : 'a tactic -> unit tactic
-  (** [ignore t] ignores the result of tactic [t]. *)
 end
 
-(** {2 Utilities} *)
+(** {1 Utilities} *)
 
 val env : Environ.env tactic
 (** [env] returns the current environment.
@@ -135,7 +142,7 @@ val env : Environ.env tactic
 val sigma : Evd.evar_map tactic
 (** [sigma] returns the current evar map. *)
 
-(** {3 Lifting operations} *)
+(** {2 Lifting operations} *)
 
 val of_list : 'a tactic list -> 'a list tactic
 (** [of_list tacs] creates a tactic that returns the list of all results,
