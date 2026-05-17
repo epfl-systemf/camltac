@@ -85,8 +85,7 @@ let compilation_args file out =
     "-package";
     "ppx_rocq.runtime";
     "-open"; "Api";
-    "-open"; "Tactics";
-    "-open"; "Tactics.Syntax";
+    "-open"; "Prelude";
     "-O3";
     "-o";
     out;
