@@ -5,4 +5,5 @@
  (theories
    Camltac
    Stdlib
+   stdpp
    Ltac2))
