@@ -2,7 +2,7 @@
 
 Camltac allows OCaml to be written directly with Rocq scripts. It supports most constructs from Ltac2, including term construction (`constr:(…)`), pattern matching, and antiquotations using [`ppx_rocq`](https://github.com/epfl-systemf/ppx_rocq), and more. Moreover, Camltac ships with most of the [Ltac2 API](https://rocq-prover.org/doc/master/corelib/index.html#Ltac2), which guarantee stability across Rocq versions.
 
-See the [quickstart](#quickstart) section for ready-to-use examples.
+See the [quickstart](#quickstart) section for quick examples, or the [`examples`](./examples/) directory for more complete examples of using Camltac.
 
 ## Setup
 
@@ -18,38 +18,48 @@ Then, add `From Camltac Require Import Camltac.` to the top of your Rocq files, 
 
 ## Quickstart
 
-Here's how you define a simple procedure (implemented [here](./examples/StdppMapReification.v)) reifying operations on [Std++'s `gmap`](https://gitlab.mpi-sws.org/iris/stdpp/-/blob/master/stdpp/gmap.v) in Camltac, and use it from Ltac2:
+### Running OCaml code
 
+The most primitive command provided by Camltac is `Camltac Run`, which runs an arbitrary OCaml snippet between parentheses or brackets:
 ```coq
 From Camltac Require Import Camltac.
-From Ltac2 Require Import Ltac2.
-From stdpp Require Import gmap.
 
-Inductive map {K V : Type} :=
-| MapEmpty
-| MapInsert (k : K) (v : V) (m : map)
-| MapUnion (m1 m2 : map).
-
-Camltac Run ocaml:{{
-  let rec reify x : constr tac =
-    match%constr x with
-    | "empty" -> {%open_constr| MapEmpty |}
-    | "insert ?k ?v ?m" -> 
-      let* m' = reify m in 
-      {%constr| MapInsert %{k} %{v} %{m'} |}
-    | "union ?m1 ?m2" ->
-      let* m1' = reify m1 in
-      let* m2' = reify m2 in
-      {%constr| MapUnion %{m1'} %{m2'} |}
-
-  (* Now, we expose it to Ltac2 as follows: *)
-  let _ = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
-}}.
-
-(* … and we can immediately use it! *)
-Ltac2 @external reify : constr -> constr := "camltac.plugin.runtime" "reify".
-
-Ltac2 Eval (reify constr:(insert 0 "Hello" (insert 1 "World" empty) : gmap nat string). 
-(* = constr:(MapInsert 0 "Hello" (MapInsert 1 "World" MapEmpty)) *)
+Camltac Run ocaml:{{ let _ = Feedback.msg_notice (Pp.str "Hello world!") }}.
+(* Hello world! *)
 ```
 
+Snippets can register and fetch data through a simple registry:
+```coq
+Camltac Run ocaml:(Runtime.Registry.register "one" 1).
+
+Camltac Run ocaml:{{
+  let one = Runtime.Registry.find "one" in
+  Feedback.msg_notice (Pp.int (one + one))
+}}.
+(* 2 *)
+```
+
+### Creating new tactics
+
+To expose new tactics to Ltac2, use the `Ltac2.FFI` module:
+```coq
+From Ltac2 Require Import Ltac2.
+
+Camltac Run ocaml:{{
+  let say_hello () =
+    Feedback.msg_notice (Pp.str "Hello from OCaml!")
+
+  let _ = Ltac2.FFI.(define "say_hello" (unit @-> ret unit) say_hello)
+}}.
+
+Ltac2 @external say_hello : unit -> unit := "camltac.plugin.runtime" "say_hello".
+
+Ltac2 Eval say_hello (). (* Hello from OCaml! *)
+```
+
+Camltac can also run in tactic-in-term mode, similarly to `ltac:(…)` and `ltac2:(…)`:
+```
+Definition zero := ocaml:(let* z = {%constr| 0 |} in exact_no_check z).
+Print zero.
+(* zero = 0 : nat *)
+```
