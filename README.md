@@ -6,20 +6,19 @@ See the [quickstart](#quickstart) section for ready-to-use examples.
 
 ## Setup
 
-To install Camltac, clone the repo and run `dune install`, as follows:
+To install Camltac from sources, clone the repo and run `opam install .`, as follows:
 
 ```sh
 git clone git@github.com:epfl-systemf/camltac.git
 cd camltac
-dune build
-dune install
+opam install .
 ```
 
 Then, add `From Camltac Require Import Camltac.` to the top of your Rocq files, and you're ready to go!
 
 ## Quickstart
 
-Here's how you define a simple procedure reifying operations on [Std++'s `gmap`](https://gitlab.mpi-sws.org/iris/stdpp/-/blob/master/stdpp/gmap.v) in Camltac, and use it from Ltac2:
+Here's how you define a simple procedure (implemented [here](./examples/StdppMapReification.v)) reifying operations on [Std++'s `gmap`](https://gitlab.mpi-sws.org/iris/stdpp/-/blob/master/stdpp/gmap.v) in Camltac, and use it from Ltac2:
 
 ```coq
 From Camltac Require Import Camltac.
