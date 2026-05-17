@@ -3,7 +3,9 @@
 Identifier parsing
 ==================
 
-Several projects such as Koika use a trick from C. Pit-Claudel and T. Bourgeat (CoqPL 21) for converting unbound Rocq identifiers to Rocq strings. Implementing it naively in Ltac2 is very slow, and therefore one has to resort to a lookup table to get decent performance.
+Several projects such as Koika use a trick from C. Pit-Claudel and T. Bourgeat (CoqPL 21)
+for converting unbound Rocq identifiers to Rocq strings. Implementing it naively in Ltac2
+is very slow, and therefore one has to resort to a lookup table to get decent performance.
 |*)
 
 From Corelib Require Import Init.Byte.
