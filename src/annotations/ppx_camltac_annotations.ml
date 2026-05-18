@@ -113,3 +113,5 @@ let () =
       Library_attribute.rule
     ]
     "mltac.annotations"
+
+let () = Ppxlib.Driver.standalone ()

@@ -3,15 +3,13 @@ open Pp
 (** [run ?env ~name file] compiles and loads [file] in environment [env].
     [name] is used in error messages. *)
 let run ?(env = Runtime.Environment.empty) ~name file =
-  match Compiler.preprocess_and_compile file with
+  match Compiler.compile file with
   | Ok out ->
      Runtime.Environment.set_env env;
      Loader.load_file out;
      Sys.remove out;
      Runtime.Environment.unset_env ()
-  | Error (Preprocessing_failed err) ->
-     CErrors.user_err (fmt "Pre-processing %s failed with error code %d." name err)
-  | Error (Compilation_failed err) ->
+  | Error err ->
      CErrors.user_err (fmt "Compilation of %s exited with error code %d." name err)
 
 let run_file ?env file =

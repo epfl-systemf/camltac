@@ -6,6 +6,8 @@
    dynlink
    camltac.plugin.runtime
    camltac.plugin.api
+   camltac.plugin.annotations.metadata
+   findlib.dynload
    ppx_rocq.runtime
    sexplib)
   (preprocess (pps ppx_sexp_conv)))

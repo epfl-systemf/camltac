@@ -76,24 +76,19 @@ let call_compiler args =
 let compilation_args file out =
   [
     if Dynlink.is_native then "-shared" else "-c";
-    "-package";
-    String.concat "," rocq_packages;
-    "-package";
-    "camltac.plugin.runtime";
-    "-package";
-    "camltac.plugin.api";
-    "-package";
-    "ppx_rocq.runtime";
+    "-package"; String.concat "," rocq_packages;
+    "-package"; "camltac.plugin.runtime";
+    "-package"; "camltac.plugin.api";
+    "-package"; "ppx_rocq.runtime";
+    "-linkall";
     "-open"; "Api";
     "-open"; "Prelude";
     "-O3";
-    "-o";
-    out;
-    "-impl";
-    file
+    "-impl"; file;
+    "-o"; out
   ]
 
-let compile ?(extra_args = []) file =
+let lowlevel_compile ?(extra_args = []) file =
   let out = Dynlink.adapt_filename (Filename.remove_extension file ^ ".cmo") in
   let args = compilation_args file out @ extra_args in
   match call_compiler args with
@@ -103,23 +98,71 @@ let compile ?(extra_args = []) file =
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
      Error err
 
-type error =
-  | Preprocessing_failed of int
-  | Compilation_failed of int
+(* Create a standalone PPX executable from the given list of preprocessors. *)
+let build_combined_ppx ppx_list =
+  match ppx_list with
+  | [] ->
+     (* In most cases, we don't use PPXes, so don't build anything. *)
+     Ok "ppx_rocq -as-ppx"
+  | _ ->
+     let ppx_ml_main = Tempfile.with_content ~prefix:"ppx" ~suffix:".ml" {|let () = Ppxlib.Driver.run_as_ppx_rewriter ()|} in
+     let out = Filename.remove_extension ppx_ml_main ^ ".exe" in
+     let args =
+       [
+         "-package"; "ppxlib";
+         "-package"; "ppx_rocq";
+         "-package"; String.concat "," ppx_list;
+         "-linkpkg";
+         "-linkall";
+         "-o"; out;
+         "-only-show";
+         ppx_ml_main;
+       ]
+     in
+     match call_compiler args with
+     | Ok () -> Ok out
+     | Error err -> Error err
 
-(** Convert metadata from preprocessing to a list of arguments for the compiler. *)
-let translate_metadata_to_compiler_args (metadata: Preprocessor.metadata) =
+(** Convert metadata from annotations to a list of arguments for the compiler. *)
+let metadata_to_compiler_args (metadata: Metadata.metadata) =
   let translate_option option = String.split_on_char ' ' option in
-  let translate_lib lib = ["-I"; lib] in
+  let translate_lib lib = ["-package"; lib] in
+  let ppx_args =
+    match build_combined_ppx metadata.ppx with
+    | Ok ppx_prog -> ["-ppx"; ppx_prog]
+    | Error _ ->
+       (* Fallback to only using ppx_rocq *)
+       (* TODO: Raise an error? *)
+       ["-ppx"; "ppx_rocq -as-ppx"]
+  in
   List.concat
     [
       List.concat_map translate_option metadata.compiler_options;
-      List.concat_map translate_lib metadata.libraries
+      List.concat_map translate_lib metadata.libraries;
+      ppx_args
     ]
 
-let preprocess_and_compile file =
-  match Preprocessor.preprocess file with
-  | Error err -> Error (Preprocessing_failed err)
-  | Ok (preprocessed_file, metadata) ->
-     let extra_args = translate_metadata_to_compiler_args metadata in
-     Result.map_error (fun err -> Compilation_failed err) (compile ~extra_args preprocessed_file)
+let get_metadata file =
+  let annotation_ppx = "ppx_camltac_annotations" in
+  let metafile = Filename.remove_extension file ^ ".ml.meta" in
+  let args =
+    [
+      "-output-metadata"; metafile;
+      "-null"; (* do not output anything *)
+      "-impl"; file;
+    ]
+  in
+  match run_command annotation_ppx args with
+  | Ok () -> Metadata.read metafile
+  | Error err ->
+     (* Conservatively return empty metadata *)
+     (* TODO: Return an error? *)
+     Metadata.empty
+
+let compile file =
+  let metadata = get_metadata file in
+  (* Make sure that extra packages and PPXes are loaded in. *)
+  Fl_dynload.load_packages metadata.libraries;
+  Fl_dynload.load_packages metadata.ppx;
+  let extra_args = metadata_to_compiler_args metadata in
+  lowlevel_compile ~extra_args file
