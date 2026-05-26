@@ -163,6 +163,5 @@ let compile file =
   let metadata = get_metadata file in
   (* Make sure that extra packages and PPXes are loaded in. *)
   Fl_dynload.load_packages metadata.libraries;
-  Fl_dynload.load_packages metadata.ppx;
   let extra_args = metadata_to_compiler_args metadata in
   lowlevel_compile ~extra_args file
