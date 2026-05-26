@@ -103,9 +103,9 @@ let build_combined_ppx ppx_list =
   match ppx_list with
   | [] ->
      (* In most cases, we don't use PPXes, so don't build anything. *)
-     Ok "ppx_rocq -as-ppx"
+     Ok "ppx_rocq"
   | _ ->
-     let ppx_ml_main = Tempfile.with_content ~prefix:"ppx" ~suffix:".ml" {|let () = Ppxlib.Driver.run_as_ppx_rewriter ()|} in
+     let ppx_ml_main = Tempfile.with_content ~prefix:"ppx" ~suffix:".ml" {|let () = Ppxlib.Driver.standalone ()|} in
      let out = Filename.remove_extension ppx_ml_main ^ ".exe" in
      let args =
        [
@@ -115,7 +115,6 @@ let build_combined_ppx ppx_list =
          "-linkpkg";
          "-linkall";
          "-o"; out;
-         "-only-show";
          ppx_ml_main;
        ]
      in
@@ -129,11 +128,11 @@ let metadata_to_compiler_args (metadata: Metadata.metadata) =
   let translate_lib lib = ["-package"; lib] in
   let ppx_args =
     match build_combined_ppx metadata.ppx with
-    | Ok ppx_prog -> ["-ppx"; ppx_prog]
+    | Ok ppx_prog -> ["-pp"; ppx_prog]
     | Error _ ->
        (* Fallback to only using ppx_rocq *)
        (* TODO: Raise an error? *)
-       ["-ppx"; "ppx_rocq -as-ppx"]
+       ["-pp"; "ppx_rocq"]
   in
   List.concat
     [
