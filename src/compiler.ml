@@ -98,6 +98,20 @@ let lowlevel_compile ?(extra_args = []) file =
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
      Error err
 
+let run_with_output cmd =
+  let inp = Unix.open_process_in cmd in
+  let r = In_channel.input_all inp in
+  In_channel.close inp; r
+
+let ocamlfind_query lib =
+  let command = Filename.quote_command "ocamlfind" ["query"; lib] in
+  let output = run_with_output command in
+  String.trim output
+
+let find_cmxa lib =
+  let basedir = ocamlfind_query lib in
+  Filename.concat basedir (lib ^ ".cmxa")
+
 (* Create a standalone PPX executable from the given list of preprocessors. *)
 let build_combined_ppx ppx_list =
   match ppx_list with
@@ -107,14 +121,18 @@ let build_combined_ppx ppx_list =
   | _ ->
      let ppx_ml_main = Tempfile.with_content ~prefix:"ppx" ~suffix:".ml" {|let () = Ppxlib.Driver.standalone ()|} in
      let out = Filename.remove_extension ppx_ml_main ^ ".exe" in
+     let ppx_cmxa = List.map find_cmxa ("ppx_rocq" :: ppx_list) in
      let args =
        [
          "-package"; "ppxlib";
          "-package"; "ppx_rocq";
          "-package"; String.concat "," ppx_list;
          "-linkpkg";
-         "-linkall";
+       ]
+       @ ppx_cmxa
+       @ [
          "-o"; out;
+         "-impl";
          ppx_ml_main;
        ]
      in

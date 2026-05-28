@@ -8,20 +8,36 @@ to add tracing capabilities to a tactic.
 |*)
 
 From Camltac Require Import Camltac.
+From Ltac2 Require Import Ltac2.
 
 Inductive my_nat :=
   | NatZero
   | NatSucc (n : my_nat)
   | NatMul (n m : my_nat).
 
-(* FIXME: ppx_minidebug leads to linking errors. *)
-(*
 Camltac Run ocaml:{{
-  [@@@using "ppx_minidebug.runtime"]
+  [@@@using "ppx_minidebug.runtime", "ppx_minidebug.db"]
   [@@@ppx "ppx_minidebug"]
 
+  (* Initialize ppx_minidebug runtime. *)
+  let _get_local_debug_runtime =
+    let rt = Minidebug_db.debug_db_file "trace" in
+    fun () -> rt
+
+  type constr = Terms.constr
+
+  let pp_constr fmt (c: constr) =
+     let env = Global.env () in
+     let sigma = Evd.from_env env in
+     let s = Pp.string_of_ppcmds @@ Printer.pr_constr_env env sigma (EConstr.to_constr sigma c) in
+     Format.pp_print_string fmt s
+
+  type constr_tactic = constr Proofview.tactic
+  let pp_constr_tactic fmt (_t: constr_tactic) =
+     Format.pp_print_string fmt "<tactic>"
+
   (* Let us implement a simple recursive procedure, with tracing enabled! *)
-  let%debug_pp rec reify x =
+  let%debug_pp rec reify (x : constr) : constr_tactic =
     match%constr x with
     | "0" -> [%constr "NatZero"]
     | "S ?n" ->
@@ -33,11 +49,12 @@ Camltac Run ocaml:{{
       [%constr "NatMul %{n'} %{m'}"]
 
   let _ = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
+
 }}.
 
 Ltac2 @external reify : constr -> constr := "camltac.plugin.runtime" "reify".
 
-(* Calling our recursive procedure prints each recursive argument: *)
+(* Calling our recursive procedure triggers the tracing: *)
 Ltac2 Eval (reify constr:(1 * 2 * 3)).
 
-*)
+(* which we can visualize using [minidebug_view trace.db tui]! *)
