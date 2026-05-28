@@ -6,7 +6,6 @@ depends: [
   "rocq-core"
   "rocq-runtime"
   "ppx_rocq"
-  "dynlink"
   "odoc" {with-doc}
 ]
 build: [
@@ -24,3 +23,7 @@ build: [
   ]
 ]
 x-maintenance-intent: ["(latest)"]
+pin-depends: [
+  ["rocq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
+  ["rocq-runtime.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
+]
