@@ -9,5 +9,4 @@
  (depends
    rocq-core
    rocq-runtime
-   ppx_rocq
-   dynlink))
+   ppx_rocq))
