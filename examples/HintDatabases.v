@@ -11,6 +11,7 @@ In the meantime, you can access them from OCaml, as Fiat does:
 Require Import Camltac.Camltac.
 Require Import Ltac2.Ltac2.
 
+(* Code simplified from Fiat's HintDb plugin: https://github.com/mit-plv/fiat/blob/master/src/Common/Tactics/hint_db_extra_tactics.ml.v92 *)
 Camltac Run ocaml:{{
   let with_hint_db dbs tacK =
     let dbs = List.map HintDb.get_db dbs in
