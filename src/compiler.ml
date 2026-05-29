@@ -146,11 +146,11 @@ let metadata_to_compiler_args (metadata: Metadata.metadata) =
   let translate_lib lib = ["-package"; lib] in
   let ppx_args =
     match build_combined_ppx metadata.ppx with
-    | Ok ppx_prog -> ["-pp"; ppx_prog]
+    | Ok ppx_prog -> ["-pp"; ppx_prog ^ " --use-compiler-pp"]
     | Error _ ->
        (* Fallback to only using ppx_rocq *)
        (* TODO: Raise an error? *)
-       ["-pp"; "ppx_rocq"]
+       ["-pp"; "ppx_rocq --use-compiler-pp"]
   in
   List.concat
     [
