@@ -2,6 +2,10 @@
 
 Camltac allows OCaml to be written directly with Rocq scripts. It supports most constructs from Ltac2, including term construction (`constr:(…)`), pattern matching, and antiquotations using [`ppx_rocq`](https://github.com/epfl-systemf/ppx_rocq), and more. Moreover, Camltac ships with most of the [Ltac2 API](https://rocq-prover.org/doc/master/corelib/index.html#Ltac2), which guarantee stability across Rocq versions.
 
+<center>
+  <img src="etc/showcase.svg" width="75%" alt="Showcase image of Camltac" />
+</center>
+
 See the [quickstart](#quickstart) section for quick examples, or the [`examples`](./examples/) directory for more complete examples of using Camltac.
 
 ## Setup
