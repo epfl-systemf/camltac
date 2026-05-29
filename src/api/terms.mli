@@ -23,18 +23,28 @@ open Tactics
       manipulate it and always use {!EConstr.constr} instead.
  *)
 
-type constrexpr = Constrexpr.constr_expr
-(** Type of concrete syntax terms returned by the parser. *)
+module Definitions : sig
+  type constrexpr = Constrexpr.constr_expr
+  (** Type of concrete syntax terms returned by the parser. *)
 
-type glob_constr = Glob_term.glob_constr
-(** Type of globalized untyped terms. Globalized terms use fully qualified
-    names, have resolved notations, and do not use implicit arguments. *)
+  type expr = constrexpr
+  (** [expr] is a synonym for [constrexpr]. *)
 
-type constr = EConstr.constr
-(** Type of well-typed terms. *)
+  type glob_constr = Glob_term.glob_constr
+  (** Type of globalized untyped terms. Globalized terms use fully qualified
+      names, have resolved notations, and do not use implicit arguments. *)
 
-type open_constr = EConstr.t
-(** Type of well-typed terms, potentially with holes (evars). *)
+  type preterm = glob_constr
+  (** [preterm] is a synonym for [glob_constr]. *)
+
+  type constr = EConstr.constr
+  (** Type of well-typed terms. *)
+
+  type open_constr = EConstr.t
+  (** Type of well-typed terms, potentially with holes (evars). *)
+end
+
+include module type of Definitions
 
 (** {1 Conversion methods} *)
 

@@ -11,3 +11,4 @@
 
 include Tactics
 include Ltac2.Std
+include Terms.Definitions

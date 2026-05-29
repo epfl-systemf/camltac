@@ -5,10 +5,16 @@ open Tactics.Syntax
 
 (** {1 Term representations} *)
 
-type constrexpr = Constrexpr.constr_expr
-type glob_constr = Glob_term.glob_constr
-type constr = EConstr.constr
-type open_constr = EConstr.t
+module Definitions = struct
+  type constrexpr = Constrexpr.constr_expr
+  type expr = constrexpr
+  type glob_constr = Glob_term.glob_constr
+  type preterm = glob_constr
+  type constr = EConstr.constr
+  type open_constr = EConstr.t
+end
+
+include Definitions
 
 (** {1 Conversions} *)
 
