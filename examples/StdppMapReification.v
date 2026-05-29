@@ -38,7 +38,7 @@ Camltac Run ocaml:{{
       {%constr| MapUnion %{m1'} %{m2'} |}
 
   (* Now, we expose it to Ltac2 as follows: *)
-  let _ = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
+  let _ = FFI.(define "reify" (constr @-> tac constr) reify)
 }}.
 
 (*|

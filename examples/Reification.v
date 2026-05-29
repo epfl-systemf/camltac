@@ -102,7 +102,7 @@ Section MLReification.
             [%constr "Var %{v}"]
          | _ -> user_error (Pp.str "Unrecognized term.")
 
-    let () = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
+    let () = FFI.(define "reify" (constr @-> tac constr) reify)
   }}.
 
 (*|

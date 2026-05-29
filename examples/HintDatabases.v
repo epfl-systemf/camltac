@@ -47,8 +47,8 @@ Camltac Run ocaml:{{
       | exception Constr.DestKO -> fail (Pp.str "Cannot add non-global to hint database")
       end
 
-  let () = Ltac2.FFI.(define "add_resolve_to_db" (constr @-> string @-> tac unit) add_resolve_to_db)
-  let () = Ltac2.FFI.(define "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db)
+  let () = FFI.(define "add_resolve_to_db" (constr @-> string @-> tac unit) add_resolve_to_db)
+  let () = FFI.(define "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db)
 }}.
 
 Ltac2 @external add_to_db : constr -> string -> unit := "camltac.plugin.runtime" "add_resolve_to_db".

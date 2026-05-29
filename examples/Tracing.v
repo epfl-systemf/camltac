@@ -46,7 +46,7 @@ Camltac Run ocaml:{{
       let* m' = reify m in
       [%constr "NatMul %{n'} %{m'}"]
 
-  let _ = Ltac2.FFI.(define "reify" (constr @-> tac constr) reify)
+  let _ = FFI.(define "reify" (constr @-> tac constr) reify)
 
 }}.
 

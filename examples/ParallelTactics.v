@@ -17,7 +17,7 @@ Camltac Run ocaml:{{
    let parallel tacs =
      Eio_main.run (fun _env -> Fiber.any tacs)
 
-   let _ = Ltac2.FFI.(define "parallel" (list (thunk valexpr) @-> tac valexpr) parallel)
+   let _ = FFI.(define "parallel" (list (thunk valexpr) @-> tac valexpr) parallel)
 }}.
 
 Ltac2 @external parallel : (unit -> 'a) list -> 'a := "camltac.plugin.runtime" "parallel".
