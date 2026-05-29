@@ -24,8 +24,6 @@ Camltac Run ocaml:{{
     let rt = Minidebug_db.debug_db_file "trace" in
     fun () -> rt
 
-  type constr = Terms.constr
-
   let pp_constr fmt (c: constr) =
      let env = Global.env () in
      let sigma = Evd.from_env env in
