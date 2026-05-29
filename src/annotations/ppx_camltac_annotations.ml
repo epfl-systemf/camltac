@@ -22,7 +22,7 @@ module Compiler_options = struct
     Ast_pattern.single_expr_payload options
 
   let attribute =
-    Attribute.Floating.(declare "mltac.compiler" Context.structure_item pattern Fun.id)
+    Attribute.Floating.(declare "camltac.compiler" Context.structure_item pattern Fun.id)
 
   let rule =
     Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
@@ -64,7 +64,7 @@ module Library_attribute = struct
     Ast_pattern.single_expr_payload libraries
 
   let attribute =
-    Attribute.Floating.(declare "mltac.using" Context.structure_item pattern Fun.id)
+    Attribute.Floating.(declare "camltac.using" Context.structure_item pattern Fun.id)
 
   let rule =
     Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
@@ -97,7 +97,7 @@ module Ppx_attribute = struct
     Ast_pattern.single_expr_payload ppx_list
 
   let attribute =
-    Attribute.Floating.(declare "mltac.ppx" Context.structure_item pattern Fun.id)
+    Attribute.Floating.(declare "camltac.ppx" Context.structure_item pattern Fun.id)
 
   let rule =
     Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
@@ -112,6 +112,6 @@ let () =
       Ppx_attribute.rule;
       Library_attribute.rule
     ]
-    "mltac.annotations"
+    "camltac.annotations"
 
 let () = Ppxlib.Driver.standalone ()
