@@ -1,0 +1,17 @@
+(lang dune 3.21)
+(pkg enabled)
+
+(pin
+ (name rocq-core)
+ (package (name rocq-core))
+ (url "git+https://github.com/dhalilov/rocq.git#ltac2api"))
+
+(pin
+ (name rocq-runtime)
+ (package (name rocq-runtime))
+ (url "git+https://github.com/dhalilov/rocq.git#ltac2api"))
+
+(pin
+ (name ppx_rocq)
+ (package (name ppx_rocq))
+ (url "git+https://github.com/epfl-systemf/ppx_rocq.git"))
