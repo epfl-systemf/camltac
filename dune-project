@@ -14,4 +14,6 @@
  (depends
    rocq-core
    rocq-runtime
-   ppx_rocq))
+   ppx_rocq
+   sexplib
+   ppx_sexp_conv))

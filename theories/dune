@@ -1,4 +1,5 @@
 (rocq.theory
  (name Camltac)
  (package camltac)
+ (stdlib no)
  (plugins camltac.plugin))

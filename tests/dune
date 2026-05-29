@@ -1,8 +1,9 @@
 (rocq.theory
  (name Camltac.Tests)
  (plugins camltac.plugin)
- (flags (:standard -quiet))
- (theories Camltac))
+ (flags (:standard -quiet -require-import-from Corelib Init.Prelude))
+ (stdlib no)
+ (theories Camltac Corelib))
 
  ;; We cannot declare ML files loaded using "Camltac Load" as dependencies to Dune
  ;; using the "Extra Dependency" command, as it relies on the load path to
