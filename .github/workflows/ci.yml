@@ -22,5 +22,8 @@ jobs:
       - name: Install Camltac
         run: opam install .
 
+      - name: Build
+        run: opam exec -- dune build
+
       - name: Run tests
         run: opam exec -- dune runtest
