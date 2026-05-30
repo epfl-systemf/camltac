@@ -29,4 +29,6 @@
  (depends
    camltac
    rocq-stdlib
-   rocq-stdpp))
+   rocq-stdpp
+   ppx_minidebug
+   eio_main))
