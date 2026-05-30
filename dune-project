@@ -1,6 +1,8 @@
 (lang dune 3.22)
 (using rocq 0.12)
 
+(name camltac)
+
 (generate_opam_files true)
 
 (authors "Dario Halilovic")
