@@ -7,14 +7,20 @@ jobs:
     strategy:
       matrix:
         runs-on: [ ubuntu-latest, macos-latest, windows-latest ]
+        ocaml-compiler: [ 5 ]
     runs-on: ${{ matrix.runs-on }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install and run Dune
-        uses: ocaml-dune/setup-dune@v2
+      - name: Set-up OCaml
+        uses: ocaml/setup-ocaml@v3
         with:
-          version: latest
-          workspace: .github/dune-workspace.ci
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Install Camltac
+        run: opam install .
+
+      - name: Run tests
+        run: opam exec -- dune runtest
