@@ -1,5 +1,6 @@
 (rocq.theory
  (name Camltac.Examples)
+ (package camltac-examples)
  (plugins rocq-runtime.plugins.ltac2)
  (generate_project_file)
  (theories

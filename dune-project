@@ -22,3 +22,11 @@
    ppx_rocq
    sexplib
    ppx_sexp_conv))
+
+(package
+ (name camltac-examples)
+ (synopsis "A collection of examples using Camltac")
+ (depends
+   camltac
+   rocq-stdlib
+   rocq-stdpp))

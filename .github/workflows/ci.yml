@@ -19,6 +19,9 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - name: Add Rocq-released Opam repository
+        run: opam repo add rocq-released https://rocq-prover.github.io/opam/released/
+
       - name: Install Camltac
         run: opam install .
 

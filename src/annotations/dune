@@ -1,5 +1,6 @@
 (executable
  (public_name ppx_camltac_annotations)
+ (package camltac)
  (flags -linkall)
  (libraries
    camltac.plugin.annotations.metadata
