@@ -28,6 +28,7 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
 x-maintenance-intent: ["(latest)"]
 pin-depends: [
   ["rocq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]

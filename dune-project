@@ -7,7 +7,10 @@
 
 (authors "Dario Halilovic")
 (maintainers "Dario Halilovic")
+
 (homepage "https://github.com/epfl-systemf/camltac")
+(source
+ (github epfl-systemf/camltac))
 (bug_reports "https://github.com/epfl-systemf/camltac/issues")
 
 (package
