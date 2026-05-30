@@ -24,7 +24,6 @@ let rocq_packages = [
     "rocq-runtime.lib";
     "rocq-runtime.library";
     "rocq-runtime.parsing";
-    "rocq-runtime.perf";
     "rocq-runtime.plugins";
     "rocq-runtime.plugins.btauto";
     "rocq-runtime.plugins.cc";
