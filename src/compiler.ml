@@ -1,63 +1,10 @@
 (** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
     to compile to shared libraries that can be dynlinked. *)
 
+let () = Findlib.init ()
 
-(** List of Rocq packages that are automatically linked in.
-
-    TODO: Obtain this list through [ocamlfind list | grep ^rocq-*]. *)
-let rocq_packages = [
-    "rocq-core";
-    "rocq-runtime";
-    "rocq-runtime.boot";
-    "rocq-runtime.checklib";
-    "rocq-runtime.clib";
-    "rocq-runtime.config";
-    "rocq-runtime.config.byte";
-    "rocq-runtime.coqargs";
-    "rocq-runtime.coqdeplib";
-    "rocq-runtime.coqworkmgrapi";
-    "rocq-runtime.debugger_support";
-    "rocq-runtime.engine";
-    "rocq-runtime.gramlib";
-    "rocq-runtime.interp";
-    "rocq-runtime.kernel";
-    "rocq-runtime.lib";
-    "rocq-runtime.library";
-    "rocq-runtime.parsing";
-    "rocq-runtime.plugins";
-    "rocq-runtime.plugins.btauto";
-    "rocq-runtime.plugins.cc";
-    "rocq-runtime.plugins.cc_core";
-    "rocq-runtime.plugins.derive";
-    "rocq-runtime.plugins.extraction";
-    "rocq-runtime.plugins.firstorder";
-    "rocq-runtime.plugins.firstorder_core";
-    "rocq-runtime.plugins.funind";
-    "rocq-runtime.plugins.ltac";
-    "rocq-runtime.plugins.ltac2";
-    "rocq-runtime.plugins.ltac2_ltac1";
-    "rocq-runtime.plugins.micromega";
-    "rocq-runtime.plugins.micromega_core";
-    "rocq-runtime.plugins.nsatz";
-    "rocq-runtime.plugins.nsatz_core";
-    "rocq-runtime.plugins.number_string_notation";
-    "rocq-runtime.plugins.ring";
-    "rocq-runtime.plugins.rtauto";
-    "rocq-runtime.plugins.ssreflect";
-    "rocq-runtime.plugins.ssrmatching";
-    "rocq-runtime.plugins.tauto";
-    "rocq-runtime.plugins.zify";
-    "rocq-runtime.pretyping";
-    "rocq-runtime.printing";
-    "rocq-runtime.proofs";
-    "rocq-runtime.rocqshim";
-    "rocq-runtime.stm";
-    "rocq-runtime.sysinit";
-    "rocq-runtime.tactics";
-    "rocq-runtime.toplevel";
-    "rocq-runtime.vernac";
-    "rocq-runtime.vm";
-]
+(** List of Rocq packages that are automatically linked in. *)
+let rocq_packages = Findlib.list_packages' ~prefix:"rocq-runtime" ()
 
 let run_command prog args =
   let command = Filename.quote_command prog args in
@@ -102,13 +49,8 @@ let run_with_output cmd =
   let r = In_channel.input_all inp in
   In_channel.close inp; r
 
-let ocamlfind_query lib =
-  let command = Filename.quote_command "ocamlfind" ["query"; lib] in
-  let output = run_with_output command in
-  String.trim output
-
 let find_cmxa lib =
-  let basedir = ocamlfind_query lib in
+  let basedir = Findlib.package_directory lib in
   Filename.concat basedir (lib ^ ".cmxa")
 
 (* Create a standalone PPX executable from the given list of preprocessors. *)

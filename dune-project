@@ -20,6 +20,7 @@
    rocq-core
    rocq-runtime
    ppx_rocq
+   ocamlfind
    sexplib
    ppx_sexp_conv))
 

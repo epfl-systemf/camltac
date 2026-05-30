@@ -7,6 +7,7 @@
    camltac.plugin.runtime
    camltac.plugin.api
    camltac.plugin.annotations.metadata
+   findlib
    findlib.dynload
    ppx_rocq.runtime
    sexplib)
