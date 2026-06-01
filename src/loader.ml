@@ -14,11 +14,11 @@ let check_file file =
   else if not (Sys.file_exists file) then
     CErrors.user_err (fmt "File %s does not exist." file)
 
-let load_file file =
+let load_file ?(public = false) file =
   check_file file;
   Flags.if_verbose Feedback.msg_debug (fmt "Loading file %s." file);
   try
-    Dynlink.loadfile_private file;
+    if public then Dynlink.loadfile file else Dynlink.loadfile_private file;
     Flags.if_verbose Feedback.msg_debug (fmt "File %s successfully loaded." file);
   with
   | Dynlink.Error (Dynlink.Library's_module_initializers_failed exn) ->

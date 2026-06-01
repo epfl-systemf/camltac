@@ -26,6 +26,7 @@ let compilation_args file out =
     "-package"; "camltac.plugin.runtime";
     "-package"; "camltac.plugin.api";
     "-package"; "ppx_rocq.runtime";
+    "-I"; Tempfile.output_dir;
     "-linkall";
     "-open"; "Api";
     "-open"; "Prelude";

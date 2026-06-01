@@ -83,5 +83,7 @@ let contents scaffold =
        append after
   in
   append (line_number_directive ~line_number:1 ~source_file:scaffold_file);
+  append (Dynamic_prelude.contents ());
+  require_new_line ();
   append_scaffold scaffold;
   Buffer.contents buffer

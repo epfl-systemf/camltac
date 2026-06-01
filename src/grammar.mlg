@@ -70,5 +70,10 @@ END
 VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
 | [ "Camltac" "Run" ocaml(snippet) ] ->
    { let scaffold = Scaffold.make snippet in
-     Runner.run_code (Scaffold.contents scaffold) }
+     let _ = Runner.run_code (Scaffold.contents scaffold) in () }
+
+| [ "Camltac" "Module" ident(m) ":=" ocaml(snippet) ] ->
+   { let scaffold = Scaffold.make snippet in
+     let tempfile = Runner.run_code ~public:true (Scaffold.contents scaffold) in
+     Dynamic_prelude.register (Names.Id.to_string m) tempfile }
 END

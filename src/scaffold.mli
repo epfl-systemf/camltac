@@ -10,7 +10,7 @@ type t
 (** Type of scaffolds. *)
 
 val make : Snippet.t -> t
-(** [make snippet] creates a scaffold for the given snippet. *)
+(** [make snippet] creates an empty scaffold for the given snippet. *)
 
 val wrap : before:string -> after:string -> t -> t
 (** [wrap ~before ~after scaffold] wraps the contents of the scaffold, adding
