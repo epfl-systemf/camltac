@@ -161,7 +161,7 @@ Now, let's reimplement it in OCaml!
 
 Require Import Camltac.Camltac.
 
-Camltac Run ocaml:{{
+Camltac Module IdentParsing := ocaml:{{
   open Names
 
   let lookup_table = [|
@@ -252,14 +252,11 @@ Camltac Run ocaml:{{
         Ltac2.exact_no_check rocq_string
       | _ -> assert false
     end
-
-  let () = Runtime.Registry.register "id_to_rocq_string" id_to_rocq_string
-  let () = Runtime.Registry.register "serialize_binder_in_context" serialize_binder_in_context
 }}.
 
 Notation ml_ident_to_string a :=
   (match true return string with
-   | a => ocaml:{{Runtime.Registry.find "serialize_binder_in_context"}}
+   | a => ocaml:{{IdentParsing.serialize_binder_in_context}}
    end) (only parsing). 
 
 (*|

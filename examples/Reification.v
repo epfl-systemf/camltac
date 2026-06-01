@@ -97,7 +97,7 @@ Section MLReification.
          match Constr.kind (EConstr.Unsafe.to_constr t) with
          | Var v ->
             (* Use our ident parsing function defined in [IdentParsing.v]. *)
-            let id_to_rocq_string: Names.Id.t -> EConstr.constr Proofview.tactic = Runtime.Registry.find "id_to_rocq_string" in
+            let id_to_rocq_string: Names.Id.t -> EConstr.constr Proofview.tactic = IdentParsing.id_to_rocq_string in
             let* v = id_to_rocq_string v in
             [%constr "Var %{v}"]
          | _ -> user_error (Pp.str "Unrecognized term.")
