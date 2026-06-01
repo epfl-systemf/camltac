@@ -6,15 +6,10 @@
    dynlink
    camltac.plugin.runtime
    camltac.plugin.api
-   camltac.plugin.annotations.metadata
+   camltac-directives.metadata
    findlib
    findlib.dynload
-   ppx_rocq.runtime
-   sexplib)
-  ;; Create a dependency on the "ppx_camltac_annotations" executable
-  ;; This is a work-around for https://github.com/ocaml/dune/issues/3499
-  (preprocessor_deps %{bin:ppx_camltac_annotations})
-  (preprocess (pps ppx_sexp_conv)))
+   ppx_rocq.runtime))
 
 (rocq.pp
  (modules grammar))

@@ -100,8 +100,8 @@ let metadata_to_compiler_args (metadata: Metadata.metadata) =
       ppx_args
     ]
 
-let get_metadata file =
-  let annotation_ppx = "ppx_camltac_annotations" in
+let read_build_directives file =
+  let directives_ppx = "ppx_camltac_directives" in
   let metafile = Filename.remove_extension file ^ ".ml.meta" in
   let args =
     [
@@ -110,7 +110,7 @@ let get_metadata file =
       "-impl"; file;
     ]
   in
-  match run_command annotation_ppx args with
+  match run_command directives_ppx args with
   | Ok () -> Metadata.read metafile
   | Error err ->
      (* Conservatively return empty metadata *)
@@ -118,7 +118,7 @@ let get_metadata file =
      Metadata.empty
 
 let compile file =
-  let metadata = get_metadata file in
+  let metadata = read_build_directives file in
   (* Make sure that extra packages and PPXes are loaded in. *)
   Fl_dynload.load_packages metadata.libraries;
   let extra_args = metadata_to_compiler_args metadata in

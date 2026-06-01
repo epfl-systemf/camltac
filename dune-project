@@ -21,6 +21,14 @@
    rocq-runtime
    ppx_rocq
    ocamlfind
+   camltac-directives))
+
+(package
+ (name camltac-directives)
+ (synopsis "A small preprocessor that handles build directives for Camltac")
+ (depends
+   ppxlib
+   ocamlfind
    sexplib
    ppx_sexp_conv))
 

@@ -1,0 +1,9 @@
+(executable
+ (public_name ppx_camltac_directives)
+ (package camltac-directives)
+ (libraries
+   camltac-directives.metadata
+   ppxlib
+   findlib
+   sexplib)
+ (preprocess (pps ppx_sexp_conv)))

@@ -1,0 +1,6 @@
+(library
+ (name metadata)
+ (public_name camltac-directives.metadata)
+ (synopsis "Library for handling directive metadata")
+ (libraries sexplib)
+ (preprocess (pps ppx_sexp_conv)))
