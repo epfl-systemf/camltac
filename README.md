@@ -33,13 +33,12 @@ Camltac Run ocaml:{{ let _ = Feedback.msg_notice (Pp.str "Hello world!") }}.
 (* Hello world! *)
 ```
 
-Snippets can register and fetch data through a simple registry:
+Camltac also allows to define new modules, which can be used to reuse definitions:
 ```coq
-Camltac Run ocaml:(Runtime.Registry.register "one" 1).
+Camltac Module M := ocaml:(let one = 1).
 
 Camltac Run ocaml:{{
-  let one = Runtime.Registry.find "one" in
-  Feedback.msg_notice (Pp.int (one + one))
+  Feedback.msg_notice (Pp.int (M.one + M.one))
 }}.
 (* 2 *)
 ```

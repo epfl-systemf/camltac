@@ -1,7 +1,5 @@
 From Camltac Require Import Camltac.
 
-Camltac Module M := ocaml:{{
-   let my_print s = Feedback.msg_notice (Pp.str s)
-}}.
+Camltac Module M := ocaml:(let one = 1).
 
-Camltac Run ocaml:{{ let () = M.my_print "Hello from M!\n" }}.
+Camltac Run ocaml:{{ let () = Feedback.msg_notice (Pp.int (M.one + M.one)) }}.
