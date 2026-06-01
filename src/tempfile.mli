@@ -1,5 +1,8 @@
 (** Utilities for manipulating temporary files. *)
 
+val output_dir : string
+(** [output_dir] returns the name of the directory where temporary files are stored. *)
+
 (** [with_context ~prefix ~suffix content] creates a temporary file with the given [content].
     The optional [prefix] and [suffix] arguments control filename generation. *)
 val with_content : ?prefix:string -> ?suffix:string -> string -> string
