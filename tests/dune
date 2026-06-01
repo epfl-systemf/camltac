@@ -1,5 +1,6 @@
 (rocq.theory
  (name Camltac.Tests)
+ (package camltac)
  (plugins camltac.plugin)
  (flags (:standard -quiet -require-import-from Corelib Init.Prelude))
  (stdlib no)
@@ -13,5 +14,6 @@
  ;; for more discussion.
 (rule
  (targets _dummy_target)
+ (package camltac)
  (deps (glob_files *.ml))
  (action (write-file _dummy_target "This is a dummy target used to copy .ml files to _build/default.")))
