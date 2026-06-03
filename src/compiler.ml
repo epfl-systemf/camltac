@@ -45,11 +45,6 @@ let lowlevel_compile ?(extra_args = []) file =
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
      Error err
 
-let run_with_output cmd =
-  let inp = Unix.open_process_in cmd in
-  let r = In_channel.input_all inp in
-  In_channel.close inp; r
-
 let find_cmxa lib =
   let basedir = Findlib.package_directory lib in
   Filename.concat basedir (lib ^ ".cmxa")
