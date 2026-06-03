@@ -71,8 +71,8 @@ let contents scaffold =
        indent ~n:(loc.bp - loc.bol_pos);
        append contents;
        (* Insert line directive for the rest of the content. *)
-       let current_line = 1 + (Buffer.to_seq buffer |> Seq.filter (fun c -> c = '\n') |> Seq.length) in
        require_new_line ();
+       let current_line = 1 + (Buffer.to_seq buffer |> Seq.filter (fun c -> c = '\n') |> Seq.length) in
        append (line_number_directive ~line_number:current_line ~source_file:scaffold_file)
     | Wrap { before; scaffold; after } ->
        require_new_line ();
