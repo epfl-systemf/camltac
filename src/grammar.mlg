@@ -49,22 +49,19 @@ VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }
 END
 
-VERNAC ARGUMENT EXTEND located_string
-| [ string(s) ] -> { (s, loc) }
+VERNAC ARGUMENT EXTEND ocaml_file
+| [ string(file) ] ->
+   { if Filename.is_relative file then
+       let (/) = Filename.concat in
+       match loc.fname with
+       | InFile { file = rocq_file } -> Sys.getcwd () / Filename.dirname rocq_file / file
+       | ToplevelInput -> Sys.getcwd () / file
+     else file }
 END
 
 VERNAC COMMAND EXTEND CamltacLoad CLASSIFIED AS SIDEFF
-| [ "Camltac" "Load" located_string(file) ] ->
-   { let file, (loc : Loc.t) = file in
-     let full_path =
-       if Filename.is_relative file then
-         let base_dir =
-           match loc.fname with
-           | InFile { file } -> Filename.concat (Sys.getcwd()) (Filename.dirname file)
-           | ToplevelInput -> Sys.getcwd()
-         in Filename.concat base_dir file
-       else file
-     in Runner.run_file full_path }
+| [ "Camltac" "Load" ocaml_file(file) ] ->
+   { Runner.run_file file }
 END
 
 VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
