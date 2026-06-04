@@ -1,30 +1,31 @@
 DECLARE PLUGIN "camltac.plugin"
 
 {
-  (* Required for wit_* functions *)
-  open Stdarg
+(* Required for wit_* functions *)
+open Stdarg
 
-  (* Term grammar *)
-  open Procq.Constr
-  open Procq.Prim
+(* Term grammar *)
+open Procq.Constr
+open Procq.Prim
 
-  let ocaml_code = Procq.Entry.make "ocaml_code"
+let ocaml_code = Procq.Entry.make "ocaml_code"
 
-  let get_quotation_contents ~loc ~label q =
-    let sep, contents = Tok.trim_quotation q in
-    (* Get location of OCaml code only *)
-    let sep_length =
-      match sep with
-      | Some sep ->
-         q |> String.to_seq
-           |> Seq.take_while (fun c -> c = sep)
-           |> Seq.length
-      | None -> 0
-    in
-    let start_shift = String.length label + sep_length in
-    let end_shift = - sep_length in
-    let loc = Loc.shift_loc start_shift end_shift loc in
-    loc, contents
+let get_quotation_contents ~loc ~prefix q =
+  let sep, contents = Tok.trim_quotation q in
+  (* Get location of OCaml code only *)
+  let sep_length =
+    match sep with
+    | Some sep ->
+       String.to_seq q
+       |> Seq.take_while (fun c -> c = sep)
+       |> Seq.length
+    | None -> 0
+  in
+  let start_shift = String.length prefix + sep_length in
+  let end_shift = - sep_length in
+  let loc = Loc.shift_loc start_shift end_shift loc in
+  loc, contents
+
 }
 
 GRAMMAR EXTEND Gram
@@ -33,7 +34,7 @@ GLOBAL:
 
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
-        { let loc, contents = get_quotation_contents ~loc ~label:"ocaml:" q in
+        { let loc, contents = get_quotation_contents ~loc ~prefix:"ocaml:" q in
 	  Snippet.make ~loc contents } ] ]
   ;
   term: LEVEL "0"
