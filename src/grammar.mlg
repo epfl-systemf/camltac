@@ -26,6 +26,12 @@ let get_quotation_contents ~loc ~prefix q =
   let loc = Loc.shift_loc start_shift end_shift loc in
   loc, contents
 
+let validate_module_name ~loc (name: string) =
+  if Char.Ascii.is_upper (String.get name 0) then
+    ()
+  else
+    let suggestion = String.capitalize_ascii name in
+    CErrors.user_err ~loc (Pp.fmt "Module names must be capitalized.\nHint: did you mean %S?" suggestion)
 }
 
 GRAMMAR EXTEND Gram
@@ -60,6 +66,13 @@ VERNAC ARGUMENT EXTEND ocaml_file
      else file }
 END
 
+VERNAC ARGUMENT EXTEND ocaml_module
+| [ ident(m) ] ->
+   { let name = Names.Id.to_string m in
+     validate_module_name ~loc name;
+     name }
+END
+
 VERNAC COMMAND EXTEND CamltacLoad CLASSIFIED AS SIDEFF
 | [ "Camltac" "Load" ocaml_file(file) ] ->
    { Runner.run_file file }
@@ -70,8 +83,8 @@ VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
    { let scaffold = Scaffold.make snippet in
      let _ = Runner.run_code (Scaffold.contents scaffold) in () }
 
-| [ "Camltac" "Module" ident(m) ":=" ocaml(snippet) ] ->
+| [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ] ->
    { let scaffold = Scaffold.make snippet in
      let tempfile = Runner.run_code ~public:true (Scaffold.contents scaffold) in
-     Dynamic_prelude.register (Names.Id.to_string m) tempfile }
+     Dynamic_prelude.register m tempfile }
 END
