@@ -16,6 +16,7 @@ let contents { contents } = contents
 
 type execution_mode =
   | Run
+  | Check
   | Module of (string * Loc.t)
   | Tactic_in_term
 

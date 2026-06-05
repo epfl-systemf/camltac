@@ -22,6 +22,13 @@ let compile_file ~loc file =
   | Error code ->
      CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
 
+let infer_interface ~loc file =
+  check_file ~loc file;
+  match Compiler.infer_interface file with
+  | Ok out -> out
+  | Error code ->
+     CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
+
 let compile_scaffold ~loc mode scaffold =
   let build_file =
     match mode with
@@ -33,7 +40,9 @@ let compile_scaffold ~loc mode scaffold =
        end
     | _ -> Build_files.save_snippet scaffold
   in
-  compile_file ~loc build_file
+  match mode with
+  | Check -> infer_interface ~loc build_file
+  | _ -> compile_file ~loc build_file
 
 let compile_snippet mode snippet =
   let loc = Snippet.loc snippet in
@@ -41,8 +50,21 @@ let compile_snippet mode snippet =
   compile_scaffold ~loc mode scaffold
 
 (** {1 Interpretation} *)
+
+let read_interface file =
+  let in_channel = In_channel.open_text file in
+  let intf = In_channel.input_all in_channel in
+  In_channel.close_noerr in_channel;
+  String.trim intf
+
 let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
   match mode with
+  | Check ->
+     Loader.load_packages dependencies;
+     (* Read the interface from the [.mli] file. *)
+     let mli_file = compiled_file in
+     let intf = read_interface mli_file in
+     Feedback.msg_info (Pp.str intf)
   | Module _ ->
      Loader.load_file ~public:true ~dependencies compiled_file
   | _ ->

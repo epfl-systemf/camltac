@@ -85,3 +85,23 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
        let module_name = String.capitalize_ascii filename in
        Main.interpret (Snippet.Module (module_name, loc)) compilation_output }
 END
+
+VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
+| [ "Camltac" "Check" ocaml(snippet) ]
+  SYNTERP AS compilation_output
+     { Main.compile_snippet Snippet.Check snippet }
+  -> { Main.interpret Snippet.Check compilation_output }
+
+| [ "Camltac" "Check" ocaml_module(m) ]
+  SYNTERP AS compilation_output
+     { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
+       let module_name, loc = m in
+       let scaffold = Format.sprintf "include %s" module_name in
+       Main.compile_scaffold ~loc Snippet.Check scaffold }
+  -> { Main.interpret Snippet.Check compilation_output }
+
+| [ "Camltac" "Check" ocaml_file(file) ]
+  SYNTERP AS compilation_output
+     { let filename, loc = file in Main.infer_interface ~loc filename }
+  -> { Main.interpret Snippet.Check compilation_output }
+END

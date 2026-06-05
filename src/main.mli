@@ -5,6 +5,9 @@
 val compile_file : loc:Loc.t -> string -> Compiler.output
 (** [compile_file ~loc file] compiles the given file. *)
 
+val infer_interface : loc:Loc.t -> string -> Compiler.output
+(** [infer_interface ~loc file] type-checks the given file. *)
+
 val compile_scaffold : loc:Loc.t -> Snippet.execution_mode -> string -> Compiler.output
 (** [compile_scaffold ~loc mode scaffold] compiles the scaffold code [scaffold]
     according to its execution [mode]. *)

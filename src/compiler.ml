@@ -28,7 +28,7 @@ type output =
 
 open Camltac_directives
 
-let compile ~(directives: Build_directives.t) impl =
+let compile ~(directives: Build_directives.t) ?(infer_interface = false) impl =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
   (* Obtain shorter filenames. *)
@@ -42,6 +42,7 @@ let compile ~(directives: Build_directives.t) impl =
       ~open_modules:default_open_modules
       ~optimize:(`O3)
       ~extra_args:(directives.compiler_options)
+      ~infer_interface
       ~pp
       impl
   in Ok { compiled_file; dependencies = directives.libraries }
@@ -49,4 +50,9 @@ let compile ~(directives: Build_directives.t) impl =
 let compile_with_directives impl =
   match Build_directives.get impl with
   | Ok directives -> compile ~directives impl
+  | Error _ as e -> e
+
+let infer_interface impl =
+  match Build_directives.get impl with
+  | Ok directives -> compile ~directives ~infer_interface:true impl
   | Error _ as e -> e
