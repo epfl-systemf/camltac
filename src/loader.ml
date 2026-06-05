@@ -1,25 +1,18 @@
-(** This file handles dynamic loading of compiled libraries
-    by wrapping the [Dynlink] module from the OCaml standard library. *)
+(** Dynamic loading of shared libraries using [Dynlink]. *)
 
-open Pp
+let load_packages packages =
+  Fl_dynload.load_packages packages
 
-(** List of extensions that can be loaded. *)
-let allowed_extensions =
-  if Dynlink.is_native then [".cmxs"] else [".cmo"; ".cma"]
-
-(** Checks that the given [file] can be dynamically loaded. *)
-let check_file file =
-  if not (List.mem (Filename.extension file) allowed_extensions) then
-    CErrors.user_err (fmt "File %s is not a %s file." file (String.concat " or " allowed_extensions))
-  else if not (Sys.file_exists file) then
-    CErrors.user_err (fmt "File %s does not exist." file)
-
-let load_file ?(public = false) file =
-  check_file file;
-  Flags.if_verbose Feedback.msg_debug (fmt "Loading file %s." file);
+let load_file ~public ?(dependencies = []) file =
+  assert (Sys.file_exists file);
+  assert (String.equal (Filename.extension file) (if Dynlink.is_native then ".cmxs" else ".cma"));
+  let load = if public then Dynlink.loadfile else Dynlink.loadfile_private in
   try
-    if public then Dynlink.loadfile file else Dynlink.loadfile_private file;
-    Flags.if_verbose Feedback.msg_debug (fmt "File %s successfully loaded." file);
+    (* Make sure that dependencies are available before loading. *)
+    load_packages dependencies;
+    Flags.if_verbose Feedback.msg_debug (Pp.fmt "Loading file %s." file);
+    load file;
+    Flags.if_verbose Feedback.msg_debug (Pp.fmt "File %s successfully loaded." file);
   with
   | Dynlink.Error (Dynlink.Library's_module_initializers_failed exn) ->
      (* This means that the OCaml code inputted by the user failed.
@@ -29,4 +22,4 @@ let load_file ?(public = false) file =
      raise exn
   | Dynlink.Error e ->
      let message = Dynlink.error_message e in
-     CErrors.user_err (str message)
+     CErrors.user_err (Pp.str message)

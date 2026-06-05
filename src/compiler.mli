@@ -1,11 +1,11 @@
-(** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
-    to compile to shared libraries that can be dynlinked. *)
+(** Compilation of OCaml snippets to shared libraries. *)
 
-val lowlevel_compile : ?extra_args:string list -> string -> (string, int) result
-(** [lowlevel_compile ?extra_args file] compiles the given OCaml [file] to a shared library,
-    returning either the path to the compiled file on success, or the error code
-    if compilation failed. [extra_args] is a list of additional arguments to
-    pass to the compiler. *)
+(** Type of compilation output. *)
+type output =
+  { compiled_file: string;
+    dependencies: string list
+  }
 
-val compile : string -> (string, int) result
-(** [compile file] compiles [file], following Camltac annotations. *)
+val compile_with_directives : string -> (output, int) result
+(** [compile file] compiles [file] to a shared library that can be loaded through [Loader.load_file].
+    Build directives are recognized by this method, and integrated in the compilation process. *)

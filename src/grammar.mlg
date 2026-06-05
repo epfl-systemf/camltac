@@ -26,12 +26,6 @@ let get_quotation_contents ~loc ~prefix q =
   let loc = Loc.shift_loc start_shift end_shift loc in
   loc, contents
 
-let validate_module_name ~loc (name: string) =
-  if Char.Ascii.is_upper (String.get name 0) then
-    ()
-  else
-    let suggestion = String.capitalize_ascii name in
-    CErrors.user_err ~loc (Pp.fmt "Module names must be capitalized.\nHint: did you mean %S?" suggestion)
 }
 
 GRAMMAR EXTEND Gram
@@ -43,12 +37,10 @@ GLOBAL:
         { let loc, contents = get_quotation_contents ~loc ~prefix:"ocaml:" q in
 	  Snippet.make ~loc contents } ] ]
   ;
+
+  (* OCaml-in-term *)
   term: LEVEL "0"
-    [ [ c = ocaml_code ->
-        { let open Constrexpr in
-	  let raw = TacInTerm.of_snippet c in
-	  CAst.make ~loc @@ CGenarg (Raw (TacInTerm.wit_ocaml_in_term, raw))
-    } ] ]
+    [ [ c = ocaml_code -> { Tactic_in_term.from_ocaml c } ] ]
   ;
 END
 
@@ -56,35 +48,40 @@ VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }
 END
 
+VERNAC ARGUMENT EXTEND ocaml_module
+| [ ident(m) ] -> { Names.Id.to_string m, loc }
+END
+
 VERNAC ARGUMENT EXTEND ocaml_file
 | [ string(file) ] ->
-   { if Filename.is_relative file then
-       let (/) = Filename.concat in
-       match loc.fname with
-       | InFile { file = rocq_file } -> Sys.getcwd () / Filename.dirname rocq_file / file
-       | ToplevelInput -> Sys.getcwd () / file
-     else file }
-END
-
-VERNAC ARGUMENT EXTEND ocaml_module
-| [ ident(m) ] ->
-   { let name = Names.Id.to_string m in
-     validate_module_name ~loc name;
-     name }
-END
-
-VERNAC COMMAND EXTEND CamltacLoad CLASSIFIED AS SIDEFF
-| [ "Camltac" "Load" ocaml_file(file) ] ->
-   { Runner.run_file file }
+   { let file =
+       if Filename.is_relative file then
+         let (/) = Filename.concat in
+         match loc.fname with
+         | InFile { file = rocq_file } -> Sys.getcwd () / Filename.dirname rocq_file / file
+         | ToplevelInput -> Sys.getcwd () / file
+       else file
+     in file, loc }
 END
 
 VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
-| [ "Camltac" "Run" ocaml(snippet) ] ->
-   { let scaffold = Scaffold.make snippet in
-     let _ = Runner.run_code (Scaffold.contents scaffold) in () }
+| [ "Camltac" "Run" ocaml(snippet) ]
+  SYNTERP AS compilation_output
+     { Main.compile_snippet Snippet.Run snippet }
+  -> { Main.interpret Snippet.Run compilation_output }
+END
 
-| [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ] ->
-   { let scaffold = Scaffold.make snippet in
-     let tempfile = Runner.run_code ~public:true (Scaffold.contents scaffold) in
-     Dynamic_prelude.register m tempfile }
+VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
+| [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
+  SYNTERP AS compilation_output
+     { Main.compile_snippet (Snippet.Module m) snippet }
+  -> { Main.interpret (Snippet.Module m) compilation_output }
+
+| [ "Camltac" "Load" ocaml_file(file) ]
+  SYNTERP AS compilation_output
+     { let filename, loc = file in Main.compile_file ~loc filename }
+  -> { (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
+       let filename, loc = file in
+       let module_name = String.capitalize_ascii filename in
+       Main.interpret (Snippet.Module (module_name, loc)) compilation_output }
 END

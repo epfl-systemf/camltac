@@ -1,8 +1,15 @@
-(** This file handles dynamic loading of compiled libraries
-    by wrapping the [Dynlink] module from the OCaml standard library. *)
+(** Dynamic loading of shared libraries using [Dynlink]. *)
 
-(** [load_file public file] loads the given compiled file into the current Rocq
+val load_packages : string list -> unit
+(** [load_packages packages] loads the given list of packages. *)
+
+val load_file : public:bool -> ?dependencies:string list -> string -> unit
+(** [load_file ~public ?dependencies file] loads the given compiled file into the current Rocq
     context. The file path must be absolute.
-    If [public] is set to [true], the compilation unit is available to subsequent
-    files. *)
-val load_file : ?public:bool -> string -> unit
+
+    @param public
+      If [true], the compilation unit is available to subsequently loaded files.
+
+    @param dependencies (default = [[]])
+      List of dependencies of the file to load before.
+ *)

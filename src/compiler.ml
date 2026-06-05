@@ -1,107 +1,52 @@
-(** This file wraps the OCaml compiler (ocamlc/ocamlopt), providing utilities
-    to compile to shared libraries that can be dynlinked. *)
-
-let () = Findlib.init ()
+(** Compilation of OCaml snippets to shared libraries. *)
 
 (** List of Rocq packages that are automatically linked in. *)
-let rocq_packages = Findlib.list_packages' ~prefix:"rocq-runtime" ()
+let rocq_packages = Ocamlfind.list_packages ~prefix:"rocq-runtime" ()
 
-let run_command prog args =
-  let command = Filename.quote_command prog args in
-  let err = Sys.command command in
-  if err = 0 then Ok () else Error err
+(** Set of packages linked by default. *)
+let default_packages =
+  ["camltac.plugin.runtime";
+   "camltac.plugin.api";
+   "ppx_rocq.runtime"]
+  @ rocq_packages
 
-(** Call the OCaml compiler with the given arguments, returning [Ok ()] if the
-    compilation was successful, or [Error code] if the compilation failed. *)
-let call_compiler args =
-  let ocamlfind = Boot.Env.ocamlfind () in
-  let compiler = if Dynlink.is_native then "ocamlopt" else "ocamlc" in
-  run_command ocamlfind (compiler :: args)
+(** Set of modules open by default. *)
+let default_open_modules =
+  ["Api"; "Prelude"]
 
-(** Return the compilation arguments for the given [file]. *)
-let compilation_args file out =
-  [
-    if Dynlink.is_native then "-shared" else "-c";
-    "-package"; String.concat "," rocq_packages;
-    "-package"; "camltac.plugin.runtime";
-    "-package"; "camltac.plugin.api";
-    "-package"; "ppx_rocq.runtime";
-    "-I"; Tempfile.output_dir;
-    "-linkall";
-    "-open"; "Api";
-    "-open"; "Prelude";
-    "-O3";
-    "-impl"; file;
-    "-o"; out
-  ]
+(** Relativize [filename] against [dir]. *)
+let relativize ~dir filename =
+  if String.starts_with ~prefix:dir filename then
+    let dirname_length = String.length dir in
+    String.sub filename dirname_length (String.length filename - dirname_length)
+  else
+    filename
 
-let lowlevel_compile ?(extra_args = []) file =
-  let out = Dynlink.adapt_filename (Filename.remove_extension file ^ ".cmo") in
-  let args = compilation_args file out @ extra_args in
-  match call_compiler args with
-  | Ok () -> Ok out
-  | Error err ->
-     (* TODO: Capture OCaml compilation errors to avoid printing them, e.g., when using [Fail].
-        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
-     Error err
-
-let find_cmxa lib =
-  let basedir = Findlib.package_directory lib in
-  Filename.concat basedir (lib ^ ".cmxa")
-
-(* Create a standalone PPX executable from the given list of preprocessors. *)
-let build_combined_ppx ppx_list =
-  match ppx_list with
-  | [] ->
-     (* In most cases, we don't use PPXes, so don't build anything. *)
-     Ok "ppx_rocq"
-  | _ ->
-     let ppx_ml_main = Tempfile.with_content ~prefix:"ppx" ~suffix:".ml" {|let () = Ppxlib.Driver.standalone ()|} in
-     let out = Filename.remove_extension ppx_ml_main ^ ".exe" in
-     let ppx_cmxa = List.map find_cmxa ("ppx_rocq" :: ppx_list) in
-     let args =
-       [
-         "-package"; "ppxlib";
-         "-package"; "ppx_rocq";
-         "-package"; String.concat "," ppx_list;
-         "-linkpkg";
-       ]
-       @ ppx_cmxa
-       @ [
-         "-o"; out;
-         "-impl";
-         ppx_ml_main;
-       ]
-     in
-     match call_compiler args with
-     | Ok () -> Ok out
-     | Error err -> Error err
+type output =
+  { compiled_file: string;
+    dependencies: string list }
 
 open Camltac_directives
 
-(** Convert build directives to a list of arguments for the compiler. *)
-let directives_to_compiler_args (directives: Build_directives.t) =
-  let translate_option option = String.split_on_char ' ' option in
-  let translate_lib lib = ["-package"; lib] in
-  let ppx_args =
-    match build_combined_ppx directives.ppx with
-    | Ok ppx_prog -> ["-pp"; ppx_prog ^ " --use-compiler-pp"]
-    | Error _ ->
-       (* Fallback to only using ppx_rocq *)
-       (* TODO: Raise an error? *)
-       ["-pp"; "ppx_rocq --use-compiler-pp"]
-  in
-  List.concat
-    [
-      List.concat_map translate_option directives.compiler_options;
-      List.concat_map translate_lib directives.libraries;
-      ppx_args
-    ]
+let compile ~(directives: Build_directives.t) impl =
+  let ( let* ) = Result.bind in
+  let* pp = Preprocessors.combine directives.ppx in
+  (* Obtain shorter filenames. *)
+  let impl = relativize ~dir:(Sys.getcwd () ^ "/") impl in
+  let* compiled_file =
+    Ocamlfind.compile
+      ~shared:true
+      ~packages:(directives.libraries @ default_packages)
+      ~linkall:true
+      ~include_dirs:[Build_files.modules_dir]
+      ~open_modules:default_open_modules
+      ~optimize:(`O3)
+      ~extra_args:(directives.compiler_options)
+      ~pp
+      impl
+  in Ok { compiled_file; dependencies = directives.libraries }
 
-let compile file =
-  let (let*) = Result.bind in
-  let* directives = Build_directives.get file in
-  (* Make sure that extra packages and PPXes are loaded in. *)
-  Fl_dynload.load_packages directives.libraries;
-  let extra_args = directives_to_compiler_args directives in
-  lowlevel_compile ~extra_args file
+let compile_with_directives impl =
+  match Build_directives.get impl with
+  | Ok directives -> compile ~directives impl
+  | Error _ as e -> e
