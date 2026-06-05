@@ -112,6 +112,6 @@ let () =
       Ppx_attribute.rule;
       Library_attribute.rule
     ]
-    "camltac.annotations"
+    "camltac.directives"
 
 let () = Ppxlib.Driver.standalone ()

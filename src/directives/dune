@@ -1,9 +1,17 @@
 (executable
  (public_name ppx_camltac_directives)
+ (modules ast_utils ppx_camltac_directives)
  (package camltac-directives)
  (libraries
-   camltac-directives.metadata
+   camltac-directives
    ppxlib
    findlib
    sexplib)
+ (preprocess (pps ppx_sexp_conv)))
+
+(library
+ (name camltac_directives)
+ (public_name camltac-directives)
+ (modules build_directives)
+ (libraries sexplib)
  (preprocess (pps ppx_sexp_conv)))

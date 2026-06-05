@@ -77,12 +77,14 @@ let build_combined_ppx ppx_list =
      | Ok () -> Ok out
      | Error err -> Error err
 
-(** Convert metadata from annotations to a list of arguments for the compiler. *)
-let metadata_to_compiler_args (metadata: Metadata.metadata) =
+open Camltac_directives
+
+(** Convert build directives to a list of arguments for the compiler. *)
+let directives_to_compiler_args (directives: Build_directives.t) =
   let translate_option option = String.split_on_char ' ' option in
   let translate_lib lib = ["-package"; lib] in
   let ppx_args =
-    match build_combined_ppx metadata.ppx with
+    match build_combined_ppx directives.ppx with
     | Ok ppx_prog -> ["-pp"; ppx_prog ^ " --use-compiler-pp"]
     | Error _ ->
        (* Fallback to only using ppx_rocq *)
@@ -91,31 +93,15 @@ let metadata_to_compiler_args (metadata: Metadata.metadata) =
   in
   List.concat
     [
-      List.concat_map translate_option metadata.compiler_options;
-      List.concat_map translate_lib metadata.libraries;
+      List.concat_map translate_option directives.compiler_options;
+      List.concat_map translate_lib directives.libraries;
       ppx_args
     ]
 
-let read_build_directives file =
-  let directives_ppx = "ppx_camltac_directives" in
-  let metafile = Filename.remove_extension file ^ ".ml.meta" in
-  let args =
-    [
-      "-output-metadata"; metafile;
-      "-null"; (* do not output anything *)
-      "-impl"; file;
-    ]
-  in
-  match run_command directives_ppx args with
-  | Ok () -> Metadata.read metafile
-  | Error err ->
-     (* Conservatively return empty metadata *)
-     (* TODO: Return an error? *)
-     Metadata.empty
-
 let compile file =
-  let metadata = read_build_directives file in
+  let (let*) = Result.bind in
+  let* directives = Build_directives.get file in
   (* Make sure that extra packages and PPXes are loaded in. *)
-  Fl_dynload.load_packages metadata.libraries;
-  let extra_args = metadata_to_compiler_args metadata in
+  Fl_dynload.load_packages directives.libraries;
+  let extra_args = directives_to_compiler_args directives in
   lowlevel_compile ~extra_args file

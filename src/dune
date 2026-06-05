@@ -6,7 +6,7 @@
    dynlink
    camltac.plugin.runtime
    camltac.plugin.api
-   camltac-directives.metadata
+   camltac-directives
    findlib
    findlib.dynload
    ppx_rocq.runtime))
