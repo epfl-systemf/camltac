@@ -42,6 +42,10 @@ let compile_scaffold ~loc mode scaffold =
   in
   match mode with
   | Check -> infer_interface ~loc build_file
+  | Module (m, _) ->
+     let compilation_output = compile_file ~loc build_file in
+     Module_manager.declare_module m compilation_output;
+     compilation_output
   | _ -> compile_file ~loc build_file
 
 let compile_snippet mode snippet =
@@ -66,6 +70,7 @@ let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependenc
      let intf = read_interface mli_file in
      Feedback.msg_info (Pp.str intf)
   | Module _ ->
-     Loader.load_file ~public:true ~dependencies compiled_file
+     (* Already handled by [Module_manager]. *)
+     assert false
   | _ ->
      Loader.load_file ~public:false ~dependencies compiled_file
