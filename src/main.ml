@@ -61,12 +61,22 @@ let read_interface file =
   In_channel.close_noerr in_channel;
   String.trim intf
 
+let simplify_interface intf =
+  (* Simplify interface for single-values. *)
+  let prefix = "val ( - )" in
+  if String.starts_with ~prefix intf then
+    let l = String.length prefix in
+    "-" ^ String.sub intf l (String.length intf - l)
+  else
+    intf
+
 let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
   match mode with
   | Check ->
      (* Read the interface from the [.mli] file. *)
      let mli_file = compiled_file in
      let intf = read_interface mli_file in
+     let intf = simplify_interface intf in
      Feedback.msg_info (Pp.str intf)
   | Module _ ->
      (* Already handled by [Module_manager]. *)
