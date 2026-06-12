@@ -8,6 +8,10 @@ open Stdarg
 open Procq.Constr
 open Procq.Prim
 
+(* Ltac and Ltac2 grammars *)
+open Ltac2_plugin
+open Ltac2_plugin.G_ltac2
+
 let ocaml_code = Procq.Entry.make "ocaml_code"
 
 let get_quotation_contents ~loc ~prefix q =
@@ -43,6 +47,16 @@ GLOBAL:
     [ [ c = ocaml_code -> { Tactic_in_term.from_ocaml c } ] ]
   ;
 END
+
+GRAMMAR EXTEND Gram
+GLOBAL: ltac2_atom;
+
+  (* OCaml-in-Ltac2 *)
+  ltac2_atom: FIRST
+    [ [ c = ocaml_code -> { Tactic_in_Ltac2.from_ocaml c } ] ]
+  ;
+END
+
 
 VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }

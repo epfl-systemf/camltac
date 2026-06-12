@@ -13,3 +13,5 @@ include Tactics
 include Ltac2.Std
 module FFI = Ltac2.FFI
 include Terms.Definitions
+
+type valexpr = Ltac2_plugin.Tac2val.valexpr
