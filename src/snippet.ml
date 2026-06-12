@@ -19,6 +19,7 @@ type execution_mode =
   | Check
   | Module of (string * Loc.t)
   | Tactic_in_term
+  | Tactic_in_Ltac2
 
 module Scaffold = struct
   type t = Buffer.t
@@ -102,7 +103,7 @@ let scaffold mode snippet =
     match mode with
   | Check ->
      Some "let (-) = begin", Some "end"
-  | Tactic_in_term ->
+  | Tactic_in_term | Tactic_in_Ltac2 ->
      Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
   | Run | Module _ ->
      None, None

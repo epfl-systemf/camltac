@@ -34,6 +34,7 @@ type execution_mode =
   | Check                      (** Type-checking OCaml expressions ([Camltac Check ocaml:(…)]). *)
   | Module of (string * Loc.t) (** OCaml top-level declarations ([Camltac Module M := ocaml:(…)]). *)
   | Tactic_in_term             (** Tactic-in-term modality (e.g. [Definition x := ocaml:(…)]). *)
+  | Tactic_in_Ltac2            (** Tactic-in-Ltac2 modality (e.g. [Ltac2 f := ocaml:(…)]). *)
 
 val scaffold : execution_mode -> t -> string
 (** [scaffold mode snippet] returns the contents of the scaffold file for the
