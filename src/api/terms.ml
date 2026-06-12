@@ -33,6 +33,11 @@ module Expr = struct
     let* sigma in
     let flags = PrintingFlags.current () in
     return (Constrextern.extern_constr ~flags env sigma c)
+
+  let print c =
+    let* env in
+    let* sigma in
+    return (Ppconstr.pr_constr_expr ~flags:{ parentheses = false } env sigma c)
 end
 
 module Glob_constr = struct
@@ -48,6 +53,11 @@ module Glob_constr = struct
     let* sigma in
     let flags = (PrintingFlags.current ()).detype in
     return (Detyping.detype Detyping.Now ~flags env sigma c)
+
+  let print c =
+    let* env in
+    let* sigma in
+    return (Printer.pr_glob_constr_env env sigma c)
 end
 
 module Constr = struct
@@ -68,6 +78,11 @@ module Constr = struct
     let sigma = Evd.merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
+
+  let print c =
+    let* env in
+    let* sigma in
+    return (Printer.pr_econstr_env env sigma c)
 end
 
 module Open_constr = struct
@@ -86,4 +101,6 @@ module Open_constr = struct
     let sigma, econstr = Pretyping.understand_tcc env sigma e in
     Proofview.Unsafe.tclEVARS sigma >>
     return econstr
+
+  let print = Constr.print
 end

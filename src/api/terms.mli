@@ -59,6 +59,9 @@ module Expr : sig
   val of_constr : constr -> t tactic
   (** [of_constr c] converts a well-typed term [c] to its concrete syntax
       representation. *)
+
+  val print : t -> Pp.t tactic
+  (** [print c] pretty-prints the given term [c]. *)
 end
 
 module Glob_constr : sig
@@ -73,6 +76,9 @@ module Glob_constr : sig
   val of_constr : constr -> t tactic
   (** [of_constr c] converts a well-typed term [c] to a globalized term by
       erasing its type information. *)
+
+  val print : t -> Pp.t tactic
+  (** [print c] pretty-prints the given term [c]. *)
 end
 
 module Constr : sig
@@ -87,6 +93,9 @@ module Constr : sig
 
   val of_glob_constr : glob_constr -> t tactic
   (** [of_glob_constr c] perform type inference and type-checks the globalized term [c]. *)
+
+  val print : t -> Pp.t tactic
+  (** [print c] pretty-prints the given term [c]. *)
 end
 
 module Open_constr : sig
@@ -100,4 +109,7 @@ module Open_constr : sig
   val of_glob_constr : glob_constr -> t tactic
   (** [of_glob_constr c] behaves like [Constr.of_glob_constr c], except that
       unresolved evars are allowed in the resulting term. *)
+
+  val print : t -> Pp.t tactic
+  (** [print c] pretty-prints the given term [c]. *)
 end
