@@ -13,7 +13,7 @@
  ;; to Dune. See also https://rocq-prover.zulipchat.com/#narrow/channel/240550-Dune-devs-.26-users/topic/Extra.20Dependency
  ;; for more discussion.
 (rule
- (targets _dummy_target)
+ (targets _dummy_target.v) ;; It's important that it's a .v file, so that it runs before the rocq.theory stanza
  (package camltac)
  (deps (glob_files *.ml))
- (action (write-file _dummy_target "This is a dummy target used to copy .ml files to _build/default.")))
+ (action (write-file _dummy_target.v "")))
