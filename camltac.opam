@@ -3,6 +3,7 @@ opam-version: "2.0"
 synopsis: "OCaml as a Tactic Language for Rocq"
 maintainer: ["Dario Halilovic"]
 authors: ["Dario Halilovic"]
+license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [

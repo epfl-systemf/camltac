@@ -7,6 +7,7 @@
 
 (authors "Dario Halilovic")
 (maintainers "Dario Halilovic")
+(license LGPL-2.1-only)
 
 (homepage "https://github.com/epfl-systemf/camltac")
 (source
