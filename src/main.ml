@@ -64,7 +64,6 @@ let read_interface file =
 let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
   match mode with
   | Check ->
-     Loader.load_packages dependencies;
      (* Read the interface from the [.mli] file. *)
      let mli_file = compiled_file in
      let intf = read_interface mli_file in
