@@ -6,19 +6,6 @@ val list_packages : ?prefix:string -> unit -> string list
 (** [list_packages ?prefix ()] returns the list of packages
     whose name starts with [prefix]. *)
 
-val find_library : string -> string
-(** [find_library] returns the path to the library's directory.
-
-    @raise Findlib.No_such_package If the library could not be found.
- *)
-
-val find_library_cma : string -> string
-(** [find_library_cma] returns the path to the [.cma] (bytecode) or [.cmxa]
-    (native) file for library [lib].
-
-    @raise Findlib.No_such_package If the library could not be found.
- *)
-
 (** {1 Compilation} *)
 
 val compile :

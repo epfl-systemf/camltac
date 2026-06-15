@@ -9,7 +9,7 @@ let combine preprocessors =
      Ocamlfind.compile
        ~packages:(["ppxlib"; "ppx_rocq"] @ preprocessors)
        ~linkpkg:true
-       (* Using [linkpkg] is not enough, so we explicitly link. *)
-       ~extra_args:(List.map Ocamlfind.find_library_cma ("ppx_rocq" :: preprocessors))
+       ~linkall:true
+       ~extra_args:["-predicates"; "ppx_driver"]
        ~out
        ppx_ml_main

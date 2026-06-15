@@ -11,14 +11,6 @@ let () = Findlib.init ()
 let list_packages ?prefix () =
   Findlib.list_packages' ?prefix ()
 
-let find_library lib =
-  Findlib.package_directory lib
-
-let find_library_cma lib =
-  let directory = find_library lib in
-  let extension = if Dynlink.is_native then ".cmxa" else ".cma" in
-  Filename.concat directory (lib ^ extension)
-
 (** {1 Compilation} *)
 
 (** {2 Arguments} *)
