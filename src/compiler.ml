@@ -41,7 +41,7 @@ let compile ~(directives: Build_directives.t) ?(infer_interface = false) impl =
       ~include_dirs:[Build_files.modules_dir]
       ~open_modules:default_open_modules
       ~optimize:(`O3)
-      ~extra_args:(directives.compiler_options)
+      ~extra_args:("-short-paths" :: directives.compiler_options)
       ~infer_interface
       ~pp
       impl

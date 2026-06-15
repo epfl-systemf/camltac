@@ -11,6 +11,7 @@ depends: [
   "rocq-core"
   "rocq-runtime"
   "ppx_rocq"
+  "ppx_deriving"
   "ocamlfind"
   "camltac-directives"
   "odoc" {with-doc}

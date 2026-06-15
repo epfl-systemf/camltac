@@ -70,6 +70,12 @@ let simplify_interface intf =
   else
     intf
 
+let get_type Compiler.{ compiled_file = mli_file } =
+  let intf = read_interface mli_file in
+  let regexp = Str.regexp {|val ( - ) : \([^ ]+\) tactic|} in
+  let _ = Str.search_forward regexp intf 0 in
+  Str.matched_group 1 intf
+
 let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
   match mode with
   | Check ->
@@ -78,6 +84,15 @@ let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependenc
      let intf = read_interface mli_file in
      let intf = simplify_interface intf in
      Feedback.msg_info (Pp.str intf)
+  | Eval typ ->
+     Loader.load_file ~public:false ~dependencies compiled_file;
+     let tactic: string Proofview.tactic = Runtime.Output.get_tactic () in
+     let env = Global.env () in
+     let sigma = Evd.from_env env in
+     let name = Names.Id.of_string "camltac" in
+     let proof = Proof.start ~name ~poly:PolyFlags.default sigma [] in
+     let (_, _, result) = Proof.run_tactic env tactic proof in
+     Feedback.msg_notice Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
   | Module _ ->
      (* Already handled by [Module_manager]. *)
      assert false

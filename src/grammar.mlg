@@ -85,6 +85,16 @@ VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
   -> { Main.interpret Snippet.Run compilation_output }
 END
 
+VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS SIDEFF
+| [ "Camltac" "Eval" ocaml(snippet) ]
+  SYNTERP AS synterp_output
+     { let check_output = Main.compile_snippet Snippet.Check snippet in
+       let typ = Main.get_type check_output in
+       typ, Main.compile_snippet (Snippet.Eval typ) snippet }
+  -> { let typ, compilation_output = synterp_output in
+       Main.interpret (Snippet.Eval typ) compilation_output }
+END
+
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
 | [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS _

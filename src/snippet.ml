@@ -16,6 +16,7 @@ let contents { contents } = contents
 
 type execution_mode =
   | Run
+  | Eval of string
   | Check
   | Module of (string * Loc.t)
   | Tactic_in_term
@@ -101,11 +102,19 @@ end
 let scaffold mode snippet =
   let header, footer =
     match mode with
-  | Check ->
-     Some "let (-) = begin", Some "end"
-  | Tactic_in_term | Tactic_in_Ltac2 ->
-     Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
-  | Run | Module _ ->
-     None, None
+    | Check ->
+       Some "let (-) = begin", Some "end"
+    | Eval typ ->
+       Some ({|[@@@using "ppx_deriving.runtime"]
+              [@@@ppx "ppx_deriving.show"]
+              open Api.Printers
+              type t = |} ^ typ ^ {|[@@deriving show]
+              let () = Runtime.Output.set_tactic begin
+                let* x =|}),
+       Some "in (return (show x)) end"
+    | Tactic_in_term | Tactic_in_Ltac2 ->
+       Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
+    | Run | Module _ ->
+       None, None
   in
   Scaffold.make ?header ?footer snippet

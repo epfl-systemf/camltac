@@ -21,6 +21,7 @@
    rocq-core
    rocq-runtime
    ppx_rocq
+   ppx_deriving ;; For Camltac Eval
    ocamlfind
    camltac-directives))
 

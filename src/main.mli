@@ -18,6 +18,10 @@ val compile_snippet : Snippet.execution_mode -> Snippet.t -> Compiler.output
 
 (** {2 Interpretation} *)
 
+val get_type : Compiler.output -> string
+(** [get_type output] reads the given [.mli] file and returns the type of the
+    tactic. *)
+
 val interpret : Snippet.execution_mode -> Compiler.output -> unit
 (** [interpret mode compilation_output] interprets the compilation output
     according to [mode]. *)
