@@ -12,7 +12,7 @@ let default_packages =
 
 (** Set of modules open by default. *)
 let default_open_modules =
-  ["Api"; "Prelude"]
+  ["Api"; "Prelude"; "Prelude.Stdlib"]
 
 (** Relativize [filename] against [dir]. *)
 let relativize ~dir filename =
