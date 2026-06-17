@@ -9,6 +9,8 @@ open Procq.Constr
 open Procq.Prim
 
 (* Ltac and Ltac2 grammars *)
+open Ltac_plugin
+open Ltac_plugin.Pltac
 open Ltac2_plugin
 open Ltac2_plugin.G_ltac2
 
@@ -57,6 +59,14 @@ GLOBAL: ltac2_atom;
   ;
 END
 
+(* OCaml-in-Ltac *)
+GRAMMAR EXTEND Gram
+GLOBAL: tactic_value;
+
+  tactic_value: FIRST
+    [ [ c = ocaml_code -> { Tactic_in_Ltac.from_ocaml c } ] ]
+  ;
+END
 
 VERNAC ARGUMENT EXTEND ocaml
 | [ ocaml_code(c) ] -> { c }

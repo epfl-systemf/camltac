@@ -20,6 +20,7 @@ type execution_mode =
   | Check
   | Module of (string * Loc.t)
   | Tactic_in_term
+  | Tactic_in_Ltac
   | Tactic_in_Ltac2
 
 module Scaffold = struct
@@ -112,7 +113,7 @@ let scaffold mode snippet =
               let () = Runtime.Output.set_tactic begin
                 let* x =|}),
        Some "in (return (show x)) end"
-    | Tactic_in_term | Tactic_in_Ltac2 ->
+    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
        Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
     | Run | Module _ ->
        None, None
