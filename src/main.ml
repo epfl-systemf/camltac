@@ -32,7 +32,7 @@ let infer_interface ~loc file =
 let compile_scaffold ~loc mode scaffold =
   let build_file =
     match mode with
-    | Snippet.Module (name, name_loc) ->
+    | Snippet.Module { name; loc = name_loc } ->
        check_module_name ~loc:name_loc name;
        begin match Build_files.save_module ~name scaffold with
        | Ok file -> file
@@ -42,9 +42,9 @@ let compile_scaffold ~loc mode scaffold =
   in
   match mode with
   | Check -> infer_interface ~loc build_file
-  | Module (m, _) ->
+  | Module { name = m; local } ->
      let compilation_output = compile_file ~loc build_file in
-     Module_manager.declare_module m compilation_output;
+     Module_manager.declare_module ?local m compilation_output;
      compilation_output
   | _ -> compile_file ~loc build_file
 

@@ -18,7 +18,7 @@ type execution_mode =
   | Run
   | Eval of string
   | Check
-  | Module of (string * Loc.t)
+  | Module of { name: string; loc: Loc.t; local: bool option }
   | Tactic_in_term
   | Tactic_in_Ltac
   | Tactic_in_Ltac2

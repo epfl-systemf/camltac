@@ -106,18 +106,19 @@ VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
-| [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
+| #[ local = Attributes.locality ] [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS _
-     { Main.compile_snippet (Snippet.Module m) snippet }
+     { let name, loc = m in
+       Main.compile_snippet (Snippet.Module { name; loc; local }) snippet }
   -> { () }
 
-| [ "Camltac" "Load" ocaml_file(file) ]
+| #[ local = Attributes.locality ] [ "Camltac" "Load" ocaml_file(file) ]
   SYNTERP AS _
      { let filename, loc = file in
        let compilation_output = Main.compile_file ~loc filename in
        let module_name = String.capitalize_ascii filename in
        (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
-       Module_manager.declare_module module_name compilation_output
+       Module_manager.declare_module ?local module_name compilation_output
      }
   -> { () }
 END

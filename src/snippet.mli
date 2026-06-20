@@ -33,7 +33,11 @@ type execution_mode =
   | Run                        (** OCaml code that is run for its side-effects ([Camltac Run ocaml:(…)]). *)
   | Eval of string             (** Evaluation of OCaml tactics ([Camltac Eval ocaml:(…)]). *)
   | Check                      (** Type-checking OCaml expressions ([Camltac Check ocaml:(…)]). *)
-  | Module of (string * Loc.t) (** OCaml top-level declarations ([Camltac Module M := ocaml:(…)]). *)
+  | Module of {
+      name: string;
+      loc: Loc.t;
+      local: bool option
+    }                          (** OCaml top-level declarations ([Camltac Module M := ocaml:(…)]). *)
   | Tactic_in_term             (** Tactic-in-term modality (e.g. [Definition x := ocaml:(…)]). *)
   | Tactic_in_Ltac             (** Tactic-in-Ltac modality (e.g. [Ltac f := ocaml:(…)]). *)
   | Tactic_in_Ltac2            (** Tactic-in-Ltac2 modality (e.g. [Ltac2 f () := ocaml:(…)]). *)
