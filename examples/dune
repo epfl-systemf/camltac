@@ -8,3 +8,8 @@
    Stdlib
    stdpp
    Ltac2))
+
+(rule
+ (targets _dummy.v)
+ (deps (glob_files *.ml))
+ (action (write-file _dummy.v "")))
