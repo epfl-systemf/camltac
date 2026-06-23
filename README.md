@@ -6,7 +6,7 @@ Camltac allows OCaml to be written directly with Rocq scripts. It supports most 
   <img src="etc/showcase.svg" width="75%" alt="Showcase image of Camltac" />
 </center>
 
-See the [quickstart](#quickstart) section for quick examples, or the [`examples`](./examples/) directory for more complete examples of using Camltac.
+See the [quickstart](#quickstart) section for quick examples, or head over to the [tour](./examples/Tour.v) or the [`examples`](./examples/) directory for more complete examples of using Camltac.
 
 ## Setup
 
