@@ -18,6 +18,7 @@
  (name camltac)
  (synopsis "OCaml as a Tactic Language for Rocq")
  (depends
+   (ocaml (>= 5.4))
    rocq-core
    rocq-runtime
    ppx_rocq

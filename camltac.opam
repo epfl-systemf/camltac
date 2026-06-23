@@ -8,6 +8,7 @@ homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
   "dune" {>= "3.22"}
+  "ocaml" {>= "5.4"}
   "rocq-core"
   "rocq-runtime"
   "ppx_rocq"
