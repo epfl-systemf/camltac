@@ -170,8 +170,8 @@ Camltac Module My_tactics := ocaml:{{
   let by_transitivity () =
     progress (subst_all ()) >>
     match%goal __ with
-    | _, "?x = ?x" -> reflexivity ()
-    | { h = _ :: "?x = ?x" }, _ -> clear [h]
+    | _, "?x = ?x" -> let _ = x in reflexivity ()
+    | { h = _ :: "?x = ?x" }, _ -> let _ = x in clear [h]
 }}.
 
 Goal forall x y : nat, x = y -> y = x.
