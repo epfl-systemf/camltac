@@ -67,7 +67,7 @@ Declare ML Module "camltac.plugin.runtime".
 
 Goal forall a b, andb a b = andb b a.
 Proof.
-  From Stdlib Require All.
+  From Stdlib Require Bool.
   apply_search.
   intros.
   destruct a, b; reflexivity.
