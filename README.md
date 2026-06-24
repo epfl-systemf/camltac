@@ -10,13 +10,11 @@ See the [quickstart](#quickstart) section for quick examples, or head over to th
 
 ## Setup
 
-To install Camltac from sources, clone the repo and run `opam install .`, as follows:
-
+Install Camltac through `opam` by using the following commands:
 ```sh
-git clone git@github.com:epfl-systemf/camltac.git
-cd camltac
-opam install ./camltac.opam
-# Optional: opam install ./camltac-examples.opam
+opam update
+opam repo add rocq-released https://rocq-prover.github.io/opam/released/
+opam pin add https://github.com/epfl-systemf/camltac.git
 ```
 
 Then, add `From Camltac Require Import Camltac.` to the top of your Rocq files, and you're ready to go!
