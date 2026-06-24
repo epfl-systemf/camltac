@@ -234,8 +234,8 @@ Camltac Module IdentParsing := ocaml:{{
     String.fold_right (fun c tail ->
         let* tail in
         let* byte = lookup_table.(Char.code c) in
-        [%constr "%{byte} :: %{tail}"])
-    (Id.to_string id) [%constr "@nil Byte.byte"]
+        [%open_constr "%{byte} :: %{tail}"])
+    (Id.to_string id) [%open_constr "@nil Byte.byte"]
 
   let id_to_rocq_string (id: Id.t) =
     let* bytes = id_to_byte_list id in
