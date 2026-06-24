@@ -16,7 +16,7 @@ At its core, Camltac provides a way to run OCaml code within Rocq files. Followi
 |*)
 
 Camltac Run ocaml:{{
-  Feedback.msg_notice (Pp.str "Hello world!")
+  Feedback.msg_info (Pp.str "Hello world!")
 }}.
 
 (*|
@@ -27,7 +27,7 @@ Camltac Run ocaml:{{
   let hello = "Hello"
   let world = " wonderful world!"
 
-  let () = Feedback.msg_notice (Pp.str (hello ^ world))
+  let () = Feedback.msg_info (Pp.str (hello ^ world))
 }}.
 
 (*|
@@ -40,7 +40,7 @@ Camltac Module M := ocaml:{{
 }}.
 
 Camltac Run ocaml:{{
-  Feedback.msg_notice (Pp.str (M.hello ^ M.world))
+  Feedback.msg_info (Pp.str (M.hello ^ M.world))
 }}.
 
 (*|

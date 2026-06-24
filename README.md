@@ -27,7 +27,7 @@ The most primitive command provided by Camltac is `Camltac Run`, which runs an a
 ```coq
 From Camltac Require Import Camltac.
 
-Camltac Run ocaml:{{ let _ = Feedback.msg_notice (Pp.str "Hello world!") }}.
+Camltac Run ocaml:{{ Feedback.msg_info (Pp.str "Hello world!") }}.
 (* Hello world! *)
 ```
 
@@ -36,7 +36,7 @@ Camltac also allows to define new modules, which can be used to reuse definition
 Camltac Module M := ocaml:(let one = 1).
 
 Camltac Run ocaml:{{
-  Feedback.msg_notice (Pp.int (M.one + M.one))
+  Feedback.msg_info (Pp.int (M.one + M.one))
 }}.
 (* 2 *)
 ```
@@ -49,7 +49,7 @@ From Ltac2 Require Import Ltac2.
 
 Camltac Run ocaml:{{
   let say_hello () =
-    Feedback.msg_notice (Pp.str "Hello from OCaml!")
+    Feedback.msg_info (Pp.str "Hello from OCaml!")
 
   let _ = Ltac2.FFI.(define "say_hello" (unit @-> ret unit) say_hello)
 }}.

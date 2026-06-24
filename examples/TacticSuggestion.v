@@ -54,7 +54,7 @@ Camltac Run ocaml:{{
       else
         let pr_globref ref = Libnames.pr_path (Nametab.path_of_global ref) in
         let result_pp = List.fold_left (fun acc res -> acc ++ str "\n" ++ pr_globref res) (str "Here are the list of theorems that could be applied: ") !results in
-        let () = Feedback.msg_notice result_pp in
+        let () = Feedback.msg_info result_pp in
         tclUNIT ()
     end
 

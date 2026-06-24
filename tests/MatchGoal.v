@@ -7,14 +7,14 @@ Proof.
     match%goal __ with
     | { h = _ :: "nat" }, _ ->
       let name = Names.Id.to_string h in
-      Feedback.msg_notice (Pp.str name);
+      Feedback.msg_info (Pp.str name);
       return ()
   }}.
   ocaml:{{
     match%goal reverse with
     | { h = _ :: "nat" }, _ ->
       let name = Names.Id.to_string h in
-      Feedback.msg_notice (Pp.str name);
+      Feedback.msg_info (Pp.str name);
       return ()
   }}.
   exact I.

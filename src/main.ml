@@ -92,7 +92,7 @@ let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependenc
      let name = Names.Id.of_string "camltac" in
      let proof = Proof.start ~name ~poly:PolyFlags.default sigma [] in
      let (_, _, result) = Proof.run_tactic env tactic proof in
-     Feedback.msg_notice Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
+     Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
   | Module _ ->
      (* Already handled by [Module_manager]. *)
      assert false
