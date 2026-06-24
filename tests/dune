@@ -1,3 +1,5 @@
+(include_subdirs qualified)
+
 (rocq.theory
  (name Camltac.Tests)
  (package camltac)
