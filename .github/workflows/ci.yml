@@ -22,11 +22,8 @@ jobs:
       - name: Add Rocq-released Opam repository
         run: opam repo add rocq-released https://rocq-prover.github.io/opam/released/
 
-      - name: Install Camltac directives
-        run: opam install ./camltac-directives.opam
-
       - name: Install Camltac
-        run: opam install ./camltac.opam
+        run: opam install .
 
       - name: Build
         run: opam exec -- dune build
