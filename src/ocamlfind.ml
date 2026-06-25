@@ -37,6 +37,7 @@ let output_extension ~stop_after ~shared ~native =
 
 let compilation_args
       ~packages ~linkpkg ~linkall
+      ~compile_only
       ~shared
       ~include_dirs
       ~open_modules
@@ -83,6 +84,7 @@ let compilation_args
   let args = add_argument ~if_:linkpkg "-linkpkg" args in
   let args = add_arguments "-package" packages args in
   let args = add_argument ~if_:(shared && not infer_interface) (if native then "-shared" else "-a") args in
+  let args = add_argument ~if_:compile_only "-c" args in
   let args = add_argument ~if_:infer_interface "-i" args in
   args, out
 
@@ -100,6 +102,7 @@ let run_ocamlfind ?stdout args =
 
 let compile
       ?(packages = []) ?(linkpkg = false) ?(linkall = false)
+      ?(compile_only = false)
       ?(shared = false)
       ?(include_dirs = [])
       ?(open_modules = [])
@@ -113,6 +116,7 @@ let compile
   let args, out =
     compilation_args
       ~packages ~linkpkg ~linkall
+      ~compile_only
       ~shared
       ~include_dirs
       ~open_modules

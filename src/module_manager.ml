@@ -5,16 +5,60 @@ type camltac_module =
     local: bool;
     compilation_output: Compiler.output }
 
-let loaded_modules = Summary.ref ~stage:Synterp ~name:"loaded_modules" []
+type state =
+  { loaded_modules: camltac_module list;
+    packing_module: string option }
+
+let state =
+  Summary.ref
+    ~stage:Synterp
+    ~name:"state"
+    { loaded_modules = []; packing_module = None }
 
 let is_loaded m =
-  List.mem m !loaded_modules
+  let module_name_eq m' = String.equal m'.name m in
+  List.exists module_name_eq !state.loaded_modules
 
-let load_module { name; compilation_output } =
+let module_name filename =
+  Filename.basename filename
+  |> Filename.remove_extension
+  |> String.capitalize_ascii
+
+(** [module_aliases ()] returns the contents of the packing module. *)
+let module_aliases () =
+  let module_alias { name; compilation_output } =
+    let real_name = module_name compilation_output.compiled_file in
+    Format.sprintf "module %s = %s" name real_name
+  in
+  (* First element = most recent, so reverse the order. *)
+  let aliases = List.rev_map module_alias !state.loaded_modules in
+  String.concat "\n" aliases
+
+let packing_module () =
+  Option.map module_name !state.packing_module
+
+let generate_packing_module () =
+  let impl = Build_files.save_module (module_aliases ()) in
+  let compilation_output =
+    Ocamlfind.compile
+      ~compile_only:true
+      ~include_dirs:[Build_files.modules_dir]
+      ~extra_args:["-no-alias-deps"]
+      impl
+  in
+  match compilation_output with
+  | Ok packing_module ->
+     state := { !state with packing_module = Some packing_module }
+  | Error err ->
+     CErrors.user_err (Pp.fmt "Compilation of packing module failed with error %d." err)
+
+let load_module m =
+  let { name; compilation_output } = m in
   if not (is_loaded name) then begin
      let Compiler.{ compiled_file; dependencies } = compilation_output in
      Loader.load_file ~public:true ~dependencies compiled_file;
-     loaded_modules := name :: !loaded_modules
+     state := { !state with loaded_modules = m :: !state.loaded_modules };
+     generate_packing_module ()
   end
 
 let camltac_module : camltac_module -> Libobject.obj =

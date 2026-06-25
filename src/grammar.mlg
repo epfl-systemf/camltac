@@ -137,7 +137,8 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
   SYNTERP AS compilation_output
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
-       let scaffold = Format.sprintf "include %s" module_name in
+       let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
+       let scaffold = Snippet.scaffold Snippet.Run snippet in
        Main.compile_scaffold ~loc Snippet.Check scaffold }
   -> { Main.interpret Snippet.Check compilation_output }
 

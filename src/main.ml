@@ -17,14 +17,16 @@ let check_file ~loc (file: string) =
 
 let compile_file ~loc file =
   check_file ~loc file;
-  match Compiler.compile_with_directives file with
+  let packing_module = Module_manager.packing_module () in
+  match Compiler.compile_with_directives ?packing_module file with
   | Ok out -> out
   | Error code ->
      CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
 
 let infer_interface ~loc file =
   check_file ~loc file;
-  match Compiler.infer_interface file with
+  let packing_module = Module_manager.packing_module () in
+  match Compiler.infer_interface ?packing_module file with
   | Ok out -> out
   | Error code ->
      CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
@@ -34,11 +36,10 @@ let compile_scaffold ~loc mode scaffold =
     match mode with
     | Snippet.Module { name; loc = name_loc } ->
        check_module_name ~loc:name_loc name;
-       let override = not (Module_manager.is_loaded name) in
-       begin match Build_files.save_module ~override ~name scaffold with
-       | Ok file -> file
-       | Error err -> CErrors.user_err ~loc (Pp.str err)
-       end
+       if Module_manager.is_loaded name then
+         CErrors.user_err ~loc (Pp.fmt "Module %S already exists." name)
+       else
+         Build_files.save_module scaffold
     | _ -> Build_files.save_snippet scaffold
   in
   match mode with

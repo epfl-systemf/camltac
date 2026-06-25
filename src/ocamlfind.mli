@@ -12,6 +12,7 @@ val compile :
   ?packages:string list ->
   ?linkpkg:bool ->
   ?linkall:bool ->
+  ?compile_only:bool ->
   ?shared:bool ->
   ?include_dirs:string list ->
   ?open_modules:string list ->
@@ -33,6 +34,9 @@ val compile :
 
     @param linkall (default = [false])
       If true, all modules are linked in the final output, even unreferenced one.
+
+    @param compile_only (default = [false])
+      If true, only compile, do not link ([-c]).
 
     @param shared (default = [false])
       In native mode: builds a shared library ([-shared]).

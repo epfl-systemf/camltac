@@ -199,7 +199,7 @@ Camltac Module Op := ocaml:{{
   | Const of int
   | Plus of (t * t)
   | Minus of (t * t)
-  [@@deriving show]
+  [@@deriving show { with_path = false }]
 }}.
 
 Camltac Run ocaml:{{

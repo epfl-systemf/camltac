@@ -28,7 +28,7 @@ type output =
 
 open Camltac_directives
 
-let compile ~(directives: Build_directives.t) ?(infer_interface = false) impl =
+let compile ?packing_module ~(directives: Build_directives.t) ?(infer_interface = false) impl =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
   (* Obtain shorter filenames. *)
@@ -39,7 +39,7 @@ let compile ~(directives: Build_directives.t) ?(infer_interface = false) impl =
       ~packages:(directives.libraries @ default_packages)
       ~linkall:true
       ~include_dirs:[Build_files.modules_dir]
-      ~open_modules:default_open_modules
+      ~open_modules:(Option.List.cons packing_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~infer_interface
@@ -47,12 +47,12 @@ let compile ~(directives: Build_directives.t) ?(infer_interface = false) impl =
       impl
   in Ok { compiled_file; dependencies = directives.libraries }
 
-let compile_with_directives impl =
+let compile_with_directives ?packing_module impl =
   match Build_directives.get impl with
-  | Ok directives -> compile ~directives impl
+  | Ok directives -> compile ?packing_module ~directives impl
   | Error _ as e -> e
 
-let infer_interface impl =
+let infer_interface ?packing_module impl =
   match Build_directives.get impl with
-  | Ok directives -> compile ~directives ~infer_interface:true impl
+  | Ok directives -> compile ?packing_module ~directives ~infer_interface:true impl
   | Error _ as e -> e
