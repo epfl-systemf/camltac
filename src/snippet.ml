@@ -8,6 +8,29 @@ type t =
 
 let make ~loc contents = { loc; contents }
 
+let read_file ~loc filename =
+  if Sys.file_exists filename then
+    let in_channel = open_in filename in
+    let contents = In_channel.input_all in_channel in
+    In_channel.close_noerr in_channel;
+    contents
+  else
+    CErrors.user_err ~loc (Pp.fmt "File %S does not exist." filename)
+
+let of_file ~loc filename =
+  let contents = read_file ~loc filename in
+  let loc = Loc.{
+     fname = InFile { dirpath = None; file = filename };
+     line_nb = 1;
+     bol_pos = 0;
+     bp = 0;
+     (* These end locations are obviously wrong, but we don't use this information. *)
+     line_nb_last = max_int;
+     bol_pos_last = max_int;
+     ep = max_int
+  } in
+  make ~loc contents
+
 let loc { loc } = loc
 
 let contents { contents } = contents

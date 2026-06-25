@@ -11,6 +11,9 @@ type t
 val make : loc:Loc.t -> string -> t
 (** [make ~loc contents] creates a snippet with the given contents. *)
 
+val of_file : loc:Loc.t -> string -> t
+(** [of_file ~loc filename] creates a snippet for the given file. *)
+
 val loc : t -> Loc.t
 (** [loc snippet] returns the location of the snippet. *)
 
