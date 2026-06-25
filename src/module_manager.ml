@@ -7,8 +7,11 @@ type camltac_module =
 
 let loaded_modules = Summary.ref ~stage:Synterp ~name:"loaded_modules" []
 
+let is_loaded m =
+  List.mem m !loaded_modules
+
 let load_module { name; compilation_output } =
-  if not (List.mem name !loaded_modules) then begin
+  if not (is_loaded name) then begin
      let Compiler.{ compiled_file; dependencies } = compilation_output in
      Loader.load_file ~public:true ~dependencies compiled_file;
      loaded_modules := name :: !loaded_modules

@@ -34,7 +34,8 @@ let compile_scaffold ~loc mode scaffold =
     match mode with
     | Snippet.Module { name; loc = name_loc } ->
        check_module_name ~loc:name_loc name;
-       begin match Build_files.save_module ~name scaffold with
+       let override = not (Module_manager.is_loaded name) in
+       begin match Build_files.save_module ~override ~name scaffold with
        | Ok file -> file
        | Error err -> CErrors.user_err ~loc (Pp.str err)
        end

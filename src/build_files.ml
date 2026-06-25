@@ -25,12 +25,27 @@ let save_temp ~dir ~prefix contents =
 let save_snippet contents =
   save_temp ~dir:snippets_dir ~prefix:"snippet" contents
 
-let save_module ~name contents =
+let remove_module name =
+  let remove ext =
+    let filename = modules_dir / name ^ ext in
+    if Sys.file_exists filename then Sys.remove filename
+  in
+  remove ".ml";
+  remove ".mli";
+  remove ".cmo";
+  remove ".cma";
+  remove ".cmi";
+  remove ".cmx";
+  remove ".cmxa";
+  remove ".cmxs"
+
+let save_module ?(override = false) ~name contents =
   assert (Char.Ascii.is_upper @@ String.get name 0);
   let file = modules_dir / name ^ ".ml" in
   match Sys.file_exists file with
-  | true -> Error (Format.sprintf "Module %S already exists." name)
   | false -> save ~file contents; Ok file
+  | true when override -> remove_module name; save ~file contents; Ok file
+  | true -> Error (Format.sprintf "Module %S already exists." name)
 
 let save_ppx_driver contents =
   save_temp ~dir:ppx_dir ~prefix:"ppx" contents
