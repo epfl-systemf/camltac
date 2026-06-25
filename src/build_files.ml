@@ -9,10 +9,11 @@ let ppx_dir = build_dir / "ppx"
 
 (* Make sure that build directories exist. *)
 let () =
-  (if not (Sys.file_exists build_dir) then Sys.mkdir build_dir 0o700);
-  (if not (Sys.file_exists snippets_dir) then Sys.mkdir snippets_dir 0o700);
-  (if not (Sys.file_exists modules_dir) then Sys.mkdir modules_dir 0o700);
-  (if not (Sys.file_exists ppx_dir) then Sys.mkdir ppx_dir 0o700)
+  let mkdir dir = if not (Sys.file_exists dir) then Sys.mkdir dir 0o700 in
+  mkdir build_dir;
+  mkdir snippets_dir;
+  mkdir modules_dir;
+  mkdir ppx_dir
 
 let save ~file contents =
   Out_channel.with_open_text file (fun out_channel -> output_string out_channel contents)
