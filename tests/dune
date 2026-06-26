@@ -4,7 +4,7 @@
  (name Camltac.Tests)
  (package camltac)
  (plugins camltac.plugin)
- (flags (:standard -quiet -require-import-from Corelib Init.Prelude))
+ (flags (:standard -require-import-from Corelib Init.Prelude))
  (stdlib no)
  (theories Camltac Corelib Ltac2))
 

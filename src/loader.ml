@@ -10,9 +10,9 @@ let load_file ~public ?(dependencies = []) file =
   try
     (* Make sure that dependencies are available before loading. *)
     load_packages dependencies;
-    Flags.if_verbose Feedback.msg_debug (Pp.fmt "Loading file %s." file);
+    Debug.print (fun () -> Pp.fmt "Loading file %s." file);
     load file;
-    Flags.if_verbose Feedback.msg_debug (Pp.fmt "File %s successfully loaded." file);
+    Debug.print (fun () -> Pp.fmt "File %s successfully loaded." file);
   with
   | Dynlink.Error (Dynlink.Library's_module_initializers_failed exn) ->
      (* This means that the OCaml code inputted by the user failed.
