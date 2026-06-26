@@ -10,6 +10,9 @@ val declare_module : ?local:bool -> string -> Compiler.output -> unit
 (** [declare_module ?local m compilation_output] declares a new Camltac module
     named [m]. If [local] is [true], the module is accessible only in the current file. *)
 
+val loaded_dependencies : unit -> string list
+(** [loaded_dependencies ()] returns all currently loaded dependencies. *)
+
 (** {1 Module aliases}
 
     OCaml has namespacing issues: [Loader.load_file] cannot load two modules

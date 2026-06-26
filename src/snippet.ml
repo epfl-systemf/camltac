@@ -129,8 +129,7 @@ let scaffold mode snippet =
     | Check ->
        Some "let (-) = begin", Some "end"
     | Eval typ ->
-       Some ({|[@@@using "ppx_deriving.runtime"]
-              [@@@ppx "ppx_deriving.show"]
+       Some ({|[@@@ppx "ppx_deriving.show"]
               open Api.Printers
               type t = |} ^ typ ^ {|[@@deriving show]
               let () = Runtime.Output.set_tactic begin

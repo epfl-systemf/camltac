@@ -192,8 +192,7 @@ Camltac supports additional OCaml libraries and preprocessors through special fl
 |*)
 
 Camltac Module Op := ocaml:{{
-  [@@@using "ppx_deriving.runtime"]
-  [@@@ppx "ppx_deriving", "ppx_deriving.show"]
+  [@@@ppx "ppx_deriving.show"]
 
   type t =
   | Const of int
@@ -203,8 +202,6 @@ Camltac Module Op := ocaml:{{
 }}.
 
 Camltac Run ocaml:{{
-  [@@@using "ppx_deriving.runtime"]
-
   let s = Op.(show (Plus (Const 1, Const 2)))
   let () = Feedback.msg_info (Pp.str s)
 }}.

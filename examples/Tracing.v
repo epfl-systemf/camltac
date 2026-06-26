@@ -16,7 +16,6 @@ Inductive my_nat :=
   | NatMul (n m : my_nat).
 
 Camltac Run ocaml:{{
-  [@@@using "ppx_minidebug.runtime", "ppx_minidebug.db"]
   [@@@ppx "ppx_minidebug"]
 
   (* Initialize ppx_minidebug runtime. *)

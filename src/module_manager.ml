@@ -7,17 +7,22 @@ type camltac_module =
 
 type state =
   { loaded_modules: camltac_module list;
-    packing_module: string option }
+    loaded_dependencies: string list;
+    packing_module: string option;
+  }
 
 let state =
   Summary.ref
     ~stage:Synterp
     ~name:"state"
-    { loaded_modules = []; packing_module = None }
+    { loaded_modules = []; loaded_dependencies = []; packing_module = None }
 
 let is_loaded m =
   let module_name_eq m' = String.equal m'.name m in
   List.exists module_name_eq !state.loaded_modules
+
+let loaded_dependencies () =
+  !state.loaded_dependencies
 
 let module_name filename =
   Filename.basename filename
@@ -57,7 +62,8 @@ let load_module m =
   if not (is_loaded name) then begin
      let Compiler.{ compiled_file; dependencies } = compilation_output in
      Loader.load_file ~public:true ~dependencies compiled_file;
-     state := { !state with loaded_modules = m :: !state.loaded_modules };
+     state := { !state with loaded_modules = m :: !state.loaded_modules;
+                            loaded_dependencies = dependencies @ !state.loaded_dependencies };
      generate_packing_module ()
   end
 

@@ -28,31 +28,56 @@ type output =
 
 open Camltac_directives
 
-let compile ?packing_module ~(directives: Build_directives.t) ?(infer_interface = false) impl =
+let ppx_runtime_deps ppxs =
+  let find_value preds ppx prop =
+    let value = Findlib.package_property preds ppx prop in
+    String.split_on_char ' ' value
+  in
+  let ppx_runtime_deps ppx =
+    (* Check ppx_runtime_deps first. *)
+    try find_value [] ppx "ppx_runtime_deps"
+    with Not_found ->
+       try find_value ["custom_ppx"] ppx "requires"
+       with Not_found -> []
+  in
+  List.concat_map ppx_runtime_deps ppxs
+
+type context =
+  { packing_module: string option;
+    loaded_dependencies: string list;
+  }
+
+let empty_context =
+  { packing_module = None;
+    loaded_dependencies = [] }
+
+let compile ?(context = empty_context) ~(directives: Build_directives.t) ?(infer_interface = false) impl =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
+  let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
+  let dependencies = ppx_runtime_deps @ directives.libraries in
   (* Obtain shorter filenames. *)
   let impl = relativize ~dir:(Sys.getcwd () ^ "/") impl in
   let* compiled_file =
     Ocamlfind.compile
       ~shared:true
-      ~packages:(directives.libraries @ default_packages)
+      ~packages:(dependencies @ context.loaded_dependencies @ default_packages)
       ~linkall:true
       ~include_dirs:[Build_files.modules_dir]
-      ~open_modules:(Option.List.cons packing_module default_open_modules)
+      ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~infer_interface
       ~pp
       impl
-  in Ok { compiled_file; dependencies = directives.libraries }
+  in Ok { compiled_file; dependencies }
 
-let compile_with_directives ?packing_module impl =
+let compile_with_directives ?context impl =
   match Build_directives.get impl with
-  | Ok directives -> compile ?packing_module ~directives impl
+  | Ok directives -> compile ?context ~directives impl
   | Error _ as e -> e
 
-let infer_interface ?packing_module impl =
+let infer_interface ?context impl =
   match Build_directives.get impl with
-  | Ok directives -> compile ?packing_module ~directives ~infer_interface:true impl
+  | Ok directives -> compile ?context ~directives ~infer_interface:true impl
   | Error _ as e -> e

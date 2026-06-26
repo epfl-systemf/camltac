@@ -17,16 +17,24 @@ let check_file ~loc (file: string) =
 
 let compile_file ~loc file =
   check_file ~loc file;
-  let packing_module = Module_manager.packing_module () in
-  match Compiler.compile_with_directives ?packing_module file with
+  let context = Compiler.{
+    packing_module = Module_manager.packing_module ();
+    loaded_dependencies = Module_manager.loaded_dependencies ()
+  }
+  in
+  match Compiler.compile_with_directives ~context file with
   | Ok out -> out
   | Error code ->
      CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
 
 let infer_interface ~loc file =
   check_file ~loc file;
-  let packing_module = Module_manager.packing_module () in
-  match Compiler.infer_interface ?packing_module file with
+  let context = Compiler.{
+    packing_module = Module_manager.packing_module ();
+    loaded_dependencies = Module_manager.loaded_dependencies ()
+  }
+  in
+  match Compiler.infer_interface ~context file with
   | Ok out -> out
   | Error code ->
      CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)

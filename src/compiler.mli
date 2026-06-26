@@ -6,11 +6,15 @@ type output =
     dependencies: string list
   }
 
-val compile_with_directives : ?packing_module:string -> string -> (output, int) result
+type context =
+  { packing_module: string option;    (** A module containing module aliases. *)
+    loaded_dependencies: string list; (** List of already loaded dependencies. *)
+  }
+
+val compile_with_directives : ?context:context -> string -> (output, int) result
 (** [compile file] compiles [file] to a shared library that can be loaded through [Loader.load_file].
     Build directives are recognized by this method, and integrated in the compilation process.
+ *)
 
-    If [packing_module] is not [None], it is added to the list of opened modules. *)
-
-val infer_interface : ?packing_module:string -> string -> (output, int) result
+val infer_interface : ?context:context -> string -> (output, int) result
 (** [infer_interface file] type-checks [file] and returns its inferred interface. *)
