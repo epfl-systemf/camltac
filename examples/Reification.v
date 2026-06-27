@@ -79,7 +79,7 @@ Now, we reimplement it in Camltac:
 Section MLReification.
   Camltac Run ocaml:{{
     let rec reify t =
-      match%constr t with
+      match%rocq t with
       | "true" -> [%constr "Literal true"]
       | "false" -> [%constr "Literal false"]
       | "negb ?x" ->

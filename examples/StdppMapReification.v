@@ -27,7 +27,7 @@ reified constructor:
 
 Camltac Run ocaml:{{
   let rec reify x =
-    match%constr x with
+    match%rocq x with
     | "empty" -> {%open_constr| MapEmpty |}
     | "insert ?k ?v ?m" ->
       let* m' = reify m in

@@ -141,7 +141,7 @@ Inductive nat' :=
 
 Camltac Eval ocaml:{{
   let rec reify n =
-    match%constr n with
+    match%rocq n with
     | "0" -> [%constr "NatZero"]
     | "S ?m" ->
       let* m' = reify m in
@@ -163,15 +163,15 @@ Note that `match%constr` is backtracking, meaning that branches are tried in ord
 Pattern matching over goals
 ===========================
 
-Pattern matching over goal is implemented by the `match%goal` syntax:
+Pattern matching over goal is implemented by the `match%rocq` syntax:
 |*)
 
 Camltac Module My_tactics := ocaml:{{
   let by_transitivity () =
     progress (subst_all ()) >>
-    match%goal __ with
-    | _, "?x = ?x" -> let _ = x in reflexivity ()
-    | { h = _ :: "?x = ?x" }, _ -> let _ = x in clear [h]
+    match%rocq goal with
+    | _, "?_x = ?_x" -> reflexivity ()
+    | { h = _ :: "?_x = ?_x" }, _ -> clear [h]
 }}.
 
 Goal forall x y : nat, x = y -> y = x.

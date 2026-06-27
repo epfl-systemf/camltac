@@ -35,7 +35,7 @@ Camltac Run ocaml:{{
 
   (* Let us implement a simple recursive procedure, with tracing enabled! *)
   let%debug_pp rec reify (x : constr) : constr_tactic =
-    match%constr x with
+    match%rocq x with
     | "0" -> [%constr "NatZero"]
     | "S ?n" ->
       let* n' = reify n in
