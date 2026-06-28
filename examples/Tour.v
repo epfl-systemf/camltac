@@ -202,8 +202,8 @@ Camltac Module Op := ocaml:{{
 }}.
 
 Camltac Run ocaml:{{
-  let s = Op.(show (Plus (Const 1, Const 2)))
-  let () = Feedback.msg_info (Pp.str s)
+  let s = Op.(show (Plus (Const 1, Const 2))) in
+  Feedback.msg_info (Pp.str s)
 }}.
 
 (*|
@@ -219,8 +219,8 @@ Require Import Ltac2.Ltac2.
 
 Camltac Run ocaml:{{
   (* A small tactic to showcase the Ltac2 FFI: *)
-  let succ x = [%constr "S %{x}"]
-  let () = Ltac2.FFI.(define "succ" (constr @-> tac constr) succ)
+  let succ x = [%constr "S %{x}"] in
+  Ltac2.FFI.(define "succ" (constr @-> tac constr) succ)
 }}.
 
 Ltac2 @external succ : constr -> constr :=
