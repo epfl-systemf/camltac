@@ -86,7 +86,7 @@ let get_type Compiler.{ compiled_file = mli_file } =
   let _ = Str.search_forward regexp intf 0 in
   Str.matched_group 1 intf
 
-let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
+let interpret ?proof (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
   match mode with
   | Check ->
      (* Read the interface from the [.mli] file. *)
@@ -98,9 +98,15 @@ let interpret (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependenc
      Loader.load_file ~public:false ~dependencies compiled_file;
      let tactic: string Proofview.tactic = Runtime.Output.get_tactic () in
      let env = Global.env () in
-     let sigma = Evd.from_env env in
-     let name = Names.Id.of_string "camltac" in
-     let proof = Proof.start ~name ~poly:PolyFlags.default sigma [] in
+     let proof =
+       match proof with
+       | None ->
+          let sigma = Evd.from_env env in
+          let name = Names.Id.of_string "camltac" in
+          Proof.start ~name ~poly:PolyFlags.default sigma []
+       | Some proof ->
+          Declare.Proof.get proof
+     in
      let (_, _, result) = Proof.run_tactic env tactic proof in
      Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
   | Module _ ->

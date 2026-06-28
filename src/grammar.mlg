@@ -96,13 +96,14 @@ VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
 END
 
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
-| [ "Camltac" "Eval" ocaml(snippet) ]
+| ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_output
      { let check_output = Main.compile_snippet Snippet.Check snippet in
        let typ = Main.get_type check_output in
        typ, Main.compile_snippet (Snippet.Eval typ) snippet }
-  -> { let typ, compilation_output = synterp_output in
-       Main.interpret (Snippet.Eval typ) compilation_output }
+  -> { fun ~pstate:proof ->
+       let typ, compilation_output = synterp_output in
+       Main.interpret ?proof (Snippet.Eval typ) compilation_output }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF

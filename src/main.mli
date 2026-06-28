@@ -22,6 +22,9 @@ val get_type : Compiler.output -> string
 (** [get_type output] reads the given [.mli] file and returns the type of the
     tactic. *)
 
-val interpret : Snippet.execution_mode -> Compiler.output -> unit
-(** [interpret mode compilation_output] interprets the compilation output
-    according to [mode]. *)
+val interpret : ?proof:Declare.Proof.t -> Snippet.execution_mode -> Compiler.output -> unit
+(** [interpret ?proof mode compilation_output] interprets the compilation output
+    according to [mode].
+
+    If [proof] is specified, interpretation is done in the context of the given proof.
+ *)

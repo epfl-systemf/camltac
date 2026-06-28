@@ -12,3 +12,11 @@ Ltac2 Eval ("Hello").
 Ltac2 Eval (constr:(1 + 1)).
 Ltac2 Eval ('(?[x])).
 Ltac2 Eval (constr:(forall x : nat, x = S x)).
+
+(** Eval in proof *)
+Goal forall x : nat, True.
+Proof.
+  intros.
+  Camltac Eval ocaml:{{ Ltac2.Control.hyp [%ident "x"] }}.
+  exact I.
+Qed.
