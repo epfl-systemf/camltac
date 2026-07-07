@@ -19,6 +19,7 @@
  (synopsis "OCaml as a Tactic Language for Rocq")
  (depends
    (ocaml (>= 5.4))
+   (dune (< 3.24))
    rocq-core
    rocq-runtime
    ppx_rocq
