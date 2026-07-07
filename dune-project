@@ -20,7 +20,6 @@
  (depends
    (ocaml (>= 5.4))
    (dune (< 3.24))
-   rocq-core
    rocq-runtime
    ppx_rocq
    ppx_deriving ;; For Camltac Eval
