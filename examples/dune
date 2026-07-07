@@ -11,5 +11,5 @@
 
 (rule
  (targets _dummy.v)
- (deps (glob_files *.ml))
+ (deps (glob_files *.ml) (package camltac))
  (action (write-file _dummy.v "")))
