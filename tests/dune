@@ -2,6 +2,7 @@
 
 (rocq.theory
  (name Camltac.Tests)
+ (package camltac-tests)
  (plugins camltac.plugin)
  (flags (:standard -require-import-from Corelib Init.Prelude))
  (stdlib no)
