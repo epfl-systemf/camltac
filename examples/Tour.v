@@ -131,7 +131,7 @@ Unlike the Ltac2 `$` antiquotations, the antiquoted expression between the curly
 Pattern matching over terms
 ===========================
 
-Just like Ltac2, Camltac provides the ability to perform pattern-matching on terms using the `match%constr` syntax:
+Just like Ltac2, Camltac provides the ability to perform pattern-matching on terms using the `match%rocq` syntax:
 |*)
 
 Inductive nat' :=
@@ -158,7 +158,7 @@ Camltac Eval ocaml:{{
 (*|
 The left-hand side of each branch is a pattern with pattern variables of the form `?name`. Each pattern variable is associated to an OCaml variable of the same name, which makes the syntax similar to Ltac2's `match!`.
 
-Note that `match%constr` is backtracking, meaning that branches are tried in order until one of them succeeds.
+Note that `match%rocq` is backtracking, meaning that branches are tried in order until one of them succeeds.
 
 Pattern matching over goals
 ===========================
