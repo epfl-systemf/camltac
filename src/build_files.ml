@@ -9,7 +9,10 @@ let ppx_dir = build_dir / "ppx"
 
 (* Make sure that build directories exist. *)
 let () =
-  let mkdir dir = if not (Sys.file_exists dir) then Sys.mkdir dir 0o700 in
+  let mkdir dir =
+    try Sys.mkdir dir 0o700
+    with Sys_error _ when Sys.file_exists dir -> ()
+  in
   mkdir build_dir;
   mkdir snippets_dir;
   mkdir modules_dir;
