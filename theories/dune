@@ -2,5 +2,4 @@
  (name Camltac)
  (package camltac)
  (stdlib no)
- (plugins camltac.plugin rocq-runtime.plugins.ltac2)
- (theories Corelib Ltac2))
+ (plugins camltac.plugin))
