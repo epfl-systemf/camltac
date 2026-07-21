@@ -52,9 +52,9 @@ let compile_scaffold ~loc mode scaffold =
   in
   match mode with
   | Check -> infer_interface ~loc build_file
-  | Module { name = m; local } ->
+  | Module { name = m; locality } ->
      let compilation_output = compile_file ~loc build_file in
-     Module_manager.declare_module ?local m compilation_output;
+     Module_manager.declare_module ~locality m compilation_output;
      compilation_output
   | _ -> compile_file ~loc build_file
 

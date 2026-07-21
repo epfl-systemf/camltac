@@ -41,7 +41,7 @@ type execution_mode =
   | Run
   | Eval of string
   | Check
-  | Module of { name: string; loc: Loc.t; local: bool option }
+  | Module of { name: string; loc: Loc.t; locality: Libobject.locality }
   | Tactic_in_term
   | Tactic_in_Ltac
   | Tactic_in_Ltac2

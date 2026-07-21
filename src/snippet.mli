@@ -39,7 +39,7 @@ type execution_mode =
   | Module of {
       name: string;
       loc: Loc.t;
-      local: bool option
+      locality: Libobject.locality
     }                          (** OCaml top-level declarations ([Camltac Module M := ocaml:(…)]). *)
   | Tactic_in_term             (** Tactic-in-term modality (e.g. [Definition x := ocaml:(…)]). *)
   | Tactic_in_Ltac             (** Tactic-in-Ltac modality (e.g. [Ltac f := ocaml:(…)]). *)
