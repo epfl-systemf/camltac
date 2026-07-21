@@ -33,6 +33,7 @@ build: [
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
 x-maintenance-intent: ["(latest)"]
 pin-depends: [
+  ["coq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
   ["rocq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
   ["rocq-runtime.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
   ["ppx_rocq.dev" "git+https://github.com/epfl-systemf/ppx_rocq.git"]
