@@ -1,0 +1,27 @@
+name: Examples
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runs-on: [ ubuntu-latest, macos-latest ]
+        ocaml-compiler: [ "5.4" ]
+    runs-on: ${{ matrix.runs-on }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set-up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Add Rocq-released Opam repository
+        run: opam repo add rocq-released https://rocq-prover.github.io/opam/released/
+
+      - name: Install Camltac with examples
+        run: opam install .

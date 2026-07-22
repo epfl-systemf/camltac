@@ -5,7 +5,9 @@
 (** {2 Validation} *)
 
 let check_module_name ~loc (name: string) =
-  if not (Char.Ascii.is_upper (String.get name 0)) then
+  match String.get name 0 with
+  | 'A'..'Z' -> ()
+  | _ ->
     let suggestion = String.capitalize_ascii name in
     CErrors.user_err ~loc (Pp.fmt "Module names must be capitalized.\nHint: did you mean %S?" suggestion)
 
