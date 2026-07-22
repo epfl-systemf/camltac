@@ -168,9 +168,9 @@ Pattern matching over goal is implemented by the `match%rocq` syntax:
 
 Camltac Module My_tactics := ocaml:{{
   let by_transitivity () =
-    progress (subst_all ()) >>
+    progress (subst ()) >>
     match%rocq goal with
-    | _, "?_x = ?_x" -> reflexivity ()
+    | _, "?_x = ?_x" -> reflexivity
     | { h = _ :: "?_x = ?_x" }, _ -> clear [h]
 }}.
 

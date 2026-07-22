@@ -240,7 +240,7 @@ Camltac Module IdentParsing := ocaml:{{
   let id_to_rocq_string (id: Id.t) =
     let* bytes = id_to_byte_list id in
     let* id = [%constr "string_of_list_byte %{bytes}"] in
-    Ltac2.eval (Ltac2.Red.native None) id
+    Ltac2.eval (Ltac2.Red.native ()) id
 
   let serialize_binder_in_context =
     let open Proofview in

@@ -4,5 +4,5 @@ From Camltac Require Import Camltac.
 
 Goal forall x : nat, x = x.
 Proof.
-  ocaml:(Ltac2.reflexivity ()).
+  ocaml:(Ltac2.reflexivity).
 Qed.
