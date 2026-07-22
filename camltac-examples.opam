@@ -7,7 +7,7 @@ license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
-  "dune" {>= "3.22"}
+  "dune" {>= "3.21"}
   "camltac"
   "rocq-stdlib"
   "rocq-stdpp"
