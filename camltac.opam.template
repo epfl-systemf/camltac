@@ -1,6 +1,4 @@
 pin-depends: [
-  ["coq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
-  ["rocq-core.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
-  ["rocq-runtime.dev" "git+https://github.com/dhalilov/rocq.git#ltac2api"]
   ["ppx_rocq.dev" "git+https://github.com/epfl-systemf/ppx_rocq.git"]
+  ["mltac2.dev" "git+https://github.com/dhalilov/mltac2.git#support-9.2"]
 ]

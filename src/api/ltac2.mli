@@ -15,5 +15,5 @@ end
 
 (** The Ltac2 module is provided in {!Tac2api}. *)
 
-include module type of Tac2api.Ltac2
+include module type of Mltac2.Ltac2
 include module type of Std
