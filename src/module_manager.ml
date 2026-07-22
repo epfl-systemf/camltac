@@ -2,7 +2,6 @@
 
 type camltac_module =
   { name: string;
-    locality: Libobject.locality;
     compilation_output: Compiler.output }
 
 type state =
@@ -67,32 +66,15 @@ let load_module m =
      generate_packing_module ()
   end
 
-let camltac_module : camltac_module -> Libobject.obj =
-  let open Libobject in
-  let load_function _ m =
-    (* Called at [Require] time. *)
-    match m.locality with
-    | SuperGlobal -> load_module m
-    | _ -> ()
-  in
-  let open_function filter n m =
-    (* Called at [Import] time. *)
-    match m.locality with
-    | Export when n = 1 -> load_module m
-    | _ -> ()
-  in
-  declare_object
-    {(default_object "camltac_module") with
-      object_stage = Summary.Stage.Interp;
-      cache_function = load_module; (* Always immediately load the module locally. *)
-      load_function;
-      open_function;
-      subst_function = (fun (_, o) -> o);
-      classify_function = (fun { locality } ->
-        match locality with
-        | Local -> Dispose
-        | Export | SuperGlobal -> Substitute) }
+let camltac_module : Libobject.locality * camltac_module -> Libobject.obj =
+  Libobject.declare_object (
+      Libobject.object_with_locality
+        ~stage:Summary.Stage.Interp
+        ~cache:load_module
+        ~subst:None
+        ~discharge:Fun.id
+        "camltac_module")
 
 let declare_module ~locality name compilation_output =
-  let m = { name; locality; compilation_output } in
-  Lib.add_leaf (camltac_module m)
+  let m = { name; compilation_output } in
+  Lib.add_leaf (camltac_module (locality, m))
