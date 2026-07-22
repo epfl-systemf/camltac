@@ -4,6 +4,7 @@
  (synopsis "Stable APIs for interacting with Rocq")
  (libraries
    rocq-runtime.vernac
+   rocq-runtime.dev ;; For debug printers
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2
    rocq-runtime.tactics))
