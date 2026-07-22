@@ -17,6 +17,9 @@ Ltac2 Eval (constr:(forall x : nat, x = S x)).
 Goal forall x : nat, True.
 Proof.
   intros.
-  Camltac Eval ocaml:{{ Ltac2.Control.hyp [%ident "x"] }}.
+  Camltac Eval ocaml:{{
+    let* env = Tactics.env in
+    return (Result.get_ok @@ Ltac2.Control.hyp env {%ident| x |})
+  }}.
   exact I.
 Qed.
