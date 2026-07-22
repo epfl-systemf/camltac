@@ -3,6 +3,7 @@
  (public_name camltac.plugin.api)
  (synopsis "Stable APIs for interacting with Rocq")
  (libraries
+   mltac2
    rocq-runtime.vernac
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2

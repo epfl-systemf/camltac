@@ -15,5 +15,8 @@ end
 
 (** {1 Ltac2 APIs} *)
 
-include Tac2api.Ltac2
+(** The Ltac2 APIs are provided by MLtac2. We simply include them
+    here. *)
+
+include Mltac2.Ltac2
 include Std
