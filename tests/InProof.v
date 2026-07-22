@@ -1,6 +1,7 @@
 From Camltac Require Import Camltac.
 
 Goal True.
+Proof.
   (* The "Camltac Run" command is marked as a kernel side-effect, so it gets run twice:
      - Once during the proof
      - Once at Qed time.

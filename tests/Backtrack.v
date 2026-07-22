@@ -5,6 +5,7 @@ From Camltac Require Import Camltac.
 Set Warnings "-undo-batch-mode".
 
 Goal True.
+Proof.
   Camltac Module M := ocaml:{{let x = 1}}.
   Camltac Eval ocaml:{{ return M.x }}.
   Restart.
