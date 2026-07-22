@@ -1,5 +1,5 @@
-(lang dune 3.22)
-(using rocq 0.12)
+(lang dune 3.21)
+(using rocq 0.11)
 
 (name camltac)
 
@@ -18,7 +18,7 @@
  (name camltac)
  (synopsis "OCaml as a Tactic Language for Rocq")
  (depends
-   (ocaml (>= 5.4))
+   (ocaml (>= 4.14))
    (dune (< 3.24))
    rocq-runtime
    ppx_rocq
