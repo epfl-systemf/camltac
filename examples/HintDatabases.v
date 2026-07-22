@@ -63,6 +63,7 @@ Create HintDb foo.
 Axiom dummy_lemma : 3 = 5.
 
 Goal 3 = 5.
+Proof.
   add_to_db constr:(dummy_lemma) "foo".
   auto with foo.
 Qed.
