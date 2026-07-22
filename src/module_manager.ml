@@ -83,7 +83,7 @@ let camltac_module : camltac_module -> Libobject.obj =
   in
   declare_object
     {(default_object "camltac_module") with
-      object_stage = Summary.Stage.Synterp;
+      object_stage = Summary.Stage.Interp;
       cache_function = load_module; (* Always immediately load the module locally. *)
       load_function;
       open_function;

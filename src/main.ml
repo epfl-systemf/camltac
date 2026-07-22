@@ -52,10 +52,6 @@ let compile_scaffold ~loc mode scaffold =
   in
   match mode with
   | Check -> infer_interface ~loc build_file
-  | Module { name = m; locality } ->
-     let compilation_output = compile_file ~loc build_file in
-     Module_manager.declare_module ~locality m compilation_output;
-     compilation_output
   | _ -> compile_file ~loc build_file
 
 let compile_snippet mode snippet =
@@ -86,7 +82,7 @@ let get_type Compiler.{ compiled_file = mli_file } =
   let _ = Str.search_forward regexp intf 0 in
   Str.matched_group 1 intf
 
-let interpret ?proof (mode: Snippet.execution_mode) Compiler.{ compiled_file; dependencies } =
+let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; dependencies } as compilation_output) =
   match mode with
   | Check ->
      (* Read the interface from the [.mli] file. *)
@@ -109,8 +105,8 @@ let interpret ?proof (mode: Snippet.execution_mode) Compiler.{ compiled_file; de
      in
      let (_, _, result) = Proof.run_tactic env tactic proof in
      Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
-  | Module _ ->
-     (* Already handled by [Module_manager]. *)
-     assert false
+  | Module { locality; name } ->
+     (* [Module_manager] handles module loading. *)
+     Module_manager.declare_module ~locality name compilation_output
   | _ ->
      Loader.load_file ~public:false ~dependencies compiled_file
