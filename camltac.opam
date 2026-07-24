@@ -7,8 +7,8 @@ license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
-  "ocaml" {>= "5.4"}
-  "dune" {>= "3.22" & < "3.24"}
+  "ocaml" {>= "4.14"}
+  "dune" {>= "3.21" & < "3.24"}
   "rocq-runtime"
   "ppx_rocq"
   "ppx_deriving"

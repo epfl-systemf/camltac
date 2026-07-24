@@ -12,10 +12,6 @@ module Compiler_options = struct
       (struct let name = "compiler_options" end)
       (struct type t = string list [@@deriving sexp] end)
 
-  let expand ~ctxt options =
-    Property.set options;
-    []
-
   let pattern =
     let option = Ast_pattern.(estring __) in
     let options = Ast_utils.comma_separated option in
@@ -24,8 +20,10 @@ module Compiler_options = struct
   let attribute =
     Attribute.Floating.(declare "camltac.compiler" Context.structure_item pattern Fun.id)
 
-  let rule =
-    Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
+  let check item =
+    match Attribute.Floating.convert_res [attribute] item with
+    | Ok (Some options) -> Property.set options
+    | _ -> ()
 end
 
 (* Make sure that Findlib is initialized to check packages. *)
@@ -53,11 +51,6 @@ module Library_attribute = struct
     | Error None ->
        Location.raise_errorf ~loc "Could not find package %s." lib
 
-  let expand ~ctxt libs =
-    let libs = List.map check_lib libs in
-    Property.set libs;
-    []
-
   let pattern =
     let library = Ast_pattern.(estring __') in
     let libraries = Ast_utils.comma_separated library in
@@ -66,8 +59,12 @@ module Library_attribute = struct
   let attribute =
     Attribute.Floating.(declare "camltac.using" Context.structure_item pattern Fun.id)
 
-  let rule =
-    Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
+  let check item =
+    match Attribute.Floating.convert_res [attribute] item with
+    | Ok (Some libs) ->
+       let libs = List.map check_lib libs in
+       Property.set libs
+    | _ -> ()
 end
 
 (** [[@@@ppx]] floating attribute, used to adds preprocessors. *)
@@ -86,11 +83,6 @@ module Ppx_attribute = struct
     | Error None ->
        Location.raise_errorf ~loc "Could not find PPX named %s." ppx
 
-  let expand ~ctxt ppx_list =
-    let ppx_list = List.map check_ppx ppx_list in
-    Property.set ppx_list;
-    []
-
   let pattern =
     let ppx = Ast_pattern.(estring __') in
     let ppx_list = Ast_utils.comma_separated ppx in
@@ -99,19 +91,29 @@ module Ppx_attribute = struct
   let attribute =
     Attribute.Floating.(declare "camltac.ppx" Context.structure_item pattern Fun.id)
 
-  let rule =
-    Context_free.Rule.attr_str_floating_expect_and_expand attribute expand
+  let check item =
+    match Attribute.Floating.convert_res [attribute] item with
+    | Ok (Some ppx_list) ->
+       let ppx_list = List.map check_ppx ppx_list in
+       Property.set ppx_list
+    | _ -> ()
 end
+
+let ast_iterator =
+  object
+    inherit Ast_traverse.iter as super
+
+    method! structure_item str =
+      Compiler_options.check str;
+      Library_attribute.check str;
+      Ppx_attribute.check str
+  end
 
 (**/**)
 
 let () =
   Ppxlib.Driver.register_transformation
-    ~rules:[
-      Compiler_options.rule;
-      Ppx_attribute.rule;
-      Library_attribute.rule
-    ]
+    ~impl:(fun structure -> ast_iterator#structure structure; structure)
     "camltac.directives"
 
 let () = Ppxlib.Driver.standalone ()
