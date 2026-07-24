@@ -27,8 +27,7 @@ Camltac Run ocaml:{{
           | Apply h
           | EApply h ->
              let _, lem = Hints.hint_as_term h in
-             let open Syntax in
-             (tacK lem) || tac
+             (tacK lem) <||> tac
           | _ -> tac
           end
         end tac hints

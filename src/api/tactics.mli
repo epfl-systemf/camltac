@@ -4,7 +4,7 @@ type +'a tactic = 'a Proofview.tactic
 (** The tactic monad. *)
 
 val return : 'a -> 'a tactic
-(** “Unit” operation of the tactic monad: [unit x] is a tactic that produces
+(** “Unit” operation of the tactic monad: [return x] is a tactic that produces
     the value [x]. *)
 
 val (let*) : 'a tactic -> ('a -> 'b tactic) -> 'b tactic
@@ -58,13 +58,13 @@ val tryif : unit tactic -> then_:(unit tactic) -> else_:(unit tactic) -> unit ta
 (** [tryif t ~then_ ~else_] executes tactic [then_] if [t] is successful, or
     [else_] otherwise. *)
 
-val branch : unit tactic -> unit tactic -> unit tactic
-(** Branching with backtracking: [branch t1 t2] first evaluates [t1] to each focused
+val (<+>) : unit tactic -> unit tactic -> unit tactic
+(** Branching with backtracking: [t1 <+> t2] first evaluates [t1] to each focused
     goal independently, inserting a backtracking point. If [t1] fails, [t2] is
     evaluated. *)
 
-val branch' : unit tactic -> unit tactic -> unit tactic
-(** Branching without backtracking: [branch' t1 t2] evaluates [t1] to each focused
+val (<||>) : unit tactic -> unit tactic -> unit tactic
+(** Branching without backtracking: [t1 <||> t2] evaluates [t1] to each focused
     goal independently. If [t1] fails immediately, [t2] is tried. *)
 
 val first : unit tactic list -> unit tactic
@@ -108,26 +108,6 @@ val abstract : ?opaque:bool -> ?name:Names.Id.t -> unit tactic -> unit tactic
 
 val ignore : 'a tactic -> unit tactic
 (** [ignore t] ignores the result of tactic [t]. *)
-
-(** {2 Syntax} *)
-
-(** This module defines syntax for tacticals that conflicts usual arithmetic
-    operators. This module should therefore be opened locally. *)
-module Syntax : sig
-
-  val (+) : unit tactic -> unit tactic -> unit tactic
-  (** Notation for [branch]: [t1 + t2] first evaluates [t1] to each focused
-      goal independently, inserting a backtracking point. If [t1] fails, [t2] is
-      evaluated. *)
-
-  val (||) : unit tactic -> unit tactic -> unit tactic
-  (** Notation for [branch']: [t1 || t2] evaluates [t1] to each focused
-      goal independently. If [t1] fails immediately, [t2] is tried. *)
-
-  val (>) : unit tactic -> 'a tactic list -> 'a list tactic
-  (** Notation for dispatch: [t > [t1; t2; …]] executes tactic [t], followed by
-      dispatching [t1], …, [tn] to each of the resulting goals. *)
-end
 
 (** {1 Utilities} *)
 
