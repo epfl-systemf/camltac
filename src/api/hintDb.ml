@@ -53,7 +53,7 @@ let create ?(local = false) ?(discriminated = true) name =
   Hints.create_hint_db local name TransparentState.full discriminated;
   get_db name
 
-let transparent_state { db } = Hint_db.transparent_state db
+let transparent_state { db; _ } = Hint_db.transparent_state db
 
 let is_opaque cst db =
   let ts = transparent_state db in
@@ -73,9 +73,9 @@ let set_opaque cst ~opaque db =
     }
   in set_transparent_state ts db
 
-let discriminated { db } = Hint_db.use_dn db
+let discriminated { db; _ } = Hint_db.use_dn db
 
-let name { name } = name
+let name { name; _ } = name
 
 let locality_or_default locality =
   match locality with
@@ -91,55 +91,47 @@ let add_hint ?locality entry dbname =
   Hints.add_hints ~locality [dbname] entry;
   get_db dbname
 
-let hint_resolve ?locality ?cost ?pattern globref { db; name } =
+let hint_resolve ?locality ?cost ?pattern globref { name; _ } =
   let info = Typeclasses.{ hint_priority = cost; hint_pattern = pattern } in
   let entry = Hints.HintsResolveEntry [(info, true, globref)] in
   add_hint ?locality entry name
 
-let hint_cut ?locality regex { db; name } =
+let hint_cut ?locality regex { name; _ } =
   let entry = Hints.HintsCutEntry regex in
   add_hint ?locality entry name
 
-let hint_extern ?locality ~cost ?pattern tac { db; name } =
+let hint_extern ?locality ~cost ?pattern tac { name; _ } =
   let info = Typeclasses.{ hint_priority = Some cost; hint_pattern = pattern } in
   let entry = Hints.HintsExternEntry (info, tac) in
   add_hint ?locality entry name
 
-let hint_modes ?locality globref ~modes { db; name } =
+let hint_modes ?locality globref ~modes { name; _ } =
   let modes = Hints.parse_modes modes in
   let entry = Hints.HintsModeEntry (globref, modes) in
   add_hint ?locality entry name
 
-let get_modes env globref { db; name } =
+let get_modes env globref { db; _ } =
   let modes = Hints.Hint_db.find_mode env globref db in
   List.map Array.to_list modes
 
-let hint_unfold ?locality globrefs { db; name } =
+let hint_unfold ?locality globrefs { name; _ } =
   let entry = Hints.HintsUnfoldEntry (List.map Tacred.evaluable_of_global_reference globrefs) in
   add_hint ?locality entry name
 
-let remove_hints ?locality globrefs { db; name } =
+let remove_hints ?locality globrefs { name; _ } =
   let locality = locality_or_default locality in
   Hints.remove_hints ~locality [name] globrefs;
   get_db name
 
-let all_hints { db } =
+let all_hints { db; _ } =
   let hints = ref [] in
   Hints.Hint_db.iter (fun _ _ list -> hints := list) db;
   !hints
 
-let print { db } =
+let print { db; _ } =
   let* env in
   let* sigma in
   return (Hints.pr_hint_db_env env sigma db)
-
-let print_applicable () =
-  let* goals = Proofview.Goal.goals in
-  match goals with
-  | [] -> CErrors.user_err (Pp.str "No focused goal")
-  | goal :: _ ->
-     let* goal in
-     return ()
 
 let print_reference glob_ref =
   let* env in

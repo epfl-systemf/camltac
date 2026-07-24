@@ -1,0 +1,4 @@
+(env
+ (_
+  ;; Disable [unused-var-strict] since the generated grammar.ml raises plenty of them.
+  (flags (:standard -w -27))))

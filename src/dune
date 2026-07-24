@@ -13,5 +13,5 @@
    findlib.dynload
    ppx_rocq.runtime))
 
-(rocq.pp
+(coq.pp
  (modules grammar))

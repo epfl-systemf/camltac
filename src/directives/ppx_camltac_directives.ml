@@ -101,7 +101,7 @@ end
 
 let ast_iterator =
   object
-    inherit Ast_traverse.iter as super
+    inherit Ast_traverse.iter
 
     method! structure_item (str: structure_item) =
       Compiler_options.check str;

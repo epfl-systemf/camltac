@@ -7,7 +7,7 @@ license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
-  "dune" {>= "3.21"}
+  "dune" {>= "3.17"}
   "camltac"
   "rocq-stdlib"
   "rocq-stdpp"
@@ -30,7 +30,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
-x-maintenance-intent: ["(latest)"]
 pin-depends: [
   ["rocq-stdlib.dev" "git+https://github.com/rocq-prover/stdlib.git"]
   ["notty-community.dev" "git+https://github.com/lukstafi/notty-community.git"]

@@ -44,7 +44,7 @@ let infer_interface ~loc file =
 let compile_scaffold ~loc mode scaffold =
   let build_file =
     match mode with
-    | Snippet.Module { name } ->
+    | Snippet.Module { name; _ } ->
        begin match name with
        | Some (name, loc) ->
           check_module_name ~loc name;
@@ -82,7 +82,7 @@ let simplify_interface intf =
   else
     intf
 
-let get_type Compiler.{ compiled_file = mli_file } =
+let get_type Compiler.{ compiled_file = mli_file; _ } =
   let intf = read_interface mli_file in
   let regexp = Str.regexp {|val ( - ) : \([^ ]+\) tactic|} in
   let _ = Str.search_forward regexp intf 0 in
@@ -111,7 +111,7 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
      in
      let (_, _, result) = Proof.run_tactic env tactic proof in
      Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
-  | Module { locality; name } ->
+  | Module { locality; name; _ } ->
      (* [Module_manager] handles module loading. *)
      let name = Option.map fst name in
      Module_manager.declare_module ~locality name compilation_output

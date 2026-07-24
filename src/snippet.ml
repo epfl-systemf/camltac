@@ -31,9 +31,9 @@ let of_file ~loc filename =
   } in
   make ~loc contents
 
-let loc { loc } = loc
+let loc { loc; _ } = loc
 
-let contents { contents } = contents
+let contents { contents; _ } = contents
 
 (** {1 Scaffolds} *)
 
@@ -46,8 +46,6 @@ type execution_mode =
   | Tactic_in_Ltac2
 
 module Scaffold = struct
-  type t = Buffer.t
-
   (** Name of the scaffold file. *)
   let scaffold_file = "_scaffold_"
 
@@ -88,7 +86,7 @@ module Scaffold = struct
        Buffer.add_string scaffold header
 
   let indent ~n scaffold =
-    for i = 1 to n do Buffer.add_char scaffold ' ' done
+    for _ = 1 to n do Buffer.add_char scaffold ' ' done
 
   let add_contents ~(loc: Loc.t) contents scaffold =
     let file =
@@ -96,7 +94,7 @@ module Scaffold = struct
       | ToplevelInput ->
          (* FIXME: Obtain original file name under ProofGeneral's toplevel. *)
          "_toplevel_"
-      | InFile { file } -> file
+      | InFile { file; _ } -> file
     in
     add_line_number_directive ~line:loc.line_nb ~file scaffold;
     (* Pad the first line to obtain correct error locations. *)
