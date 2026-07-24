@@ -1,6 +1,6 @@
 (** Term API. *)
 
-open Tactics
+open Tactic
 
 (** {1 Term representations} *)
 

@@ -18,7 +18,7 @@ Goal forall x : nat, True.
 Proof.
   intros.
   Camltac Eval ocaml:{{
-    let* env = Tactics.env in
+    let* env = Tactic.env in
     return (Result.get_ok @@ Ltac2.Control.hyp env {%ident| x |})
   }}.
   exact I.
