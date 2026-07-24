@@ -80,26 +80,26 @@ Section MLReification.
   Camltac Run ocaml:{{
     let rec reify t =
       match%rocq t with
-      | "true" -> [%constr "Literal true"]
-      | "false" -> [%constr "Literal false"]
+      | "true" -> {%constr| Literal true |}
+      | "false" -> {%constr| Literal false |}
       | "negb ?x" ->
          let* x = reify x in
-         [%constr "Neg %{x}"]
+         {%constr| Neg %{x} |}
       | "andb ?x ?y" ->
          let* left = reify x in
          let* right = reify y in
-         [%constr "And %{left} %{right}"]
+         {%constr| And %{left} %{right} |}
       | "orb ?x ?y" ->
          let* left = reify x in
          let* right = reify y in
-         [%constr "Or %{left} %{right}"]
+         {%constr| Or %{left} %{right} |}
       | _ ->
          match Constr.kind (EConstr.Unsafe.to_constr t) with
          | Var v ->
             (* Use our ident parsing function defined in [IdentParsing.v]. *)
             let id_to_rocq_string: Names.Id.t -> EConstr.constr Proofview.tactic = IdentParsing.id_to_rocq_string in
             let* v = id_to_rocq_string v in
-            [%constr "Var %{v}"]
+            {%constr| Var %{v} |}
          | _ -> user_error (Pp.str "Unrecognized term.")
 
     let () = FFI.(define "reify" (constr @-> tac constr) reify)

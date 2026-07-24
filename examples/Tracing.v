@@ -36,14 +36,14 @@ Camltac Run ocaml:{{
   (* Let us implement a simple recursive procedure, with tracing enabled! *)
   let%debug_pp rec reify (x : constr) : constr_tactic =
     match%rocq x with
-    | "0" -> [%constr "NatZero"]
+    | "0" -> {%constr| NatZero |}
     | "S ?n" ->
       let* n' = reify n in
-      [%constr "NatSucc %{n'}"]
+      {%constr| NatSucc %{n'} |}
     | "?n * ?m" ->
       let* n' = reify n in
       let* m' = reify m in
-      [%constr "NatMul %{n'} %{m'}"]
+      {%constr| NatMul %{n'} %{m'} |}
 
   let _ = FFI.(define "reify" (constr @-> tac constr) reify)
 
