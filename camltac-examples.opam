@@ -32,6 +32,7 @@ build: [
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
 x-maintenance-intent: ["(latest)"]
 pin-depends: [
+  ["rocq-stdlib.dev" "git+https://github.com/rocq-prover/stdlib.git"]
   ["notty-community.dev" "git+https://github.com/lukstafi/notty-community.git"]
   ["ppx_minidebug.3.1.0" "git+https://github.com/lukstafi/ppx_minidebug.git"]
 ]
