@@ -88,13 +88,6 @@ VERNAC ARGUMENT EXTEND ocaml_file
      in file, loc }
 END
 
-VERNAC COMMAND EXTEND CamltacRun CLASSIFIED AS SIDEFF
-| [ "Camltac" "Run" ocaml(snippet) ]
-  SYNTERP AS compilation_output
-     { Main.compile_snippet Snippet.Run snippet }
-  -> { Main.interpret Snippet.Run compilation_output }
-END
-
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_output
@@ -107,10 +100,16 @@ VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
+| #[ locality = Attributes.hint_locality ] [ "Camltac" "Run" ocaml(snippet) ]
+  SYNTERP AS synterp_output
+     { let mode = Snippet.Module { name = None; locality } in
+       mode, Main.compile_snippet mode snippet }
+  -> { let mode, compilation_output = synterp_output in
+       Main.interpret mode compilation_output }
+
 | #[ locality = Attributes.hint_locality ] [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS synterp_output
-     { let name, loc = m in
-       let mode = Snippet.Module { name; loc; locality } in
+     { let mode = Snippet.Module { name = Some m; locality } in
        mode, Main.compile_snippet mode snippet }
   -> { let mode, compilation_output = synterp_output in
        Main.interpret mode compilation_output }
@@ -125,7 +124,7 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
          |> Filename.remove_extension
          |> String.capitalize_ascii
        in
-       let mode = Snippet.Module { name; loc; locality } in
+       let mode = Snippet.Module { name = Some (name, loc); locality } in
        mode, Main.compile_snippet mode snippet }
   -> { let mode, compilation_output = synterp_output in
        Main.interpret mode compilation_output }
@@ -142,7 +141,8 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
        let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
-       let scaffold = Snippet.scaffold Snippet.Run snippet in
+       (* FIXME: [scaffold]'s mode should be optional. *)
+       let scaffold = Snippet.scaffold (Snippet.Module { name = None; locality = Libobject.Local }) snippet in
        Main.compile_scaffold ~loc Snippet.Check scaffold }
   -> { Main.interpret Snippet.Check compilation_output }
 

@@ -1,7 +1,7 @@
 (** Handles backtrack state for modules. *)
 
 type camltac_module =
-  { name: string;
+  { name: string option;
     compilation_output: Compiler.output }
 
 type state =
@@ -17,7 +17,11 @@ let state =
     { loaded_modules = []; loaded_dependencies = []; packing_module = None }
 
 let is_loaded m =
-  let module_name_eq m' = String.equal m'.name m in
+  let module_name_eq m' =
+    match m'.name with
+    | Some m' -> String.equal m m'
+    | None -> false
+  in
   List.exists module_name_eq !state.loaded_modules
 
 let loaded_dependencies () =
@@ -32,7 +36,9 @@ let module_name filename =
 let module_aliases () =
   let module_alias { name; compilation_output } =
     let real_name = module_name compilation_output.compiled_file in
-    Format.sprintf "module %s = %s" name real_name
+    match name with
+    | Some name -> Format.sprintf "module %s = %s" name real_name
+    | _ -> ""
   in
   (* First element = most recent, so reverse the order. *)
   let aliases = List.rev_map module_alias !state.loaded_modules in
@@ -58,13 +64,15 @@ let generate_packing_module () =
 
 let load_module m =
   let { name; compilation_output } = m in
-  if not (is_loaded name) then begin
-     let Compiler.{ compiled_file; dependencies } = compilation_output in
+  (* Don't load the module twice. *)
+  match name with
+  | Some name when is_loaded name -> ()
+  | _ ->
+     let Compiler.{ compiled_file; dependencies } = m.compilation_output in
      Loader.load_file ~public:true ~dependencies compiled_file;
      state := { !state with loaded_modules = m :: !state.loaded_modules;
                             loaded_dependencies = dependencies @ !state.loaded_dependencies };
      generate_packing_module ()
-  end
 
 (* We persist the runtime environment of each module, so that it can be
    retrieved upon [Require] or [Import]. *)
@@ -87,14 +95,22 @@ let declare_envs : Runtime.Environment.t CString.Map.t -> Libobject.obj =
     }
 
 let set_env m env =
-  Lib.add_leaf (declare_envs (CString.Map.add m.name env !envs))
+  match m.name with
+  | Some name -> Lib.add_leaf (declare_envs (CString.Map.add name env !envs))
+  | None -> ()
 
 let get_env m =
-  try CString.Map.find m.name !envs
-  with Not_found ->
-    let env = Runtime.Environment.empty in
-    set_env m env;
-    env
+  match m.name with
+  | None ->
+     (* Don't track anonymous modules. *)
+     Runtime.Environment.empty
+  | Some name ->
+     try CString.Map.find name !envs
+     with Not_found ->
+       let env = Runtime.Environment.empty in
+       set_env m env;
+       env
+
 
 let camltac_module : Libobject.locality * camltac_module -> Libobject.obj =
   let open Libobject in
