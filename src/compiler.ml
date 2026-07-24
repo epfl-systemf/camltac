@@ -66,7 +66,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) ?(infer
       ~include_dirs:[Build_files.modules_dir]
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~optimize:(`O3)
-      ~extra_args:("-short-paths" :: directives.compiler_options)
+      ~extra_args:("-short-paths" :: "-nopervasives" :: directives.compiler_options)
       ~infer_interface
       ~pp
       impl
