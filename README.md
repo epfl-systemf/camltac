@@ -1,12 +1,23 @@
 # Camltac: OCaml as a Tactic Language
 
-Camltac allows OCaml to be written directly with Rocq scripts. It supports most constructs from Ltac2, including term construction (`constr:(…)`), pattern matching, and antiquotations using [`ppx_rocq`](https://github.com/epfl-systemf/ppx_rocq), and more. Moreover, Camltac ships with most of the [Ltac2 API](https://rocq-prover.org/doc/master/corelib/index.html#Ltac2), which guarantee stability across Rocq versions.
+Camltac is an OCaml plugin for Rocq that allows OCaml code within Rocq scripts. Camltac lets you define OCaml meta-programs and tactics, and run them in the current Rocq state without the friction and boilerplate of setting up a plugin.
 
 <center>
-  <img src="etc/showcase.svg" width="75%" alt="Showcase image of Camltac" />
+  <img src="etc/showcase.png" width="75%" alt="Showcase image of Camltac" />
 </center>
 
-See the [quickstart](#quickstart) section for quick examples, or head over to the [tour](./examples/Tour.v) or the [`examples`](./examples/) directory for more complete examples of using Camltac.
+Camltac is both a tactic and a meta-programming language:
+
+1. As a tactic language, Camltac supports most constructs from Ltac2, including term quotations (`{%constr| … |}`), pattern matching (`match%rocq`), and antiquotations using [`ppx_rocq`](https://github.com/epfl-systemf/ppx_rocq). Camltac makes it easy to define new tactics by providing the usual Ltac2 tacticals, and a dedicated <abbr>FFI</abbr> with [Ltac](src/api/ltac.ml) and [Ltac2](src/api/ltac2.ml).
+2. As a meta-programming language, Camltac offers a complete meta-programming experience by allowing access to Rocq's internal APIs and state. To ensure stability, Camltac includes the [Ltac2 APIs](https://github.com/epfl-systemf/mltac2) which provide a simple entry point to meta-programming in OCaml.
+
+Have a look at the [tour of Camltac](./examples/Tour.v) for an overview of Camltac's features, or the [quickstart section](#quickstart) for small examples.
+
+## Learning resources
+
+- The [tour of Camltac](./examples/Tour.v) will walk you through Camltac's features and commands through a series of small examples.
+- The [quickstart](#quickstart) section contains quick examples that you can immediately run.
+- The [`examples`](./examples/) directory has more self-contained examples of using Camltac.
 
 ## Setup
 
@@ -43,23 +54,42 @@ Camltac Run ocaml:{{
 
 ### Creating new tactics
 
-To expose new tactics to Ltac2, use the `Ltac2.FFI` module:
+Tactics in Camltac are OCaml values of type `t tactic` for some type `t`. For example, here's a simple tactic that prints the conclusion of the goal:
+```coq
+Camltac Module Print_conclusion := ocaml:{{
+  let run () =
+    let open Ltac2 in
+    let* goal = Control.goal in
+    Message.print (Message.of_constr goal);
+    return ()
+}}.
+```
+
+To evaluate the tactic, use the `ocaml:(…)` quotation in any Ltac or Ltac2 expression:
+```coq
+Goal forall x : nat, x = x.
+Proof.
+  ocaml:(Print_conclusion.run ()).
+  (* forall x : nat, x = x *)
+```
+
+You can also expose it to Ltac2 through the `Ltac2.FFI` module:
 ```coq
 From Ltac2 Require Import Ltac2.
 
 Camltac Run ocaml:{{
-  let say_hello () =
-    Feedback.msg_info (Pp.str "Hello from OCaml!")
-
-  let _ = Ltac2.FFI.(define "say_hello" (unit @-> ret unit) say_hello)
+  Ltac2.FFI.(define "print_conclusion" (unit @-> tac unit) Print_conclusion.run)
 }}.
 
-Ltac2 @external say_hello : unit -> unit := "camltac.plugin.runtime" "say_hello".
+Ltac2 @external print_conclusion : unit -> unit := "camltac.plugin.runtime" "print_conclusion".
 
-Ltac2 Eval say_hello (). (* Hello from OCaml! *)
+Goal forall x : nat, x = x.
+Proof.
+  print_conclusion ().
+  (* forall x : nat, x = x *)
 ```
 
-Camltac can also run in tactic-in-term mode, similarly to `ltac:(…)` and `ltac2:(…)`:
+Finally, Camltac can also run in tactic-in-term mode, similarly to `ltac:(…)` and `ltac2:(…)`:
 ```
 Definition zero := ocaml:(let* z = {%constr| 0 |} in exact_no_check z).
 Print zero.
