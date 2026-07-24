@@ -21,9 +21,9 @@ module Compiler_options = struct
     Attribute.Floating.(declare "camltac.compiler" Context.structure_item pattern Fun.id)
 
   let check item =
-    match Attribute.Floating.convert_attr_res attribute item with
-    | Ok (Some options) -> Property.set options
-    | _ -> ()
+    match Attribute.Floating.convert [attribute] item with
+    | Some options -> Property.set options
+    | None | exception _ -> ()
 end
 
 (* Make sure that Findlib is initialized to check packages. *)
@@ -60,11 +60,11 @@ module Library_attribute = struct
     Attribute.Floating.(declare "camltac.using" Context.structure_item pattern Fun.id)
 
   let check item =
-    match Attribute.Floating.convert_attr_res attribute item with
-    | Ok (Some libs) ->
+    match Attribute.Floating.convert [attribute] item with
+    | Some libs ->
        let libs = List.map check_lib libs in
        Property.set libs
-    | _ -> ()
+    | None | exception _ -> ()
 end
 
 (** [[@@@ppx]] floating attribute, used to adds preprocessors. *)
@@ -92,11 +92,11 @@ module Ppx_attribute = struct
     Attribute.Floating.(declare "camltac.ppx" Context.structure_item pattern Fun.id)
 
   let check item =
-    match Attribute.Floating.convert_attr_res attribute item with
-    | Ok (Some ppx_list) ->
+    match Attribute.Floating.convert [attribute] item with
+    | Some ppx_list ->
        let ppx_list = List.map check_ppx ppx_list in
        Property.set ppx_list
-    | _ -> ()
+    | _ | exception _ -> ()
 end
 
 let ast_iterator =
@@ -104,12 +104,9 @@ let ast_iterator =
     inherit Ast_traverse.iter as super
 
     method! structure_item (str: structure_item) =
-      match str.pstr_desc with
-      | Pstr_attribute attribute ->
-         Compiler_options.check attribute;
-         Library_attribute.check attribute;
-         Ppx_attribute.check attribute
-      | _ -> ()
+      Compiler_options.check str;
+      Library_attribute.check str;
+      Ppx_attribute.check str
   end
 
 (**/**)
