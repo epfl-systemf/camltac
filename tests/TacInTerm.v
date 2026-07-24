@@ -13,7 +13,7 @@ Proof.
     let* env = Tactics.env in
     let Ok a = Control.hyp env {%ident| a |} in
     let Ok b = Control.hyp env {%ident| b |} in
-    let* c = [%constr "%{a} + %{b}"] in
+    let* c = {%constr| %{a} + %{b} |} in
     exact_no_check c
   ).
 Qed.

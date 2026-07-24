@@ -103,10 +103,10 @@ Similarly to `Ltac2 Eval`, `Camltac Eval` does not modify the current proof stat
 Quotations
 ==========
 
-Camltac provides quotations of the form `[%name "…"]` to input Rocq terms in OCaml. For example, to obtain a well-typed term, one can use the `%constr` quotation:
+Camltac provides quotations of the form `{%name| … |}` to input Rocq terms in OCaml. For example, to obtain a well-typed term, one can use the `%constr` quotation:
 |*)
 
-Camltac Eval ocaml:([%constr "forall x : nat, x = x"]).
+Camltac Eval ocaml:({%constr| forall x : nat, x = x |}).
 
 (*|
 `%constr` is the equivalent of Ltac2's `constr:` quotation, with similar semantics.
@@ -120,9 +120,9 @@ An antiquotation is a part of a quotation that is computed by an OCaml expressio
 |*)
 
 Camltac Eval ocaml:{{
-  let* lhs = [%constr "1 + 1"] in
-  let* rhs = [%constr "2"] in
-  [%constr "%{lhs} = %{rhs}"]
+  let* lhs = {%constr| 1 + 1 |} in
+  let* rhs = {%constr| 2 |} in
+  {%constr| %{lhs} = %{rhs} |}
 }}.
 
 (*|
@@ -142,14 +142,14 @@ Inductive nat' :=
 Camltac Eval ocaml:{{
   let rec reify n =
     match%rocq n with
-    | "0" -> [%constr "NatZero"]
-    | "S ?m" ->
+    | {| 0 |} -> {%constr| NatZero |}
+    | {| S ?m |} ->
       let* m' = reify m in
-      [%constr "NatSucc %{m'}"]
-    | "?n1 * ?n2" ->
+      {%constr| NatSucc %{m'} |}
+    | {| ?n1 * ?n2 |} ->
       let* n1' = reify n1 in
       let* n2' = reify n2 in
-      [%constr "NatMul %{n1'} %{n2'}"]
+      {%constr| NatMul %{n1'} %{n2'} |}
   in
   let* n = {%constr| 2 * 3 |} in
   reify n
@@ -170,8 +170,8 @@ Camltac Module My_tactics := ocaml:{{
   let by_transitivity () =
     progress (subst ()) >>
     match%rocq goal with
-    | _, "?_x = ?_x" -> reflexivity
-    | { h = _ :: "?_x = ?_x" }, _ -> clear [h]
+    | _, {| ?_x = ?_x |} -> reflexivity
+    | { h = _ :: {| ?_x = ?_x |} }, _ -> clear [h]
 }}.
 
 Goal forall x y : nat, x = y -> y = x.
@@ -219,7 +219,7 @@ Require Import Ltac2.Ltac2.
 
 Camltac Run ocaml:{{
   (* A small tactic to showcase the Ltac2 FFI: *)
-  let succ x = [%constr "S %{x}"] in
+  let succ x = {%constr| S %{x} |} in
   Ltac2.FFI.(define "succ" (constr @-> tac constr) succ)
 }}.
 
