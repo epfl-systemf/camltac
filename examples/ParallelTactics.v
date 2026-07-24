@@ -39,6 +39,7 @@ Fixpoint is_even (n : nat) : bool :=
 Axiom is_even_soundness : forall n, is_even n = true -> even n.
 
 Goal even 5000.
+Proof.
   Time let proof := parallel [
     (fun () => constr:(ltac:(refine (_ : even 5000); apply is_even_soundness; vm_compute; reflexivity)));
     (fun () => constr:(ltac:(refine (_ : even 5000); repeat constructor)))

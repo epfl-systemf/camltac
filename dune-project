@@ -22,6 +22,7 @@
    (dune (< 3.24))
    rocq-runtime
    ppx_rocq
+   mltac2
    ppx_deriving ;; For Camltac Eval
    ocamlfind
    camltac-directives))
