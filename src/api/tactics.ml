@@ -35,8 +35,8 @@ let repeat ?n t =
 let try_ = Tacticals.tclTRY
 let tryif t ~then_ ~else_ = Tacticals.tclIFCATCH t (fun () -> then_) (fun () -> else_)
 
-let branch = Tacticals.tclOR
-let branch' = Tacticals.tclORELSE
+let (<+>) = Tacticals.tclOR
+let (<||>) = Tacticals.tclORELSE
 
 let progress t = Proofview.tclPROGRESS t
 let solve t = Tacticals.tclSOLVE t
@@ -53,16 +53,6 @@ let timeout = Tacticals.tclTIMEOUT
 let abstract ?opaque ?name t = Abstract.tclABSTRACT ?opaque name t
 
 let ignore t = Proofview.tclIGNORE t
-
-(** {2 Syntax} *)
-
-module Syntax = struct
-  let (+) = branch
-  let (||) = branch'
-  let (>) = dispatch
-end
-
-open Syntax
 
 (** {1 Utilities} *)
 

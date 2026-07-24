@@ -1,7 +1,6 @@
 (** Term API. *)
 
 open Tactics
-open Tactics.Syntax
 
 (** {1 Term representations} *)
 

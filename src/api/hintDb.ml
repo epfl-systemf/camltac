@@ -3,7 +3,6 @@
 open Hints
 open Names
 open Tactics
-open Tactics.Syntax
 
 (** User-facing view of [Hints.hint_ast]. *)
 type 'a hint_kind =
@@ -136,7 +135,6 @@ let print { db } =
 
 let print_applicable () =
   let open Tactics in
-  let open Syntax in
   let* goals = Proofview.Goal.goals in
   match goals with
   | [] -> CErrors.user_err (Pp.str "No focused goal")
