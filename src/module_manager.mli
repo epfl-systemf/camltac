@@ -6,7 +6,7 @@ val is_loaded : string -> bool
 (** [is_loaded m] returns [true] if a module named [m] is already loaded into
     the main program. *)
 
-val declare_module : locality:Libobject.locality -> string -> Compiler.output -> unit
+val declare_module : locality:Libobject.locality -> string option -> Compiler.output -> unit
 (** [declare_module ~locality m compilation_output] declares a new Camltac module
     named [m]. The [locality] argument specifies whether the module is accessible outside of the
     current module:

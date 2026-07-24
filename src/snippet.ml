@@ -38,10 +38,9 @@ let contents { contents } = contents
 (** {1 Scaffolds} *)
 
 type execution_mode =
-  | Run
   | Eval of string
   | Check
-  | Module of { name: string; loc: Loc.t; locality: Libobject.locality }
+  | Module of { name: (string * Loc.t) option; locality: Libobject.locality }
   | Tactic_in_term
   | Tactic_in_Ltac
   | Tactic_in_Ltac2
@@ -137,7 +136,7 @@ let scaffold mode snippet =
        Some "in (return (show x)) end"
     | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
        Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
-    | Run | Module _ ->
+    | Module _ ->
        None, None
   in
   Scaffold.make ?header ?footer snippet

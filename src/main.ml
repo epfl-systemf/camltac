@@ -44,12 +44,16 @@ let infer_interface ~loc file =
 let compile_scaffold ~loc mode scaffold =
   let build_file =
     match mode with
-    | Snippet.Module { name; loc = name_loc } ->
-       check_module_name ~loc:name_loc name;
-       if Module_manager.is_loaded name then
-         CErrors.user_err ~loc (Pp.fmt "Module %S already exists." name)
-       else
-         Build_files.save_module scaffold
+    | Snippet.Module { name } ->
+       begin match name with
+       | Some (name, loc) ->
+          check_module_name ~loc name;
+          if Module_manager.is_loaded name then
+            CErrors.user_err ~loc (Pp.fmt "Module %S already exists." name)
+          else
+            Build_files.save_module scaffold
+       | _ -> Build_files.save_snippet scaffold
+       end
     | _ -> Build_files.save_snippet scaffold
   in
   match mode with
@@ -109,6 +113,7 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
      Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
   | Module { locality; name } ->
      (* [Module_manager] handles module loading. *)
+     let name = Option.map fst name in
      Module_manager.declare_module ~locality name compilation_output
   | _ ->
      Loader.load_file ~public:false ~dependencies compiled_file
