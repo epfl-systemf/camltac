@@ -10,7 +10,7 @@ Proof.
   pose (b := 2).
   refine ocaml:(
     let open Ltac2 in
-    let* env = Tactics.env in
+    let* env = Tactic.env in
     let Ok a = Control.hyp env {%ident| a |} in
     let Ok b = Control.hyp env {%ident| b |} in
     let* c = [%constr "%{a} + %{b}"] in

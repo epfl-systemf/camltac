@@ -2,7 +2,7 @@
 
 open Hints
 open Names
-open Tactics
+open Tactic
 
 (** User-facing view of [Hints.hint_ast]. *)
 type 'a hint_kind =
@@ -134,7 +134,6 @@ let print { db } =
   return (Hints.pr_hint_db_env env sigma db)
 
 let print_applicable () =
-  let open Tactics in
   let* goals = Proofview.Goal.goals in
   match goals with
   | [] -> CErrors.user_err (Pp.str "No focused goal")

@@ -9,7 +9,7 @@
     - Ltac2 APIs.
  *)
 
-include Tactics
+include Tactic
 include Ltac2.Std
 module FFI = Ltac2.FFI
 include Terms.Definitions
