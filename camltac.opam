@@ -38,5 +38,5 @@ pin-depends: [
   ["rocq-core.dev" "git+https://github.com/rocq-prover/rocq.git"]
   ["coq-core.dev" "git+https://github.com/rocq-prover/rocq.git"]
   ["ppx_rocq.dev" "git+https://github.com/epfl-systemf/ppx_rocq.git"]
-  ["mltac2.dev" "git+https://github.com/dhalilov/mltac2.git#support-9.2"]
+  ["mltac2.dev" "git+https://github.com/dhalilov/mltac2.git"]
 ]
