@@ -76,7 +76,7 @@ let compilation_args
     | Some `O3 when native -> "-O3" :: args
     | _ -> args
   in
-  let args = ["-pp"; pp ^ " -as-pp --use-compiler-pp"] @ args in
+  let args = ["-pp"; pp ^ " -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true"] @ args in
   let args = extra_args @ args in
   let args = add_arguments "-open" open_modules args in
   let args = add_arguments "-I" include_dirs args in

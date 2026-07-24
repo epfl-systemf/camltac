@@ -66,14 +66,68 @@ let load_module m =
      generate_packing_module ()
   end
 
+(* We persist the runtime environment of each module, so that it can be
+   retrieved upon [Require] or [Import]. *)
+let envs = Summary.ref ~name:"camltac_envs" CString.Map.empty
+
+let cache_envs v =
+  envs := v
+
+let merge_envs v =
+  envs := CString.Map.union (fun key v1 v2 -> Some v2) !envs v
+
+let declare_envs : Runtime.Environment.t CString.Map.t -> Libobject.obj =
+  let open Libobject in
+  declare_object
+    { (default_object "CAMLTAC-ENVS") with
+      cache_function = cache_envs;
+      load_function = (fun _ -> merge_envs);
+      open_function = (fun _ _ -> merge_envs);
+      classify_function = (fun _ -> Keep);
+    }
+
+let set_env m env =
+  Lib.add_leaf (declare_envs (CString.Map.add m.name env !envs))
+
+let get_env m =
+  try CString.Map.find m.name !envs
+  with Not_found ->
+    let env = Runtime.Environment.empty in
+    set_env m env;
+    env
+
 let camltac_module : Libobject.locality * camltac_module -> Libobject.obj =
-  Libobject.declare_object (
-      Libobject.object_with_locality
-        ~stage:Summary.Stage.Interp
-        ~cache:load_module
-        ~subst:None
-        ~discharge:Fun.id
-        "camltac_module")
+  let open Libobject in
+  let load_module m =
+    (* The environment of the module is key to globalization working properly,
+       since it is persisted between [cache_function] and [load_function]. *)
+    let env = get_env m in
+    Runtime.Environment.set_env env;
+    load_module m;
+    let env = Runtime.Environment.get_env () in
+    set_env m env;
+    Runtime.Environment.unset_env ()
+  in
+  declare_object
+  {
+    (default_object ~stage:Summary.Stage.Interp "camltac_module") with
+    cache_function = (fun (_, m) -> load_module m);
+    load_function = (fun _ (locality, m) -> match locality with
+        | Local -> assert false
+        | Export -> ()
+        | SuperGlobal -> load_module m);
+    open_function = simple_open (fun (locality, m) -> match locality with
+        | Local -> assert false
+        | Export -> load_module m
+        | SuperGlobal -> ());
+    classify_function = (fun (locality, _) -> match locality with
+        | Local -> Dispose
+        | Export | SuperGlobal -> Keep);
+    discharge_function =
+      (fun (locality,v) -> match locality with
+         | Local -> None
+         | Export | SuperGlobal -> Some (locality, v));
+  }
 
 let declare_module ~locality name compilation_output =
   let m = { name; compilation_output } in

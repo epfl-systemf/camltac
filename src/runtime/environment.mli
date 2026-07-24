@@ -8,7 +8,7 @@
 open Names
 
 (** Type of environments. *)
-type t
+type t = Glob_term.glob_constr option Id.Map.t
 
 (** {2 Creating an environment} *)
 
@@ -56,3 +56,7 @@ val unset_env : unit -> unit
     Raises [Missing_environment] if no environment was set using [set_env].
     Raises [Not_found] if the given variable has no value associated to it. *)
 val lookup : Id.t -> Glob_term.glob_constr
+
+(** Persists the given glob_constr in the current implicit environment,
+    or returns the already persisted value. *)
+val persist : id:string -> (unit -> Glob_term.glob_constr) -> Glob_term.glob_constr
