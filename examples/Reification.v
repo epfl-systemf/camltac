@@ -8,7 +8,6 @@ This plugin demonstrates how one can perform reification in Camltac versus Ltac2
 
 From Camltac Require Import Camltac.
 From Ltac2 Require Import Ltac2.
-Require Import Init.Byte. (* TODO: Remove this import when globalization is fixed. *)
 Require Import IdentParsing.
 
 From Stdlib Require Import String Arith.
