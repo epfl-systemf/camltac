@@ -1,17 +1,12 @@
 DECLARE PLUGIN "camltac.plugin"
 
 {
-(* Required for wit_* functions *)
-open Stdarg
-
 (* Term grammar *)
 open Procq.Constr
 open Procq.Prim
 
 (* Ltac and Ltac2 grammars *)
-open Ltac_plugin
 open Ltac_plugin.Pltac
-open Ltac2_plugin
 open Ltac2_plugin.G_ltac2
 
 let ocaml_code = Procq.Entry.make "ocaml_code"
@@ -82,7 +77,7 @@ VERNAC ARGUMENT EXTEND ocaml_file
        if Filename.is_relative file then
          let (/) = Filename.concat in
          match loc.fname with
-         | InFile { file = rocq_file } -> Sys.getcwd () / Filename.dirname rocq_file / file
+         | InFile { file = rocq_file; _ } -> Sys.getcwd () / Filename.dirname rocq_file / file
          | ToplevelInput -> Sys.getcwd () / file
        else file
      in file, loc }

@@ -1,5 +1,5 @@
-(lang dune 3.21)
-(using rocq 0.11)
+(lang dune 3.17)
+(using coq 0.10)
 
 (name camltac)
 
@@ -32,7 +32,7 @@
  (synopsis "Camltac's test suite")
  (depends
    camltac
-   rocq-core))
+   rocq-stdlib))
 
 (package
  (name camltac-directives)

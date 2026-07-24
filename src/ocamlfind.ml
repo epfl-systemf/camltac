@@ -135,7 +135,7 @@ let compile
   match run_ocamlfind ?stdout (compiler :: args) with
   | Ok () when infer_interface -> Ok (Option.get stdout)
   | Ok () -> Ok (Option.get out)
-  | Error err as e ->
+  | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
      e

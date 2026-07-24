@@ -54,7 +54,7 @@ let from_ocaml snippet =
 (** {2 Internalization} *)
 
 let () =
-  let intern ?loc glb_sign snippet =
+  let intern ?loc:_ glb_sign snippet =
     snippet, Runtime.Environment.capture glb_sign
   in
   Genintern.register_intern_constr wit_ocaml_in_term intern
@@ -70,7 +70,7 @@ let () =
 (** {2 Notation substitution} *)
 
 let () =
-  let subst_notation notation_vars map (snippet, env) =
+  let subst_notation _notation_vars map (snippet, env) =
     snippet, Runtime.Environment.map_unresolved map env
   in
   Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
@@ -78,7 +78,7 @@ let () =
 (** {2 Interpretation} *)
 
 let () =
-  let interp ?loc ~poly genv sigma tycon ({ source_code; compilation_output }, env) =
+  let interp ?loc:_ ~poly genv sigma tycon ({ source_code; compilation_output }, env) =
     (* Run the code *)
     let () = Main.interpret Snippet.Tactic_in_term compilation_output in
     (* Interpret the result as a tactic *)
@@ -101,12 +101,12 @@ let () =
 open Genprint
 
 let () =
-  let ocaml_printer { source_code } =
+  let ocaml_printer { source_code; _ } =
     PrinterBasic begin fun _env _evd ->
       Pp.str (Snippet.contents source_code)
       end
   in
-  let glob_ocaml_printer ({ source_code }, env) =
+  let glob_ocaml_printer ({ source_code; _ }, env) =
     let open Pp in
     PrinterBasic begin fun _env _evd ->
       let vars = Runtime.Environment.variables env in

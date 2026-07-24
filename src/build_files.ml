@@ -29,20 +29,6 @@ let save_temp ~dir ~prefix contents =
 let save_snippet contents =
   save_temp ~dir:snippets_dir ~prefix:"snippet" contents
 
-let remove_module name =
-  let remove ext =
-    let filename = modules_dir / name ^ ext in
-    if Sys.file_exists filename then Sys.remove filename
-  in
-  remove ".ml";
-  remove ".mli";
-  remove ".cmo";
-  remove ".cma";
-  remove ".cmi";
-  remove ".cmx";
-  remove ".cmxa";
-  remove ".cmxs"
-
 let save_module contents =
   save_temp ~dir:modules_dir ~prefix:"camltac_module__" contents
 

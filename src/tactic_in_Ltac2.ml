@@ -1,6 +1,5 @@
 (** Support for OCaml tactics in Ltac2. *)
 
-open Names
 open Ltac2_plugin
 open Tac2expr
 
@@ -16,15 +15,9 @@ let from_ocaml snippet =
   let compilation_output = Main.compile_snippet Snippet.Tactic_in_Ltac2 snippet in
   CAst.make ~loc (CTacExt (wit_ocaml_in_ltac2, (snippet, compilation_output)))
 
-let camltac_ltac2_prefix =
-  MPfile (DirPath.make (List.map Id.of_string ["Ltac2"; "Camltac"]))
-
-let camltac_ocaml_ltac2_type =
-  KerName.make camltac_ltac2_prefix (Id.of_string "ocaml")
-
 (** {2 Internalization} *)
 
-let intern glob_sign x =
+let intern _glob_sign x =
   (* TODO: Do something with [glob_sign]. Most likely we would need to
            internalize every constr in the snippet with [glob_sign]? *)
   Tac2env.GlbVal x, GTypRef (Other Tac2quote.Refs.t_unit, [])
@@ -35,7 +28,7 @@ let subst _ x = x
 
 (** {2 Interpretation} *)
 
-let interp ltac2_env (_, compilation_output) =
+let interp _ltac2_env (_, compilation_output) =
   (* Run the code *)
   let () = Main.interpret Snippet.Tactic_in_Ltac2 compilation_output in
   (* Interpret the result as a tactic *)

@@ -82,7 +82,7 @@ let cache_envs v =
   envs := v
 
 let merge_envs v =
-  envs := CString.Map.union (fun key v1 v2 -> Some v2) !envs v
+  envs := CString.Map.union (fun _key _v1 v2 -> Some v2) !envs v
 
 let declare_envs : Runtime.Environment.t CString.Map.t -> Libobject.obj =
   let open Libobject in
