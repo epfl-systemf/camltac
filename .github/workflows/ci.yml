@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ ubuntu-latest ]
-        rocq_version: [ "dev" ]
+        rocq_version: [ "9.0", "9.1", "9.2", "dev" ]
     runs-on: ${{ matrix.runs-on }}
 
     steps:

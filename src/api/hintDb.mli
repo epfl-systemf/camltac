@@ -11,6 +11,12 @@ open Names
 
 (** {1 Hints} *)
 
+[%%if rocq >= (9, 1)]
+type glob_generic_tactic = Gentactic.glob_generic_tactic
+[%%else]
+type glob_generic_tactic = Genarg.glob_generic_argument
+[%%endif]
+
 (** A classification of hints according to the tactic that is performed when the
     hint is applied. *)
 type 'a hint_kind =
@@ -19,7 +25,7 @@ type 'a hint_kind =
   | Exact of 'a
   | Immediate of 'a
   | Unfold of Evaluable.t
-  | Extern of Pattern.constr_pattern option * Gentactic.glob_generic_tactic
+  | Extern of Pattern.constr_pattern option * glob_generic_tactic
 
 module Hint : sig
   type t
@@ -149,7 +155,7 @@ val hint_resolve : ?locality:Hints.hint_locality -> ?cost:int -> ?pattern:(Id.Se
  *)
 
 
-val hint_extern : ?locality:Hints.hint_locality -> cost:int -> ?pattern:(Id.Set.t * Pattern.constr_pattern) -> Gentactic.glob_generic_tactic -> t -> t
+val hint_extern : ?locality:Hints.hint_locality -> cost:int -> ?pattern:(Id.Set.t * Pattern.constr_pattern) -> glob_generic_tactic -> t -> t
 (** [hint_extern ?locality ~cost ?pattern tac db] behaves like the vernacular
     {v [locality] Hint Extern cost pattern => tactic : db v. v}
 

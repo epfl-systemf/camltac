@@ -7,4 +7,5 @@
    rocq-runtime.vernac
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2
-   rocq-runtime.tactics))
+   rocq-runtime.tactics)
+ (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{rocq:version.major}, %{rocq:version.minor}))")))

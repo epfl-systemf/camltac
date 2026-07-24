@@ -12,6 +12,7 @@ let user_error ?loc msg = Tacticals.tclZEROMSG ?loc msg
 
 (** {1 Goal selectors} *)
 
+[%%if rocq >= (9, 1)]
 type goal_selector = Proofview.goal_range_selector
 
 let nth n = Proofview.NthSelector n
@@ -21,6 +22,30 @@ let id id =
   Proofview.IdSelector qualid
 
 let only selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
+[%%else]
+type goal_selector = Goal_select.t
+
+let nth n = Goal_select.SelectNth n
+let range i j =
+  Goal_select.SelectList [(i, j)]
+let id id =
+  Goal_select.SelectId (Names.Id.of_string id)
+
+let only selectors t =
+  (* Fuse [nth] and [range] selectors. *)
+  let fold acc x =
+    let open Goal_select in
+    match acc, x with
+    | SelectList [], _ -> x
+    | _, SelectAll -> Goal_select.SelectAll
+    | SelectList l, SelectList l' -> Goal_select.SelectList (l @ l')
+    | SelectList l, SelectNth n -> Goal_select.SelectList (l @ [(n, n)])
+    | SelectNth n, SelectList l -> Goal_select.SelectList ([(n, n)] @ l)
+    | _, _ -> assert false
+  in
+  let selectors = List.fold_left fold (SelectList []) selectors in
+  Goal_select.tclSELECT selectors t
+[%%endif]
 
 let all = Proofview.tclINDEPENDENT
 

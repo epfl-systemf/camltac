@@ -23,7 +23,7 @@ val user_error : ?loc:Loc.t -> Pp.t -> 'a tactic
 
 (** {1 Goal selection} *)
 
-type goal_selector = Proofview.goal_range_selector
+type goal_selector
 (** Type of goal selectors. *)
 
 val nth : int -> goal_selector

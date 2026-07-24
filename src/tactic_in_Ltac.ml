@@ -6,8 +6,15 @@ open Ltac_plugin
 
 type t = Snippet.t * Compiler.output
 
+[%%if rocq >= (9, 3)]
 let wit_ocaml_in_ltac : (t, t, Geninterp.Val.t) Genarg.genarg_type =
+  let genarg = Genarg.make0 "ocaml-in-ltac" in
+  Geninterp.register_val0 genarg (Some Any);
+  genarg
+[%%else]
+let wit_ocaml_in_ltac : (t, t, Util.Empty.t) Genarg.genarg_type =
   Genarg.make0 "ocaml-in-ltac"
+[%%endif]
 
 let from_ocaml snippet =
   let compilation_output = Main.compile_snippet Snippet.Tactic_in_Ltac snippet in
@@ -27,24 +34,28 @@ let () =
 
 (** {2 Interpretation} *)
 
-let () = Geninterp.register_val0 wit_ocaml_in_ltac (Some Any)
+let interp ist (_, compilation_output) =
+  let Compiler.{ compiled_file; dependencies } = compilation_output in
+  Loader.load_file ~public:false ~dependencies compiled_file;
+  let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
+  (* Get the resulting tactic. *)
+  let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in
+  let open Proofview.Monad in
+  tactic >>= fun () ->
+  Ftactic.return idtac
 
-let () =
-  let interp ist (_, compilation_output) =
-    let Compiler.{ compiled_file; dependencies } = compilation_output in
-    Loader.load_file ~public:false ~dependencies compiled_file;
-    let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
-    (* Get the resulting tactic. *)
-    let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in
-    let open Proofview.Monad in
-    tactic >>= fun () ->
-    Ftactic.return idtac
-  in
-  Tacinterp.Register.register_interp0 wit_ocaml_in_ltac interp
+[%%if rocq >= (9, 3)]
+let () = Tacinterp.Register.register_interp0 wit_ocaml_in_ltac interp
+[%%else]
+let () = Geninterp.register_interp0 wit_ocaml_in_ltac interp
+[%%endif]
 
 (** {2 Printing} *)
-let () =
-  let printer (snippet, _) =
-    Genprint.PrinterBasic (fun _env _evd -> Pp.str (Snippet.contents snippet))
-  in
-  Genprint.register_print0 wit_ocaml_in_ltac printer printer Genprint.generic_val_print
+let printer (snippet, _) =
+  Genprint.PrinterBasic (fun _env _evd -> Pp.str (Snippet.contents snippet))
+
+[%%if rocq >= (9, 3)]
+let () = Genprint.register_print0 wit_ocaml_in_ltac printer printer Genprint.generic_val_print
+[%%else]
+let () = Genprint.register_noval_print0 wit_ocaml_in_ltac printer printer
+[%%endif]

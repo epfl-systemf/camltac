@@ -60,7 +60,7 @@ let generate_packing_module () =
   | Ok packing_module ->
      state := { !state with packing_module = Some packing_module }
   | Error err ->
-     CErrors.user_err (Pp.fmt "Compilation of packing module failed with error %d." err)
+     CErrors.user_err (Pp.(str "Compilation of packing module failed with error " ++ int err ++ str "."))
 
 let load_module m =
   let { name; compilation_output } = m in
@@ -132,10 +132,10 @@ let camltac_module : Libobject.locality * camltac_module -> Libobject.obj =
         | Local -> assert false
         | Export -> ()
         | SuperGlobal -> load_module m);
-    open_function = simple_open (fun (locality, m) -> match locality with
+    open_function = (fun filter n (locality, m) -> match locality with
         | Local -> assert false
-        | Export -> load_module m
-        | SuperGlobal -> ());
+        | Export when Libobject.in_filter ~cat:None filter && n = 1 -> load_module m
+        | _ -> ());
     classify_function = (fun (locality, _) -> match locality with
         | Local -> Dispose
         | Export | SuperGlobal -> Keep);

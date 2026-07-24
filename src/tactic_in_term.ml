@@ -44,38 +44,70 @@ type raw_ocaml = {
 (** Representation of OCaml snippets in [Glob_term.glob_constr] terms. *)
 type glob_ocaml = raw_ocaml * Runtime.Environment.t
 
-let wit_ocaml_in_term : (raw_ocaml, glob_ocaml) GenConstr.tag = GenConstr.create "ocaml"
+[%%if rocq >= (9, 3)]
+let wit_ocaml_in_term : (raw_ocaml, glob_ocaml) GenConstr.tag = GenConstr.create "ocaml-in-term"
+
+let make ?loc raw =
+  CAst.make ?loc (Constrexpr.CGenarg (Raw (wit_ocaml_in_term, raw)))
+[%%else]
+let wit_ocaml_in_term : (raw_ocaml, glob_ocaml, Util.Empty.t) Genarg.genarg_type = Genarg.make0 "ocaml-in-term"
+
+let make ?loc raw =
+  CAst.make ?loc (Constrexpr.CGenarg (Genarg.GenArg (Rawwit wit_ocaml_in_term, raw)))
+[%%endif]
 
 let from_ocaml snippet =
   let compilation_output = Main.compile_snippet Snippet.Tactic_in_term snippet in
   let raw = { source_code = snippet; compilation_output } in
-  CAst.make ~loc:(Snippet.loc snippet) @@ Constrexpr.(CGenarg (Raw (wit_ocaml_in_term, raw)))
+  make ~loc:(Snippet.loc snippet) raw
 
 (** {2 Internalization} *)
 
+let intern ?loc:_ glb_sign snippet =
+  snippet, Runtime.Environment.capture glb_sign
+
+[%%if rocq >= (9, 3)]
+let () = Genintern.register_intern_constr wit_ocaml_in_term intern
+[%%else]
 let () =
-  let intern ?loc:_ glb_sign snippet =
-    snippet, Runtime.Environment.capture glb_sign
-  in
-  Genintern.register_intern_constr wit_ocaml_in_term intern
+  let intern ?loc glb_sign snippet = glb_sign, intern ?loc glb_sign snippet in
+  Genintern.register_intern0 wit_ocaml_in_term intern
+[%%endif]
 
 (** {2 Module substitution} *)
 
-let () =
-  let subst s (snippet, env) =
-    snippet, Runtime.Environment.map (Detyping.subst_glob_constr (Global.env()) s) env
-  in
-  Gensubst.register_constr_subst wit_ocaml_in_term subst
+let subst s (snippet, env) =
+  snippet, Runtime.Environment.map (Detyping.subst_glob_constr (Global.env()) s) env
+
+[%%if rocq >= (9, 3)]
+let () = Gensubst.register_constr_subst wit_ocaml_in_term subst
+[%%else]
+let () = Gensubst.register_subst0 wit_ocaml_in_term subst
+[%%endif]
 
 (** {2 Notation substitution} *)
 
+let subst_notation _ map (snippet, env) =
+  snippet, Runtime.Environment.map_unresolved map env
+
+[%%if rocq >= (9, 3)]
+let () = Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
+[%%else]
 let () =
-  let subst_notation _notation_vars map (snippet, env) =
-    snippet, Runtime.Environment.map_unresolved map env
+  let subst_notation vars map (snippet, env) =
+    let map = fun x -> Id.Map.find_opt x map in
+    subst_notation vars map (snippet, env)
   in
   Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
+[%%endif]
 
 (** {2 Interpretation} *)
+
+[%%if rocq >= (9, 2)]
+let refine_by_tactic = Subproof.refine_by_tactic
+[%%else]
+let refine_by_tactic = Proof.refine_by_tactic
+[%%endif]
 
 let () =
   let interp ?loc:_ ~poly genv sigma tycon ({ source_code; compilation_output }, env) =
@@ -89,7 +121,7 @@ let () =
       | None -> GlobEnv.new_type_evar genv sigma ~src:(Some (Snippet.loc source_code), Evar_kinds.InternalHole)
     in
     let () = Runtime.Environment.set_env env in
-    let c, sigma = Subproof.refine_by_tactic ~name ~poly (GlobEnv.renamed_env genv) sigma concl tac in
+    let c, sigma = refine_by_tactic ~name ~poly (GlobEnv.renamed_env genv) sigma concl tac in
     let () = Runtime.Environment.unset_env () in
     let j = { Environ.uj_val = c; Environ.uj_type = concl } in
     (j, sigma)
@@ -100,22 +132,25 @@ let () =
 
 open Genprint
 
-let () =
-  let ocaml_printer { source_code; _ } =
-    PrinterBasic begin fun _env _evd ->
-      Pp.str (Snippet.contents source_code)
-      end
-  in
-  let glob_ocaml_printer ({ source_code; _ }, env) =
-    let open Pp in
-    PrinterBasic begin fun _env _evd ->
-      let vars = Runtime.Environment.variables env in
-      let vars = Id.Set.fold List.cons vars [] in
-      match vars with
-      | [] -> str (Snippet.contents source_code)
-      | _ ->
-         (* TODO: This representation is not valid syntax *)
-         pr_sequence Id.print vars ++ str " |-" ++ str (Snippet.contents source_code)
-      end
-  in
-  Genprint.register_constr_print wit_ocaml_in_term ocaml_printer glob_ocaml_printer
+let ocaml_printer { source_code; _ } =
+  PrinterBasic begin fun _env _evd ->
+    Pp.str (Snippet.contents source_code)
+  end
+
+let glob_ocaml_printer ({ source_code; _ }, env) =
+  let open Pp in
+  PrinterBasic begin fun _env _evd ->
+    let vars = Runtime.Environment.variables env in
+    let vars = Id.Set.fold List.cons vars [] in
+    match vars with
+    | [] -> str (Snippet.contents source_code)
+    | _ ->
+       (* TODO: This representation is not valid syntax *)
+       pr_sequence Id.print vars ++ str " |-" ++ str (Snippet.contents source_code)
+  end
+
+[%%if rocq <= (9, 2)]
+let () = Genprint.register_noval_print0 wit_ocaml_in_term ocaml_printer glob_ocaml_printer
+[%%else]
+let () = Genprint.register_constr_print wit_ocaml_in_term ocaml_printer glob_ocaml_printer
+[%%endif]
