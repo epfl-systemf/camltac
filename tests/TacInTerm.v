@@ -9,9 +9,11 @@ Proof.
   pose (a := 1).
   pose (b := 2).
   refine ocaml:(
-    let open Proofview in
-    let* c = [%constr "a + b"] in
-    Ltac2.exact_no_check c
+    let open Ltac2 in
+    let* a = Control.hyp {%ident| a |} in
+    let* b = Control.hyp {%ident| b |} in
+    let* c = [%constr "%{a} + %{b}"] in
+    exact_no_check c
   ).
 Qed.
 
