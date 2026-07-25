@@ -90,7 +90,7 @@ let () = Gensubst.register_subst0 wit_ocaml_in_term subst
 let subst_notation _ map (snippet, env) =
   snippet, Runtime.Environment.map_unresolved map env
 
-[%%if rocq >= (9, 3)]
+[%%if rocq >= (9, 1)]
 let () = Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
 [%%else]
 let () =
