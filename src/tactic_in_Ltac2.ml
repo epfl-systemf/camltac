@@ -17,10 +17,18 @@ let from_ocaml snippet =
 
 (** {2 Internalization} *)
 
+[%%if rocq >= (9, 2)]
+let t_unit = Tac2quote.Refs.t_unit
+let v_unit = Tac2quote.Refs.v_unit
+[%%else]
+let t_unit = Tac2core.Core.t_unit
+let v_unit = Tac2core.Core.v_unit
+[%%endif]
+
 let intern _glob_sign x =
   (* TODO: Do something with [glob_sign]. Most likely we would need to
            internalize every constr in the snippet with [glob_sign]? *)
-  Tac2env.GlbVal x, GTypRef (Other Tac2quote.Refs.t_unit, [])
+  Tac2env.GlbVal x, GTypRef (Other t_unit, [])
 
 (** {2 Module substitution} *)
 
@@ -33,7 +41,7 @@ let interp _ltac2_env (_, compilation_output) =
   let () = Main.interpret Snippet.Tactic_in_Ltac2 compilation_output in
   (* Interpret the result as a tactic *)
   let open Proofview.Monad in
-  Runtime.Output.get_tactic () >> return Tac2quote.Refs.v_unit
+  Runtime.Output.get_tactic () >> return v_unit
 
 (** {2 Printing} *)
 

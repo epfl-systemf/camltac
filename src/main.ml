@@ -9,11 +9,11 @@ let check_module_name ~loc (name: string) =
   | 'A'..'Z' -> ()
   | _ ->
     let suggestion = String.capitalize_ascii name in
-    CErrors.user_err ~loc (Pp.fmt "Module names must be capitalized.\nHint: did you mean %S?" suggestion)
+    CErrors.user_err ~loc (Pp.(str "Module names must be capitalized.\nHint: did you mean " ++ str suggestion ++ str "?"))
 
 let check_file ~loc (file: string) =
   if not (Sys.file_exists file) then
-    CErrors.user_err ~loc (Pp.fmt "File %S does not exist." file)
+    CErrors.user_err ~loc (Pp.(str "File " ++ str file ++ str " does not exist."))
 
 (** {2 Compilation} *)
 
@@ -27,7 +27,7 @@ let compile_file ~loc file =
   match Compiler.compile_with_directives ~context file with
   | Ok out -> out
   | Error code ->
-     CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
+     CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let infer_interface ~loc file =
   check_file ~loc file;
@@ -39,7 +39,7 @@ let infer_interface ~loc file =
   match Compiler.infer_interface ~context file with
   | Ok out -> out
   | Error code ->
-     CErrors.user_err ~loc (Pp.fmt "Compilation of %s failed with error %d." file code)
+     CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let compile_scaffold ~loc mode scaffold =
   let build_file =
@@ -49,7 +49,7 @@ let compile_scaffold ~loc mode scaffold =
        | Some (name, loc) ->
           check_module_name ~loc name;
           if Module_manager.is_loaded name then
-            CErrors.user_err ~loc (Pp.fmt "Module %S already exists." name)
+            CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
           else
             Build_files.save_module scaffold
        | _ -> Build_files.save_snippet scaffold
@@ -88,6 +88,12 @@ let get_type Compiler.{ compiled_file = mli_file; _ } =
   let _ = Str.search_forward regexp intf 0 in
   Str.matched_group 1 intf
 
+[%%if rocq >= (9, 2)]
+let poly_default = PolyFlags.default
+[%%else]
+let poly_default = false
+[%%endif]
+
 let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; dependencies } as compilation_output) =
   match mode with
   | Check ->
@@ -105,7 +111,7 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
        | None ->
           let sigma = Evd.from_env env in
           let name = Names.Id.of_string "camltac" in
-          Proof.start ~name ~poly:PolyFlags.default sigma []
+          Proof.start ~name ~poly:poly_default sigma []
        | Some proof ->
           Declare.Proof.get proof
      in

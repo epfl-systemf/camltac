@@ -6,8 +6,13 @@ let with_global_env fmt f =
   let result = Pp.string_of_ppcmds (f env sigma) in
   Format.fprintf fmt "%s" result
 
+[%%if rocq >= (9, 2)]
 let pp_expr fmt c =
   with_global_env fmt (fun env sigma -> Ppconstr.pr_constr_expr ~flags:{ parentheses = false } env sigma c)
+[%%else]
+let pp_expr fmt c =
+  with_global_env fmt (fun env sigma -> Ppconstr.pr_constr_expr env sigma c)
+[%%endif]
 
 let pp_preterm fmt c =
   with_global_env fmt (fun env sigma -> Printer.pr_glob_constr_env env sigma c)

@@ -4,6 +4,7 @@
 (name camltac)
 
 (generate_opam_files true)
+(subst disabled) ;; Work-around for Dune 3.17 subst bug: https://github.com/ocaml/dune/issues/11045
 
 (authors "Dario Halilovic")
 (maintainers "Dario Halilovic")
@@ -20,7 +21,7 @@
  (depends
    (ocaml (>= 4.14))
    (dune (< 3.24))
-   rocq-runtime
+   (coq-core (>= 9.0))
    ppx_rocq
    mltac2
    ppx_deriving ;; For Camltac Eval

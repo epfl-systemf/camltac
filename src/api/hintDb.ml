@@ -4,6 +4,12 @@ open Hints
 open Names
 open Tactic
 
+[%%if rocq >= (9, 1)]
+type glob_generic_tactic = Gentactic.glob_generic_tactic
+[%%else]
+type glob_generic_tactic = Genarg.glob_generic_argument
+[%%endif]
+
 (** User-facing view of [Hints.hint_ast]. *)
 type 'a hint_kind =
   | Apply of 'a
@@ -11,7 +17,7 @@ type 'a hint_kind =
   | Exact of 'a
   | Immediate of 'a
   | Unfold of Evaluable.t
-  | Extern of Pattern.constr_pattern option * Gentactic.glob_generic_tactic
+  | Extern of Pattern.constr_pattern option * glob_generic_tactic
 
 let of_hint_ast = function
   | Res_pf h -> Apply h
@@ -91,9 +97,15 @@ let add_hint ?locality entry dbname =
   Hints.add_hints ~locality [dbname] entry;
   get_db dbname
 
+[%%if rocq >= (9, 2)]
+let hint_term = Fun.id
+[%%else]
+let hint_term = Hints.hint_globref
+[%%endif]
+
 let hint_resolve ?locality ?cost ?pattern globref { name; _ } =
   let info = Typeclasses.{ hint_priority = cost; hint_pattern = pattern } in
-  let entry = Hints.HintsResolveEntry [(info, true, globref)] in
+  let entry = Hints.HintsResolveEntry [(info, true, hint_term globref)] in
   add_hint ?locality entry name
 
 let hint_cut ?locality regex { name; _ } =
@@ -110,12 +122,25 @@ let hint_modes ?locality globref ~modes { name; _ } =
   let entry = Hints.HintsModeEntry (globref, modes) in
   add_hint ?locality entry name
 
+[%%if rocq >= (9, 1)]
 let get_modes env globref { db; _ } =
   let modes = Hints.Hint_db.find_mode env globref db in
   List.map Array.to_list modes
+[%%else]
+let get_modes _env globref { db; _ } =
+  let modes_map = Hints.Hint_db.modes db in
+  let modes = GlobRef.Map.find globref modes_map in
+  List.map Array.to_list modes
+[%%endif]
+
+[%%if rocq >= (9, 3)]
+let evaluable_of_global_reference = Tacred.evaluable_of_global_reference
+[%%else]
+let evaluable_of_global_reference = Tacred.soft_evaluable_of_global_reference
+[%%endif]
 
 let hint_unfold ?locality globrefs { name; _ } =
-  let entry = Hints.HintsUnfoldEntry (List.map Tacred.evaluable_of_global_reference globrefs) in
+  let entry = Hints.HintsUnfoldEntry (List.map evaluable_of_global_reference globrefs) in
   add_hint ?locality entry name
 
 let remove_hints ?locality globrefs { name; _ } =

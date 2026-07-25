@@ -9,7 +9,7 @@ bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
   "ocaml" {>= "4.14"}
   "dune" {>= "3.17" & < "3.24"}
-  "rocq-runtime"
+  "coq-core" {>= "9.0"}
   "ppx_rocq"
   "mltac2"
   "ppx_deriving"
@@ -18,7 +18,6 @@ depends: [
   "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -33,9 +32,6 @@ build: [
 ]
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
 pin-depends: [
-  ["rocq-runtime.dev" "git+https://github.com/rocq-prover/rocq.git"]
-  ["rocq-core.dev" "git+https://github.com/rocq-prover/rocq.git"]
-  ["coq-core.dev" "git+https://github.com/rocq-prover/rocq.git"]
   ["ppx_rocq.dev" "git+https://github.com/epfl-systemf/ppx_rocq.git"]
-  ["mltac2.dev" "git+https://github.com/dhalilov/mltac2.git"]
+  ["mltac2.dev" "git+https://github.com/epfl-systemf/mltac2.git"]
 ]

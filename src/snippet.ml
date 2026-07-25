@@ -15,7 +15,7 @@ let read_file ~loc filename =
     In_channel.close_noerr in_channel;
     contents
   else
-    CErrors.user_err ~loc (Pp.fmt "File %S does not exist." filename)
+    CErrors.user_err ~loc (Pp.(str "File " ++ str filename ++ str " does not exist."))
 
 let of_file ~loc filename =
   let contents = read_file ~loc filename in

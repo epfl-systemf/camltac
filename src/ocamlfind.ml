@@ -90,7 +90,11 @@ let compilation_args
 
 (** {2 Calling the compiler} *)
 
+[%%if rocq >= (9, 1)]
 let ocamlfind () = Boot.Env.ocamlfind ()
+[%%else]
+let ocamlfind () = Envars.ocamlfind ()
+[%%endif]
 
 let run_command ?stdout prog args =
   let command = Filename.quote_command prog ?stdout args in

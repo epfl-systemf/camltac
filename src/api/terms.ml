@@ -20,6 +20,7 @@ include Definitions
 module Expr = struct
   type t = constrexpr
 
+  [%%if rocq >= (9, 2)]
   let of_glob_constr c =
     let* env in
     let* sigma in
@@ -37,6 +38,24 @@ module Expr = struct
     let* env in
     let* sigma in
     return (Ppconstr.pr_constr_expr ~flags:{ parentheses = false } env sigma c)
+
+  [%%else]
+  let of_glob_constr c =
+    let* env in
+    let* sigma in
+    let extern_env = Constrextern.extern_env env sigma in
+    return (Constrextern.extern_glob_constr extern_env c)
+
+  let of_constr c =
+    let* env in
+    let* sigma in
+    return (Constrextern.extern_constr env sigma c)
+
+  let print c =
+    let* env in
+    let* sigma in
+    return (Ppconstr.pr_constr_expr env sigma c)
+  [%%endif]
 end
 
 module Glob_constr = struct
@@ -47,17 +66,30 @@ module Glob_constr = struct
     let* sigma in
     return (Constrintern.intern_constr env sigma e)
 
+  [%%if rocq >= (9, 2)]
   let of_constr c =
     let* env in
     let* sigma in
     let flags = (PrintingFlags.current ()).detype in
     return (Detyping.detype Detyping.Now ~flags env sigma c)
+  [%%else]
+  let of_constr c =
+    let* env in
+    let* sigma in
+    return (Detyping.detype Detyping.Now env sigma c)
+  [%%endif]
 
   let print c =
     let* env in
     let* sigma in
     return (Printer.pr_glob_constr_env env sigma c)
 end
+
+[%%if rocq <= (9, 2)]
+let merge_ustate = Evd.merge_universe_context
+[%%else]
+let merge_ustate = Evd.merge_ustate
+[%%endif]
 
 module Constr = struct
   type t = constr
@@ -66,7 +98,7 @@ module Constr = struct
     let* env in
     let* sigma in
     let constr, ustate = Constrintern.interp_constr env sigma e in
-    let sigma = Evd.merge_ustate sigma ustate in
+    let sigma = merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
 
@@ -74,7 +106,7 @@ module Constr = struct
     let* env in
     let* sigma in
     let constr, ustate = Pretyping.understand env sigma c in
-    let sigma = Evd.merge_ustate sigma ustate in
+    let sigma = merge_ustate sigma ustate in
     Proofview.Unsafe.tclEVARS sigma >>
     return constr
 
