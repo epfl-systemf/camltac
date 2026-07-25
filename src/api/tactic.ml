@@ -1,5 +1,7 @@
 (** Standard tactic syntax. *)
 
+open Names
+
 (** {1 Tactic monad} *)
 
 type +'a tactic = 'a Proofview.tactic
@@ -17,9 +19,14 @@ type goal_selector = Proofview.goal_range_selector
 
 let nth n = Proofview.NthSelector n
 let range i j = Proofview.RangeSelector (i, j)
+
+[%%if rocq >= (9, 2)]
 let id id =
   let qualid = Libnames.qualid_of_string id in
   Proofview.IdSelector qualid
+[%%else]
+let id id = Proofview.IdSelector (Id.of_string id)
+[%%endif]
 
 let only selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
 [%%else]
@@ -29,7 +36,7 @@ let nth n = Goal_select.SelectNth n
 let range i j =
   Goal_select.SelectList [(i, j)]
 let id id =
-  Goal_select.SelectId (Names.Id.of_string id)
+  Goal_select.SelectId (Id.of_string id)
 
 let only selectors t =
   (* Fuse [nth] and [range] selectors. *)
