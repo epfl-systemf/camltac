@@ -16,11 +16,9 @@ include Terms.Definitions
 
 type valexpr = Ltac2_plugin.Tac2val.valexpr
 
-(** Shadow the standard OCaml library to mark some functions as unsafe or not
-    working as intended. *)
-module Stdlib : sig
-  include module type of Stdlib
-
+(** Shadow functions from the standard OCaml library to mark them as unsafe or
+    not working as intended. *)
+include (Stdlib : sig
   val stdin  : in_channel  [@@alert camltac_io "stdin does not work in Camltac."]
   val stdout : out_channel [@@alert camltac_io "stdout does not lead to correct output; use Feedback instead."]
   val stderr : out_channel [@@alert camltac_io "stderr does not lead to correct ouput; use CErrors instead."]
@@ -46,10 +44,4 @@ module Stdlib : sig
   val read_int : unit -> int [@@alert camltac_io "read_int does not work in Camltac."]
   val read_float_opt : unit -> float option [@@alert camltac_io "read_float_opt does not work in Camltac."]
   val read_float : unit -> float [@@alert camltac_io "read_float does not work in Camltac."]
-
-  val ref : 'a -> 'a ref [@@alert camltac_ref "Using ref at the top-level is most likely a mistake; use Summary.ref instead or stdlib_ref if you're sure of what you're doing."]
-  val stdlib_ref : 'a -> 'a ref
-end = struct
-  include Stdlib
-  let stdlib_ref = ref
-end
+end)
