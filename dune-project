@@ -52,4 +52,5 @@
    rocq-stdlib
    rocq-stdpp
    ppx_minidebug
+   ppx_deriving_yojson
    eio_main))
