@@ -28,6 +28,8 @@ opam repo add rocq-released https://rocq-prover.github.io/opam/released/
 opam pin add https://github.com/epfl-systemf/camltac.git
 ```
 
+**Note**: `camltac-examples` only supports Rocq 9.2 and requires OCaml 5.4.
+
 Then, add `From Camltac Require Import Camltac.` to the top of your Rocq files, and you're ready to go!
 
 ## Quickstart

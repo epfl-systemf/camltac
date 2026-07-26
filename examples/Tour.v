@@ -92,7 +92,7 @@ Proof.
 Qed.
 
 (*|
-...or use `Camltac Eval`, which evaluates a tactic and prints its result:
+…or use `Camltac Eval`, which evaluates a tactic and prints its result:
 |*)
 
 Camltac Eval ocaml:(return (1 + 1)).
@@ -139,7 +139,7 @@ Inductive nat' :=
   | NatSucc (n : nat')
   | NatMul (n1 n2 : nat').
 
-Camltac Eval ocaml:{{
+Camltac Module Reify := ocaml:{{
   let rec reify n =
     match%rocq n with
     | {| 0 |} -> {%constr| NatZero |}
@@ -150,34 +150,42 @@ Camltac Eval ocaml:{{
       let* n1' = reify n1 in
       let* n2' = reify n2 in
       {%constr| NatMul %{n1'} %{n2'} |}
-  in
+}}.
+
+Camltac Eval ocaml:{{
   let* n = {%constr| 2 * 3 |} in
-  reify n
+  Reify.reify n
 }}.
 
 (*|
 The left-hand side of each branch is a pattern with pattern variables of the form `?name`. Each pattern variable is associated to an OCaml variable of the same name, which makes the syntax similar to Ltac2's `match!`.
 
-Note that `match%rocq` is backtracking, meaning that branches are tried in order until one of them succeeds.
+Note that `match%rocq` is backtracking, meaning that branches are tried in order until one of them succeeds. We also support `match%lazy` and `match%multi` for non-backtracking and multi-success pattern matching, as in Ltac2.
 
 Pattern matching over goals
 ===========================
 
-Pattern matching over goal is implemented by the `match%rocq` syntax:
+Pattern matching over goal is implemented by the `match%rocq goal with` syntax:
 |*)
 
-Camltac Module My_tactics := ocaml:{{
-  let by_transitivity () =
-    progress (subst ()) >>
-    match%rocq goal with
-    | _, {| ?_x = ?_x |} -> reflexivity
-    | { h = _ :: {| ?_x = ?_x |} }, _ -> clear [h]
+Camltac Module My_tauto := ocaml:{{
+  let run () =
+    let* () = intros () in
+    repeat begin match%rocq goal with
+    | { h = _ :: {| _ -> ?b |} }, {| ?b |} ->
+       let* env in
+       let h = Result.get_ok (Ltac2.Control.hyp env h) in
+       apply [(h, NoBindings)]
+    | _, {| _ \/ _ |} ->
+       Ltac2.Control.plus (left ()) (fun _ -> right ())
+    | _, _ ->
+       assumption ()
+    end
 }}.
 
-Goal forall x y : nat, x = y -> y = x.
+Goal forall A B C, (C -> A) -> C -> A \/ B.
 Proof.
-  intros.
-  ocaml:(My_tactics.by_transitivity ()).
+  ocaml:(My_tauto.run ()).
 Qed.
 
 (*|
@@ -188,22 +196,30 @@ Camltac supports additional OCaml libraries and preprocessors through special fl
 
 - The `[@@@using]` attribute allows one to use extra OCaml libraries (see `ParallelTactics.v` for an example)
 
-- The `[@@@ppx]` attribute is used to specify additional preprocessors, such as `ppx_deriving`:
+- The `[@@@ppx]` attribute is used to specify additional preprocessors, such as `ppx_deriving_yojson`:
 |*)
 
 Camltac Module Op := ocaml:{{
-  [@@@ppx "ppx_deriving.show"]
+  [@@@ppx "ppx_deriving_yojson"]
 
+  (** Here's the type of expressions in a simple lambda calculus.
+      [ppx_deriving_yojson] automatically derives JSON conversions methods for us. *)
   type t =
-  | Const of int
-  | Plus of (t * t)
-  | Minus of (t * t)
-  [@@deriving show { with_path = false }]
+    | Var of string
+    | Abs of { x: string; body: t }
+    | App of (t * t)
+  [@@deriving yojson]
 }}.
 
 Camltac Run ocaml:{{
-  let s = Op.(show (Plus (Const 1, Const 2))) in
-  Feedback.msg_info (Pp.str s)
+  open Op
+
+  (* λx. x *)
+  let id = Abs { x = "x"; body = Var "x" }
+
+  let () =
+    let s = Yojson.Safe.to_string (to_yojson id) in
+    Feedback.msg_info (Pp.str s)
 }}.
 
 (*|
@@ -218,18 +234,45 @@ Tactics in Camltac can be exposed to Ltac2 using the `FFI` module:
 Require Import Ltac2.Ltac2.
 
 Camltac Run ocaml:{{
-  (* A small tactic to showcase the Ltac2 FFI: *)
-  let succ x = {%constr| S %{x} |} in
-  Ltac2.FFI.(define "succ" (constr @-> tac constr) succ)
+  (* We expose our previously defined reification procedure to Ltac2: *)
+  Ltac2.FFI.(define "reify"
+              (constr @-> tac constr) (* Type specification; see [Tac2externals] in Rocq's Ltac2 plugin. *)
+              Reify.reify)
 }}.
 
-Ltac2 @external succ : constr -> constr :=
-  "camltac.plugin.runtime" "succ".
+Ltac2 @external reify : constr -> constr :=
+  "camltac.plugin.runtime" "reify".
 
-Ltac2 Eval (succ constr:(3)).
+Ltac2 Eval (reify constr:(2 * 3)).
+
+(*|
+Accessing internal Rocq APIs
+============================
+
+Camltac provides full access to Rocq's internal APIs, since the OCaml code runs in the Rocq process. This allows us to access Rocq's latest features, query Rocq for detailed information, or implement features traditionally reserved to OCaml plugins.
+
+For example, here's an implementation of a simple mutable counter that follows backtracks using Rocq's [Summary] module:
+|*)
+
+Camltac Module Counter := ocaml:{{
+  let value = Summary.ref ~stage:Interp ~name:"counter" 0
+
+  let inc () =
+    value := !value + 1
+  let print () =
+    Feedback.msg_info (Pp.int !value)
+}}.
+
+(*|
+Try it out for yourself: run over these snippets, and backtrack to see the effect!
+|*)
+
+Camltac Run ocaml:(Counter.print ()). (* 0 *)
+Camltac Run ocaml:(Counter.inc ()).
+Camltac Run ocaml:(Counter.print ()). (* 1 *)
 
 (*|
 Congrats, you reached the end of this tour!
 
-There are several more examples of what Camltac can offer in this directory -- make sure check to them out!
+There are several more examples of what Camltac can offer in this directory — make sure check to them out!
 |*)

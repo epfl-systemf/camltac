@@ -4,10 +4,8 @@ Camltac Run ocaml:{{
    let a = {%expr| 1 |} in
    let b = {%expr| 2 |} in
    let c = {%expr| %expr:{a} + %expr:{b} |} in
-   let env = Global.env () in
-   let sigma = Evd.from_env env in
-   let p = Ppconstr.pr_constr_expr ~flags:{parentheses = false} env sigma c in
-   Feedback.msg_info p
+   let* pp = Terms.Expr.print c in
+   return (Feedback.msg_info pp)
 }}.
 
 Camltac Run ocaml:{{
