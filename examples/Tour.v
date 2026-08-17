@@ -52,14 +52,9 @@ Camltac Load "file.ml".
 (*|
 The `Camltac Load "file.ml"` command behaves equivalently to `Camltac Module File := ocaml:(<contents of file.ml>)`.
 
-Note that when using Dune, `file.ml` must be copied to the `_build` directory, which can be achieved using the following rule:
-```dune
-(rule
- (targets _dummy.v)
- (deps file.ml) ;; or (glob_files *.ml)
- (action (write-file _dummy.v "")))
-```
-It is important that the dummy target is a `.v` file, so that it runs before the `rocq.theory` stanza.
+.. note::
+
+   There is some setup required for `Camltac Load` to work with Dune, described in the `How to setup Dune <../how-tos/Setup Dune.rst>`_ guide.
 
 Defining new tactics
 ====================
