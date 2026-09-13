@@ -2,14 +2,17 @@
 
 (** {1 Build directories} *)
 
+val root_dir : string
+(** [root_dir] is the parent of [build_dir]. *)
+
 val build_dir : string
-(** [build_dir] is the name of the directory that stores build artifacts. *)
+(** [build_dir] is the path of the [.camltac] directory. *)
 
 val snippets_dir : string
-(** [snippets_dir] is the name of the directory that stores snippets. *)
+(** [snippets_dir] is the path of the directory that stores snippets. *)
 
 val modules_dir : string
-(** [modules_dir] is the name of the directory that stores modules. *)
+(** [modules_dir] is the path of the directory that stores modules. *)
 
 (** {1 Save methods} *)
 
