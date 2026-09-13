@@ -134,6 +134,9 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
 
 | [ "Camltac" "Check" ocaml_file(file) ]
   SYNTERP AS compilation_output
-     { let filename, loc = file in Main.infer_interface ~loc filename }
+     { let filename, loc = file in
+       let snippet = Snippet.of_file ~loc filename in
+       let scaffold = Snippet.scaffold snippet in
+       Main.compile_scaffold ~loc Snippet.Check scaffold }
   -> { Main.interpret Snippet.Check compilation_output }
 END
