@@ -31,7 +31,7 @@ let get_quotation_contents ~loc ~prefix q =
 
 GRAMMAR EXTEND Gram
 GLOBAL:
-  ocaml_code term;
+  ocaml_code term tactic_value ltac2_atom;
 
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
@@ -43,23 +43,15 @@ GLOBAL:
   term: LEVEL "0"
     [ [ c = ocaml_code -> { Tactic_in_term.from_ocaml c } ] ]
   ;
-END
 
-GRAMMAR EXTEND Gram
-GLOBAL: ltac2_atom;
+  (* OCaml-in-Ltac *)
+  tactic_value: FIRST
+    [ [ c = ocaml_code -> { Tactic_in_Ltac.from_ocaml c } ] ]
+  ;
 
   (* OCaml-in-Ltac2 *)
   ltac2_atom: FIRST
     [ [ c = ocaml_code -> { Tactic_in_Ltac2.from_ocaml c } ] ]
-  ;
-END
-
-(* OCaml-in-Ltac *)
-GRAMMAR EXTEND Gram
-GLOBAL: tactic_value;
-
-  tactic_value: FIRST
-    [ [ c = ocaml_code -> { Tactic_in_Ltac.from_ocaml c } ] ]
   ;
 END
 
