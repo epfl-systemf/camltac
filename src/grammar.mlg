@@ -78,7 +78,7 @@ END
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_output
-     { let check_output = Main.compile_snippet Snippet.Check snippet in
+     { let check_output = Main.compile_snippet Snippet.Check_expression snippet in
        let typ = Main.get_type check_output in
        typ, Main.compile_snippet (Snippet.Eval typ) snippet }
   -> { fun ~pstate:proof ->
@@ -120,23 +120,21 @@ END
 VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
 | [ "Camltac" "Check" ocaml(snippet) ]
   SYNTERP AS compilation_output
-     { Main.compile_snippet Snippet.Check snippet }
-  -> { Main.interpret Snippet.Check compilation_output }
+     { Main.compile_snippet Snippet.Check_expression snippet }
+  -> { Main.interpret Snippet.Check_expression compilation_output }
 
 | [ "Camltac" "Check" ocaml_module(m) ]
   SYNTERP AS compilation_output
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
        let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
-       let scaffold = Snippet.scaffold snippet in
-       Main.compile_scaffold ~loc Snippet.Check scaffold }
-  -> { Main.interpret Snippet.Check compilation_output }
+       Main.compile_snippet Snippet.Check_module snippet }
+  -> { Main.interpret Snippet.Check_module compilation_output }
 
 | [ "Camltac" "Check" ocaml_file(file) ]
   SYNTERP AS compilation_output
      { let filename, loc = file in
        let snippet = Snippet.of_file ~loc filename in
-       let scaffold = Snippet.scaffold snippet in
-       Main.compile_scaffold ~loc Snippet.Check scaffold }
-  -> { Main.interpret Snippet.Check compilation_output }
+       Main.compile_snippet Snippet.Check_module snippet }
+  -> { Main.interpret Snippet.Check_module compilation_output }
 END

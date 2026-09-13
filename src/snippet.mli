@@ -34,7 +34,8 @@ val contents : t -> string
     interpreted. *)
 type execution_mode =
   | Eval of string             (** Evaluation of OCaml tactics ([Camltac Eval ocaml:(…)]). *)
-  | Check                      (** Type-checking OCaml expressions ([Camltac Check ocaml:(…)]). *)
+  | Check_expression           (** Type-checking OCaml expressions ([Camltac Check ocaml:(…)]). *)
+  | Check_module               (** Type-checking OCaml modules ([Camltac Check M]). *)
   | Module of {
       name: (string * Loc.t) option;
       locality: Libobject.locality
@@ -43,6 +44,6 @@ type execution_mode =
   | Tactic_in_Ltac             (** Tactic-in-Ltac modality (e.g. [Ltac f := ocaml:(…)]). *)
   | Tactic_in_Ltac2            (** Tactic-in-Ltac2 modality (e.g. [Ltac2 f () := ocaml:(…)]). *)
 
-val scaffold : ?mode:execution_mode -> t -> string
-(** [scaffold ?mode snippet] returns the contents of the scaffold file for the
+val scaffold : execution_mode -> t -> string
+(** [scaffold mode snippet] returns the contents of the scaffold file for the
     given [snippet], assuming [mode] is the execution mode. *)
