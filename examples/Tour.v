@@ -250,7 +250,9 @@ For example, here's an implementation of a simple mutable counter that follows b
 |*)
 
 Camltac Module Counter := ocaml:{{
-  let value = Summary.ref ~stage:Interp ~name:"counter" 0
+  let value: int ref =
+    (* FIXME: Rocq 9.3 recently made this type abstract. *)
+    Obj.magic (Summary.ref ~stage:Interp ~name:"counter" 0)
 
   let inc () =
     value := !value + 1
