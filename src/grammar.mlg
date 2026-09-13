@@ -128,8 +128,7 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
        let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
-       (* FIXME: [scaffold]'s mode should be optional. *)
-       let scaffold = Snippet.scaffold (Snippet.Module { name = None; locality = Libobject.Local }) snippet in
+       let scaffold = Snippet.scaffold snippet in
        Main.compile_scaffold ~loc Snippet.Check scaffold }
   -> { Main.interpret Snippet.Check compilation_output }
 

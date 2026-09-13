@@ -120,21 +120,21 @@ module Scaffold = struct
 
 end
 
-let scaffold mode snippet =
+let scaffold ?mode snippet =
   let header, footer =
     match mode with
-    | Check ->
+    | Some Check ->
        Some "let (-) = begin", Some "end"
-    | Eval typ ->
+    | Some (Eval typ) ->
        Some ({|[@@@ppx "ppx_deriving.show"]
               open Api.Printers
               type t = |} ^ typ ^ {|[@@deriving show]
               let () = Runtime.Output.set_tactic begin
                 let* x =|}),
        Some "in (return (show x)) end"
-    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
+    | Some Tactic_in_term | Some Tactic_in_Ltac | Some Tactic_in_Ltac2 ->
        Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
-    | Module _ ->
+    | Some (Module _) | None ->
        None, None
   in
   Scaffold.make ?header ?footer snippet

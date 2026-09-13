@@ -59,7 +59,7 @@ let compile_scaffold ~loc mode scaffold =
 
 let compile_snippet mode snippet =
   let loc = Snippet.loc snippet in
-  let scaffold = Snippet.scaffold mode snippet in
+  let scaffold = Snippet.scaffold ~mode snippet in
   compile_scaffold ~loc mode scaffold
 
 (** {1 Interpretation} *)
