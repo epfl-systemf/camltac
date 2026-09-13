@@ -54,12 +54,12 @@ let compile_scaffold ~loc mode scaffold =
     | _ -> Build_files.save_snippet scaffold
   in
   match mode with
-  | Check -> infer_interface ~loc build_file
+  | Check_expression | Check_module -> infer_interface ~loc build_file
   | _ -> compile_file ~loc build_file
 
 let compile_snippet mode snippet =
   let loc = Snippet.loc snippet in
-  let scaffold = Snippet.scaffold ~mode snippet in
+  let scaffold = Snippet.scaffold mode snippet in
   compile_scaffold ~loc mode scaffold
 
 (** {1 Interpretation} *)
@@ -93,7 +93,7 @@ let poly_default = false
 
 let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; dependencies } as compilation_output) =
   match mode with
-  | Check ->
+  | Check_expression | Check_module ->
      (* Read the interface from the [.mli] file. *)
      let mli_file = compiled_file in
      let intf = read_interface mli_file in
