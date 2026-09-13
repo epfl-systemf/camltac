@@ -43,6 +43,6 @@ type execution_mode =
   | Tactic_in_Ltac             (** Tactic-in-Ltac modality (e.g. [Ltac f := ocaml:(…)]). *)
   | Tactic_in_Ltac2            (** Tactic-in-Ltac2 modality (e.g. [Ltac2 f () := ocaml:(…)]). *)
 
-val scaffold : execution_mode -> t -> string
-(** [scaffold mode snippet] returns the contents of the scaffold file for the
+val scaffold : ?mode:execution_mode -> t -> string
+(** [scaffold ?mode snippet] returns the contents of the scaffold file for the
     given [snippet], assuming [mode] is the execution mode. *)
