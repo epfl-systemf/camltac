@@ -252,6 +252,8 @@ For example, here's an implementation of a simple mutable counter that follows b
 Camltac Module Counter := ocaml:{{
   let value = Summary.ref ~stage:Interp ~name:"counter" 0
 
+  open Summary.Ref
+
   let inc () =
     value := !value + 1
   let print () =

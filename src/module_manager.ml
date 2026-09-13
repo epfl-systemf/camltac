@@ -10,6 +10,10 @@ type state =
     packing_module: string option;
   }
 
+[%%if rocq >= (9, 3)]
+open Summary.Ref
+[%%endif]
+
 let state =
   Summary.ref
     ~stage:Synterp
