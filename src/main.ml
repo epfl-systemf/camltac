@@ -44,16 +44,12 @@ let infer_interface ~loc file =
 let compile_scaffold ~loc mode scaffold =
   let build_file =
     match mode with
-    | Snippet.Module { name; _ } ->
-       begin match name with
-       | Some (name, loc) ->
-          check_module_name ~loc name;
-          if Module_manager.is_loaded name then
-            CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
-          else
-            Build_files.save_module scaffold
-       | _ -> Build_files.save_snippet scaffold
-       end
+    | Snippet.Module { name = Some (name, loc); _ } ->
+       check_module_name ~loc name;
+       if Module_manager.is_loaded name then
+         CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
+       else
+         Build_files.save_module scaffold
     | _ -> Build_files.save_snippet scaffold
   in
   match mode with
