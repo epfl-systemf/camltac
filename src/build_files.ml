@@ -2,7 +2,23 @@
 
 let (/) = Filename.concat
 
-let build_dir = Sys.getcwd () / ".camltac"
+open Names
+
+(* When possible, we create the [.camltac] directory next to the [.v] file Rocq
+   is currently compiling, since it is more robust than using the current
+   working directory. We fallback to the current working directory when using
+   the toplevel. *)
+let root_dir =
+  let current_unit = Lib.library_dp () in
+  let parent_path = Libnames.pop_dirpath current_unit in
+  let using_toplevel = DirPath.is_empty parent_path in
+  if using_toplevel then Sys.getcwd ()
+  else
+    match Loadpath.find_with_logical_path parent_path with
+    | [load_path] -> Loadpath.physical load_path
+    | _ -> assert false
+
+let build_dir = root_dir / ".camltac"
 let snippets_dir = build_dir / "snippets"
 let modules_dir = build_dir / "modules"
 let ppx_dir = build_dir / "ppx"
