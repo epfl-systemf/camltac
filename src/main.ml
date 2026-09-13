@@ -4,9 +4,13 @@
 
 (** {2 Validation} *)
 
+let check_module_not_loaded ~loc name =
+  if Module_manager.is_loaded name then
+    CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
+
 let check_module_name ~loc (name: string) =
   match String.get name 0 with
-  | 'A'..'Z' -> ()
+  | 'A'..'Z' -> check_module_not_loaded ~loc name
   | _ ->
     let suggestion = String.capitalize_ascii name in
     CErrors.user_err ~loc (Pp.(str "Module names must be capitalized.\nHint: did you mean " ++ str suggestion ++ str "?"))
@@ -46,10 +50,7 @@ let compile_scaffold ~loc mode scaffold =
     match mode with
     | Snippet.Module { name = Some (name, loc); _ } ->
        check_module_name ~loc name;
-       if Module_manager.is_loaded name then
-         CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
-       else
-         Build_files.save_module scaffold
+       Build_files.save_module scaffold
     | _ -> Build_files.save_snippet scaffold
   in
   match mode with
