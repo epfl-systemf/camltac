@@ -117,7 +117,7 @@ let run_ocamlfind ?stdout args =
 let compiler = if Dynlink.is_native then "ocamlopt" else "ocamlc"
 
 let compile
-      ?(packages = []) ?(linkpkg = false) ?(linkall = false)
+      ?(packages = []) ?(linkall = false)
       ?(compile_only = false)
       ?(shared = false)
       ?(include_dirs = [])
@@ -129,7 +129,7 @@ let compile
       ?out impl =
   let args, out =
     compilation_args
-      ~packages ~linkpkg ~linkall
+      ~packages ~linkpkg:false ~linkall
       ~compile_only
       ~shared
       ~include_dirs
@@ -140,6 +140,36 @@ let compile
       ?stop_after
       ~infer_interface:false
       ?out
+      impl
+  in
+  match run_ocamlfind (compiler :: args) with
+  | Ok () -> Ok (Option.get out)
+  | Error _ as e ->
+     (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
+        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
+     e
+
+let compile_exe
+      ?(packages = []) ?(linkpkg = false) ?(linkall = false)
+      ?(include_dirs = [])
+      ?(open_modules = [])
+      ?optimize
+      ?(extra_args = [])
+      ?(pp = "ppx_rocq")
+      impl =
+  let out = Filename.remove_extension impl ^ ".exe" in
+  let args, out =
+    compilation_args
+      ~packages ~linkpkg ~linkall
+      ~compile_only:false
+      ~shared:false
+      ~include_dirs
+      ~open_modules
+      ~extra_args
+      ?optimize
+      ~pp
+      ~infer_interface:false
+      ~out
       impl
   in
   match run_ocamlfind (compiler :: args) with
