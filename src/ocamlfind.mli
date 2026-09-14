@@ -20,7 +20,6 @@ val compile :
   ?extra_args:string list ->
   ?pp:string ->
   ?stop_after:[`parsing | `typing | `lambda] ->
-  ?infer_interface:bool ->
   ?out:string ->
   string ->
   (string, int) result
@@ -62,11 +61,38 @@ val compile :
     @param stop_after (default = [None])
       Phase to stop compilation after.
 
-    @param infer_interface (default = [false])
-      If [true], infers an [.mli] interface for the implementation file.
-
     @param out (default = inferred)
       Output file.
+
+    @param impl
+      OCaml implementation file to compile.
+ *)
+
+val infer_interface :
+  ?packages:string list ->
+  ?include_dirs:string list ->
+  ?open_modules:string list ->
+  ?extra_args:string list ->
+  ?pp:string ->
+  string ->
+  (string, int) result
+(** [infer_interface impl] infers the interface of the OCaml [impl] file,
+    returning either [Ok output] or [Error code].
+
+    @param packages (default = [[]])
+      List of additional packages for compilation.
+
+    @param include_dirs (default = [[]])
+      List of additional directories to add to the compilation's search path.
+
+    @param open_modules (default = [[]])
+      List of modules automatically [open] while compiling.
+
+    @param extra_args (default = [[]])
+      Extra set of arguments to pass to the compiler.
+
+    @param pp (default = ["ppx_rocq"])
+      Executable to run as a preprocessor.
 
     @param impl
       OCaml implementation file to compile.
