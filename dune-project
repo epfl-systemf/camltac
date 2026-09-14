@@ -1,5 +1,6 @@
 (lang dune 3.17)
 (using coq 0.10)
+(using directory-targets 0.1)
 
 (name camltac)
 
