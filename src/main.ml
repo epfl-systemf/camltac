@@ -50,8 +50,8 @@ let compile_scaffold ~loc mode scaffold =
     match mode with
     | Snippet.Module { name = Some (name, loc); _ } ->
        check_module_name ~loc name;
-       Build_files.save_module scaffold
-    | _ -> Build_files.save_snippet scaffold
+       Build_files.write_module scaffold
+    | _ -> Build_files.write_snippet scaffold
   in
   match mode with
   | Check_expression | Check_module -> infer_interface ~loc build_file
