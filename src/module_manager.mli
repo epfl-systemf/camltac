@@ -18,6 +18,9 @@ val declare_module : locality:Libobject.locality -> string option -> Compiler.ou
 val loaded_dependencies : unit -> string list
 (** [loaded_dependencies ()] returns all currently loaded dependencies. *)
 
+val modules_dirs : unit -> string list
+(** [modules_dirs ()] returns the list of all directories to modules to include. *)
+
 (** {1 Module aliases}
 
     OCaml has namespacing issues: [Loader.load_file] cannot load two modules

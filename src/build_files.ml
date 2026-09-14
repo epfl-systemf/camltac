@@ -66,6 +66,14 @@ let locate build_file =
       ~file:build_file.path
       ()
 
+let build_dir ?file () =
+  match file with
+  | Some file -> locate { file with path = ".camltac" }
+  | None -> build_dir
+
+let modules_dir ?file () =
+  Filename.concat (build_dir ?file ()) "modules"
+
 (** {1 Write methods} *)
 
 let write ~file contents =
@@ -80,7 +88,7 @@ let write_snippet contents =
   write_temp ~dir:snippets_dir ~prefix:"snippet" contents
 
 let write_module contents =
-  write_temp ~dir:modules_dir ~prefix:"camltac_module__" contents
+  write_temp ~dir:(modules_dir ()) ~prefix:"camltac_module__" contents
 
 let write_ppx_driver contents =
   write_temp ~dir:ppx_dir ~prefix:"ppx" contents

@@ -9,6 +9,7 @@ type output =
 type context =
   { packing_module: string option;    (** A module containing module aliases. *)
     loaded_dependencies: string list; (** List of already loaded dependencies. *)
+    modules_dirs: string list;        (** List of modules directories to include. *)
   }
 
 val compile_with_directives : ?context:context -> Build_files.t -> (output, int) result
