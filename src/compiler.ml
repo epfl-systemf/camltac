@@ -14,14 +14,6 @@ let default_packages =
 let default_open_modules =
   ["Api"; "Prelude"]
 
-(** Relativize [filename] against [dir]. *)
-let relativize ~dir filename =
-  if String.starts_with ~prefix:dir filename then
-    let dirname_length = String.length dir in
-    String.sub filename dirname_length (String.length filename - dirname_length)
-  else
-    filename
-
 type output =
   { compiled_file: string;
     dependencies: string list }
@@ -51,13 +43,11 @@ let empty_context =
   { packing_module = None;
     loaded_dependencies = [] }
 
-let compile ?(context = empty_context) ~(directives: Build_directives.t) ?(infer_interface = false) impl =
+let compile ?(context = empty_context) ~(directives: Build_directives.t) impl =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
   let dependencies = ppx_runtime_deps @ directives.libraries in
-  (* Obtain shorter filenames. *)
-  let impl = relativize ~dir:(Sys.getcwd () ^ "/") impl in
   let* compiled_file =
     Ocamlfind.compile
       ~shared:true
@@ -67,7 +57,6 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) ?(infer
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
-      ~infer_interface
       ~pp
       impl
   in Ok { compiled_file; dependencies }
@@ -77,7 +66,22 @@ let compile_with_directives ?context impl =
   | Ok directives -> compile ?context ~directives impl
   | Error _ as e -> e
 
+let infer_interface ?(context = empty_context) ~(directives: Build_directives.t) impl =
+  let ( let* ) = Result.bind in
+  let* pp = Preprocessors.combine directives.ppx in
+  let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
+  let dependencies = ppx_runtime_deps @ directives.libraries in
+  let* compiled_file =
+    Ocamlfind.infer_interface
+      ~packages:(dependencies @ context.loaded_dependencies @ default_packages)
+      ~include_dirs:[Build_files.modules_dir]
+      ~open_modules:(Option.List.cons context.packing_module default_open_modules)
+      ~extra_args:("-short-paths" :: directives.compiler_options)
+      ~pp
+      impl
+  in Ok { compiled_file; dependencies }
+
 let infer_interface ?context impl =
   match Build_directives.get impl with
-  | Ok directives -> compile ?context ~directives ~infer_interface:true impl
+  | Ok directives -> infer_interface ?context ~directives impl
   | Error _ as e -> e
