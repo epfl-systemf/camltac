@@ -15,14 +15,9 @@ let check_module_name ~loc (name: string) =
     let suggestion = String.capitalize_ascii name in
     CErrors.user_err ~loc (Pp.(str "Module names must be capitalized.\nHint: did you mean " ++ str suggestion ++ str "?"))
 
-let check_file ~loc (file: string) =
-  if not (Sys.file_exists file) then
-    CErrors.user_err ~loc (Pp.(str "File " ++ str file ++ str " does not exist."))
-
 (** {2 Compilation} *)
 
 let compile_file ~loc file =
-  check_file ~loc file;
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
     loaded_dependencies = Module_manager.loaded_dependencies ()
@@ -31,10 +26,10 @@ let compile_file ~loc file =
   match Compiler.compile_with_directives ~context file with
   | Ok out -> out
   | Error code ->
+     let file = Build_files.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let infer_interface ~loc file =
-  check_file ~loc file;
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
     loaded_dependencies = Module_manager.loaded_dependencies ()
@@ -43,6 +38,7 @@ let infer_interface ~loc file =
   match Compiler.infer_interface ~context file with
   | Ok out -> out
   | Error code ->
+     let file = Build_files.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let compile_scaffold ~loc mode scaffold =
@@ -65,7 +61,7 @@ let compile_snippet mode snippet =
 (** {1 Interpretation} *)
 
 let read_interface file =
-  let in_channel = In_channel.open_text file in
+  let in_channel = In_channel.open_text (Build_files.locate file) in
   let intf = In_channel.input_all in_channel in
   In_channel.close_noerr in_channel;
   String.trim intf

@@ -44,6 +44,8 @@ let shorten_filename impl =
   else
     impl
 
+let native = Dynlink.is_native
+
 let compilation_args
       ~packages ~linkpkg ~linkall
       ~compile_only
@@ -56,23 +58,17 @@ let compilation_args
       ?stop_after
       ~infer_interface
       ?out impl =
-  let native = Dynlink.is_native in
+  let impl = Build_files.locate impl in
   let impl = shorten_filename impl in
   let args = ["-impl"; impl] in
   let out =
     match out with
-    | _ when infer_interface -> None
-    | Some out -> Some out
+    | Some out -> out
     | None ->
        let out_extension = output_extension ~stop_after ~shared ~native in
-       let out = Filename.remove_extension impl ^ out_extension in
-       Some out
+       Filename.remove_extension impl ^ out_extension
   in
-  let args =
-    match out with
-    | Some out -> ["-o"; out] @ args
-    | None -> args
-  in
+  let args = if not infer_interface then ["-o"; out] @ args else args in
   let args =
     match stop_after with
     | Some `parsing -> ["-stop-after"; "parsing"] @ args
@@ -96,7 +92,7 @@ let compilation_args
   let args = add_argument ~if_:(shared && not infer_interface) (if native then "-shared" else "-a") args in
   let args = add_argument ~if_:compile_only "-c" args in
   let args = add_argument ~if_:infer_interface "-i" args in
-  args, out
+  args, Build_files.of_path out
 
 (** {2 Calling the compiler} *)
 
@@ -143,7 +139,7 @@ let compile
       impl
   in
   match run_ocamlfind (compiler :: args) with
-  | Ok () -> Ok (Option.get out)
+  | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
@@ -157,7 +153,7 @@ let compile_exe
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let out = Filename.remove_extension impl ^ ".exe" in
+  let out = Filename.remove_extension (Build_files.locate impl) ^ ".exe" in
   let args, out =
     compilation_args
       ~packages ~linkpkg ~linkall
@@ -173,7 +169,7 @@ let compile_exe
       impl
   in
   match run_ocamlfind (compiler :: args) with
-  | Ok () -> Ok (Option.get out)
+  | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
@@ -186,7 +182,8 @@ let infer_interface
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let args, _ =
+  let stdout = Filename.remove_extension (Build_files.locate impl) ^ ".check.mli" in
+  let args, out =
     compilation_args
       ~packages ~linkpkg:false ~linkall:false
       ~compile_only:false
@@ -196,11 +193,11 @@ let infer_interface
       ~extra_args
       ~pp
       ~infer_interface:true
+      ~out:stdout
       impl
   in
-  let stdout = Filename.remove_extension impl ^ ".check.mli" in
   match run_ocamlfind ~stdout (compiler :: args) with
-  | Ok () -> Ok stdout
+  | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
         This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)

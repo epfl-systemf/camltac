@@ -15,7 +15,7 @@ let default_open_modules =
   ["Api"; "Prelude"]
 
 type output =
-  { compiled_file: string;
+  { compiled_file: Build_files.t;
     dependencies: string list }
 
 open Camltac_directives
@@ -62,7 +62,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) impl =
   in Ok { compiled_file; dependencies }
 
 let compile_with_directives ?context impl =
-  match Build_directives.get impl with
+  match Build_directives.get (Build_files.locate impl) with
   | Ok directives -> compile ?context ~directives impl
   | Error _ as e -> e
 
@@ -82,6 +82,6 @@ let infer_interface ?(context = empty_context) ~(directives: Build_directives.t)
   in Ok { compiled_file; dependencies }
 
 let infer_interface ?context impl =
-  match Build_directives.get impl with
+  match Build_directives.get (Build_files.locate impl) with
   | Ok directives -> infer_interface ?context ~directives impl
   | Error _ as e -> e

@@ -14,16 +14,38 @@ val snippets_dir : CUnix.physical_path
 val modules_dir : CUnix.physical_path
 (** [modules_dir] is the path of the directory that stores modules. *)
 
+(** {1 Build files} *)
+
+type t
+(** A build file is a file in a build directory.
+
+    This type is marshable and can be used by a different process,
+    even if its value of [build_dir] differs. This is implemented
+    by recording the current [build_dir], thus making [Build_files.t] values
+    layout-independent.
+ *)
+
+val of_path : CUnix.physical_path -> t
+(** [of_path path] checks whether [path] corresponds to a build file, and if so,
+    converts it to the correct representation.
+
+    @raise InvalidArgument if [path] is not a build file.
+ *)
+
+val locate : t -> CUnix.physical_path
+(** [locate build_file] returns the absolute path of [build_file] by locating it
+    in the build directory where the file was originally created. *)
+
 (** {1 Write methods} *)
 
-val write_snippet : string -> CUnix.physical_path
+val write_snippet : string -> t
 (** [write_snippet contents] saves the contents of the snippet
-    to a fresh file in [snippets_dir]. *)
+    to a fresh build file in [snippets_dir]. *)
 
-val write_module : string -> CUnix.physical_path
+val write_module : string -> t
 (** [write_module contents] saves the contents of the module
-    to a fresh file in [modules_dir]. *)
+    to a fresh build file in [modules_dir]. *)
 
-val write_ppx_driver : string -> CUnix.physical_path
+val write_ppx_driver : string -> t
 (** [write_ppx_driver contents] saves the contents of the given PPX driver to a
-    fresh file. *)
+    fresh build file. *)
