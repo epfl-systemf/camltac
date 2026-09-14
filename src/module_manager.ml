@@ -7,7 +7,7 @@ type camltac_module =
 type state =
   { loaded_modules: camltac_module list;
     loaded_dependencies: string list;
-    packing_module: string option;
+    packing_module: Build_files.t option;
   }
 
 [%%if rocq >= (9, 3)]
@@ -32,7 +32,7 @@ let loaded_dependencies () =
   !state.loaded_dependencies
 
 let module_name filename =
-  Filename.basename filename
+  Filename.basename (Build_files.locate filename)
   |> Filename.remove_extension
   |> String.capitalize_ascii
 

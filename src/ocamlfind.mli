@@ -20,8 +20,8 @@ val compile :
   ?pp:string ->
   ?stop_after:[`parsing | `typing | `lambda] ->
   ?out:string ->
-  string ->
-  (string, int) result
+  Build_files.t ->
+  (Build_files.t, int) result
 (** [compile impl] compiles the OCaml [impl] file, returning either [Ok output] or [Error code].
 
     @param packages (default = [[]])
@@ -73,8 +73,8 @@ val compile_exe :
   ?optimize:[`O2 | `O3] ->
   ?extra_args:string list ->
   ?pp:string ->
-  string ->
-  (string, int) result
+  Build_files.t ->
+  (Build_files.t, int) result
 (** [compile_exe impl] compiles the OCaml [impl] file to an executable,
     returning either [Ok output] or [Error code].
 
@@ -112,8 +112,8 @@ val infer_interface :
   ?open_modules:string list ->
   ?extra_args:string list ->
   ?pp:string ->
-  string ->
-  (string, int) result
+  Build_files.t ->
+  (Build_files.t, int) result
 (** [infer_interface impl] infers the interface of the OCaml [impl] file,
     returning either [Ok output] or [Error code].
 

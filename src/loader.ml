@@ -4,6 +4,7 @@ let load_packages packages =
   Fl_dynload.load_packages packages
 
 let load_file ~public ?(dependencies = []) file =
+  let file = Build_files.locate file in
   assert (Sys.file_exists file);
   assert (String.equal (Filename.extension file) (if Dynlink.is_native then ".cmxs" else ".cma"));
   let load = if public then Dynlink.loadfile else Dynlink.loadfile_private in

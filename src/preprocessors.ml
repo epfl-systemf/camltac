@@ -5,9 +5,12 @@ let combine preprocessors =
   | [] -> Ok "ppx_rocq"
   | _ ->
      let ppx_ml_main = Build_files.write_ppx_driver {|let () = Ppxlib.Driver.standalone ()|} in
-     Ocamlfind.compile_exe
-       ~packages:(["ppxlib"; "ppx_rocq"] @ preprocessors)
-       ~linkpkg:true
-       ~linkall:true
-       ~extra_args:["-predicates"; "ppx_driver"]
-       ppx_ml_main
+     let result =
+       Ocamlfind.compile_exe
+         ~packages:(["ppxlib"; "ppx_rocq"] @ preprocessors)
+         ~linkpkg:true
+         ~linkall:true
+         ~extra_args:["-predicates"; "ppx_driver"]
+         ppx_ml_main
+     in
+     Result.map Build_files.locate result
