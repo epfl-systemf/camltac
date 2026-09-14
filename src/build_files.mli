@@ -14,16 +14,16 @@ val snippets_dir : string
 val modules_dir : string
 (** [modules_dir] is the path of the directory that stores modules. *)
 
-(** {1 Save methods} *)
+(** {1 Write methods} *)
 
-val save_snippet : string -> string
-(** [save_snippet scaffold] saves the contents of the scaffold
+val write_snippet : string -> string
+(** [write_snippet contents] saves the contents of the snippet
     to a fresh file in [snippets_dir]. *)
 
-val save_module : string -> string
-(** [save_module scaffold] saves the contents of the scaffold
+val write_module : string -> string
+(** [write_module contents] saves the contents of the module
     to a fresh file in [modules_dir]. *)
 
-val save_ppx_driver : string -> string
-(** [save_ppx_driver contents] saves the contents of the given PPX driver to a
+val write_ppx_driver : string -> string
+(** [write_ppx_driver contents] saves the contents of the given PPX driver to a
     fresh file. *)

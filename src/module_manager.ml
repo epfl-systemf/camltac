@@ -52,7 +52,7 @@ let packing_module () =
   Option.map module_name !state.packing_module
 
 let generate_packing_module () =
-  let impl = Build_files.save_module (module_aliases ()) in
+  let impl = Build_files.write_module (module_aliases ()) in
   let compilation_output =
     Ocamlfind.compile
       ~compile_only:true

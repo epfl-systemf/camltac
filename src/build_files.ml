@@ -34,19 +34,21 @@ let () =
   mkdir modules_dir;
   mkdir ppx_dir
 
-let save ~file contents =
+(** {1 Write methods} *)
+
+let write ~file contents =
   Out_channel.with_open_text file (fun out_channel -> output_string out_channel contents)
 
-let save_temp ~dir ~prefix contents =
+let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
-  save ~file contents;
+  write ~file contents;
   file
 
-let save_snippet contents =
-  save_temp ~dir:snippets_dir ~prefix:"snippet" contents
+let write_snippet contents =
+  write_temp ~dir:snippets_dir ~prefix:"snippet" contents
 
-let save_module contents =
-  save_temp ~dir:modules_dir ~prefix:"camltac_module__" contents
+let write_module contents =
+  write_temp ~dir:modules_dir ~prefix:"camltac_module__" contents
 
-let save_ppx_driver contents =
-  save_temp ~dir:ppx_dir ~prefix:"ppx" contents
+let write_ppx_driver contents =
+  write_temp ~dir:ppx_dir ~prefix:"ppx" contents
