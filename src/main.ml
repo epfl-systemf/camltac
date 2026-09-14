@@ -20,7 +20,8 @@ let check_module_name ~loc (name: string) =
 let compile_file ~loc file =
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
-    loaded_dependencies = Module_manager.loaded_dependencies ()
+    loaded_dependencies = Module_manager.loaded_dependencies ();
+    modules_dirs = Module_manager.modules_dirs ()
   }
   in
   match Compiler.compile_with_directives ~context file with
@@ -32,7 +33,8 @@ let compile_file ~loc file =
 let infer_interface ~loc file =
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
-    loaded_dependencies = Module_manager.loaded_dependencies ()
+    loaded_dependencies = Module_manager.loaded_dependencies ();
+    modules_dirs = Module_manager.modules_dirs ()
   }
   in
   match Compiler.infer_interface ~context file with

@@ -7,6 +7,7 @@ type camltac_module =
 type state =
   { loaded_modules: camltac_module list;
     loaded_dependencies: string list;
+    modules_dirs : CString.Set.t;
     packing_module: Build_files.t option;
   }
 
@@ -18,7 +19,7 @@ let state =
   Summary.ref
     ~stage:Synterp
     ~name:"state"
-    { loaded_modules = []; loaded_dependencies = []; packing_module = None }
+    { loaded_modules = []; loaded_dependencies = []; modules_dirs = CString.Set.empty; packing_module = None }
 
 let is_loaded m =
   let module_name_eq m' =
@@ -30,6 +31,9 @@ let is_loaded m =
 
 let loaded_dependencies () =
   !state.loaded_dependencies
+
+let modules_dirs () =
+  CString.Set.elements !state.modules_dirs
 
 let module_name filename =
   Filename.basename (Build_files.locate filename)
@@ -56,7 +60,7 @@ let generate_packing_module () =
   let compilation_output =
     Ocamlfind.compile
       ~compile_only:true
-      ~include_dirs:[Build_files.modules_dir]
+      ~include_dirs:(modules_dirs ())
       ~extra_args:["-no-alias-deps"]
       impl
   in
@@ -75,7 +79,9 @@ let load_module m =
      let Compiler.{ compiled_file; dependencies } = m.compilation_output in
      Loader.load_file ~public:true ~dependencies compiled_file;
      state := { !state with loaded_modules = m :: !state.loaded_modules;
-                            loaded_dependencies = dependencies @ !state.loaded_dependencies };
+                            loaded_dependencies = dependencies @ !state.loaded_dependencies;
+                            modules_dirs = CString.Set.add (Build_files.modules_dir ~file:compiled_file ()) !state.modules_dirs
+              };
      generate_packing_module ()
 
 (* We persist the runtime environment of each module, so that it can be

@@ -1,19 +1,5 @@
 (** Methods for saving build artifacts. *)
 
-(** {1 Build directories} *)
-
-val root_dir : CUnix.physical_path
-(** [root_dir] is the parent of [build_dir]. *)
-
-val build_dir : CUnix.physical_path
-(** [build_dir] is the path of the [.camltac] directory. *)
-
-val snippets_dir : CUnix.physical_path
-(** [snippets_dir] is the path of the directory that stores snippets. *)
-
-val modules_dir : CUnix.physical_path
-(** [modules_dir] is the path of the directory that stores modules. *)
-
 (** {1 Build files} *)
 
 type t
@@ -35,6 +21,16 @@ val of_path : CUnix.physical_path -> t
 val locate : t -> CUnix.physical_path
 (** [locate build_file] returns the absolute path of [build_file] by locating it
     in the build directory where the file was originally created. *)
+
+(** {1 Build directories} *)
+
+val build_dir : ?file:t -> unit -> CUnix.physical_path
+(** [build_dir ?file ()] is the path of the [.camltac] directory of
+    [file], if specified, or the current [.camltac] directory otherwise. *)
+
+val modules_dir : ?file:t -> unit -> CUnix.physical_path
+(** [modules_dir ?file ()] is the path of the build directory that stores
+    modules, as a subdirectory of [build_dir ?file ()]. *)
 
 (** {1 Write methods} *)
 
