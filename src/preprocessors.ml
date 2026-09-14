@@ -5,11 +5,9 @@ let combine preprocessors =
   | [] -> Ok "ppx_rocq"
   | _ ->
      let ppx_ml_main = Build_files.write_ppx_driver {|let () = Ppxlib.Driver.standalone ()|} in
-     let out = Filename.remove_extension ppx_ml_main ^ ".exe" in
-     Ocamlfind.compile
+     Ocamlfind.compile_exe
        ~packages:(["ppxlib"; "ppx_rocq"] @ preprocessors)
        ~linkpkg:true
        ~linkall:true
        ~extra_args:["-predicates"; "ppx_driver"]
-       ~out
        ppx_ml_main
