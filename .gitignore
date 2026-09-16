@@ -14,3 +14,6 @@
 
 # Dune
 _build/
+
+# Camltac
+.camltac
