@@ -165,12 +165,12 @@ Pattern matching over goal is implemented by the `match%rocq goal with` syntax:
 
 Camltac Module My_tauto := ocaml:{{
   let run () =
-    let* () = intros () in
+    let* () = intros [] in
     repeat begin match%rocq goal with
     | { h = _ :: {| _ -> ?b |} }, {| ?b |} ->
        let* env in
        let h = Result.get_ok (Ltac2.Control.hyp env h) in
-       apply [(h, NoBindings)]
+       apply [term h]
     | _, {| _ \/ _ |} ->
        Ltac2.Control.plus (left ()) (fun _ -> right ())
     | _, _ ->

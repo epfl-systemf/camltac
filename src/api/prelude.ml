@@ -10,6 +10,7 @@
  *)
 
 include Tactic
+include Ltac2.Syntax
 include Ltac2.Std
 module FFI = Ltac2.FFI
 include Terms.Definitions
