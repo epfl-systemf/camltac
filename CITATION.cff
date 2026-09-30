@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: Camltac
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Dario
+    family-names: Halilovic
+    email: dario.halilovic@epfl.ch
+    affiliation: EPFL SYSTEMF
+repository-code: 'https://github.com/epfl-systemf/camltac'
+abstract: 'Camltac: OCaml as a Tactic Language'
+keywords:
+  - ocaml
+  - rocq
+  - tactic
+  - ltac2
+license: LGPL-2.1-only
+preferred-citation:
+  type: thesis
+  thesis-type: "Master's thesis"
+  title: 'Camltac: OCaml as a Tactic Language'
+  authors:
+    - given-names: Dario
+      family-names: Halilovic
+      email: dario.halilovic@epfl.ch
+      affiliation: EPFL SYSTEMF
+  url: https://infoscience.epfl.ch/entities/publication/926430ae-7511-4498-bb12-5c8cf559ec33
