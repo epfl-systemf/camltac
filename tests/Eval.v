@@ -19,7 +19,7 @@ Proof.
   intros.
   Camltac Eval ocaml:{{
     let* env = Tactic.env in
-    return (Result.get_ok @@ Ltac2.Control.hyp env {%ident| x |})
+    return (Ltac2.Control.hyp env {%ident| x |})
   }}.
   exact I.
 Qed.

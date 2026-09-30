@@ -169,7 +169,7 @@ Camltac Module My_tauto := ocaml:{{
     repeat begin match%rocq goal with
     | { h = _ :: {| _ -> ?b |} }, {| ?b |} ->
        let* env in
-       let h = Result.get_ok (Ltac2.Control.hyp env h) in
+       let h = Ltac2.Control.hyp env h in
        apply [term h]
     | _, {| _ \/ _ |} ->
        Ltac2.Control.plus (left ()) (fun _ -> right ())
