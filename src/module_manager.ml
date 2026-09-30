@@ -11,7 +11,7 @@ type state =
     packing_module: Build_files.t option;
   }
 
-[%%if rocq >= (9, 3)]
+[%%if rocq >= (9, 4)]
 open Summary.Ref
 [%%endif]
 
