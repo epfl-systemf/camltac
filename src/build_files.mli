@@ -15,7 +15,7 @@ val of_path : CUnix.physical_path -> t
 (** [of_path path] checks whether [path] corresponds to a build file, and if so,
     converts it to the correct representation.
 
-    @raise InvalidArgument if [path] is not a build file.
+    @raise Invalid_argument if [path] is not a build file.
  *)
 
 val locate : t -> CUnix.physical_path
