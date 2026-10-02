@@ -55,6 +55,9 @@ let of_path path =
   else
     invalid_arg (Format.sprintf "%s is not a build file." path)
 
+let basename build_file =
+  Filename.basename build_file.path
+
 let locate build_file =
   if DirPath.equal build_file.from root_path then
     (* Build layout. *)

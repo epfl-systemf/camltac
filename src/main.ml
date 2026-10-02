@@ -20,7 +20,7 @@ let check_module_name ~loc (name: string) =
 let compile_file ~loc file =
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
-    loaded_dependencies = Module_manager.loaded_dependencies ();
+    dependencies = Module_manager.dependencies ();
     modules_dirs = Module_manager.modules_dirs ()
   }
   in
@@ -33,7 +33,7 @@ let compile_file ~loc file =
 let infer_interface ~loc file =
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
-    loaded_dependencies = Module_manager.loaded_dependencies ();
+    dependencies = Module_manager.dependencies ();
     modules_dirs = Module_manager.modules_dirs ()
   }
   in
@@ -53,6 +53,12 @@ let compile_scaffold ~loc mode scaffold =
   in
   match mode with
   | Check_expression | Check_module -> infer_interface ~loc build_file
+  | Module { name; _ } ->
+     (* Declare the module at synterp time. *)
+     let name = Option.map fst name in
+     let out = compile_file ~loc build_file in
+     Module_manager.declare_module name out;
+     out
   | _ -> compile_file ~loc build_file
 
 let compile_snippet mode snippet =
@@ -115,6 +121,6 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
   | Module { locality; name; _ } ->
      (* [Module_manager] handles module loading. *)
      let name = Option.map fst name in
-     Module_manager.declare_module ~locality name compilation_output
+     Module_manager.load_module ~locality name compilation_output
   | _ ->
      Loader.load_file ~public:false ~dependencies compiled_file

@@ -22,6 +22,10 @@ val locate : t -> CUnix.physical_path
 (** [locate build_file] returns the absolute path of [build_file] by locating it
     in the build directory where the file was originally created. *)
 
+val basename : t -> string
+(** [basename build_file] returns the basename of [build_file].
+    Equivalent to [Filename.basename (locate build_file)] but more efficient. *)
+
 (** {1 Build directories} *)
 
 val build_dir : ?file:t -> unit -> CUnix.physical_path
