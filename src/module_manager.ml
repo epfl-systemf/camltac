@@ -1,12 +1,13 @@
-(** Handles backtrack state for modules. *)
+(** Global state manager. *)
 
 type camltac_module =
   { name: string option;
     compilation_output: Compiler.output }
 
-type state =
-  { loaded_modules: camltac_module list;
-    loaded_dependencies: string list;
+(** State required for compiling modules properly. *)
+type synterp_state =
+  { compiled_modules: Compiler.output CString.Map.t;
+    dependencies: CString.Set.t;
     modules_dirs : CString.Set.t;
     packing_module: Build_files.t option;
   }
@@ -15,45 +16,49 @@ type state =
 open Summary.Ref
 [%%endif]
 
-let state =
+let synterp_state =
   Summary.ref
     ~stage:Synterp
-    ~name:"state"
-    { loaded_modules = []; loaded_dependencies = []; modules_dirs = CString.Set.empty; packing_module = None }
+    ~name:"camltac:synterp-state"
+    { compiled_modules = CString.Map.empty;
+      dependencies = CString.Set.empty;
+      modules_dirs = CString.Set.empty;
+      packing_module = None
+    }
+
+(** List of names of loaded modules. *)
+let loaded_modules =
+  Summary.ref
+    ~stage:Interp
+    ~name:"camltac:loaded-modules"
+    ([] : string list)
 
 let is_loaded m =
-  let module_name_eq m' =
-    match m'.name with
-    | Some m' -> String.equal m m'
-    | None -> false
-  in
-  List.exists module_name_eq !state.loaded_modules
+  List.exists (String.equal m) !loaded_modules
 
-let loaded_dependencies () =
-  !state.loaded_dependencies
+let dependencies () =
+  CString.Set.elements !synterp_state.dependencies
 
 let modules_dirs () =
-  CString.Set.elements !state.modules_dirs
+  CString.Set.elements !synterp_state.modules_dirs
 
 let module_name filename =
-  Filename.basename (Build_files.locate filename)
+  Build_files.basename filename
   |> Filename.remove_extension
   |> String.capitalize_ascii
 
 (** [module_aliases ()] returns the contents of the packing module. *)
 let module_aliases () =
-  let module_alias { name; compilation_output } =
-    let real_name = module_name compilation_output.compiled_file in
-    match name with
-    | Some name -> Format.sprintf "module %s = %s" name real_name
-    | _ -> ""
+  let module_alias (name, compilation_output) =
+    let real_name = module_name compilation_output.Compiler.compiled_file in
+    Format.sprintf "module %s = %s" name real_name
   in
   (* First element = most recent, so reverse the order. *)
-  let aliases = List.rev_map module_alias !state.loaded_modules in
+  let aliases = List.rev_map module_alias (CString.Map.bindings !synterp_state.compiled_modules) in
   String.concat "\n" aliases
 
 let packing_module () =
-  Option.map module_name !state.packing_module
+  Option.map module_name !synterp_state.packing_module
 
 let generate_packing_module () =
   let impl = Build_files.write_module (module_aliases ()) in
@@ -66,23 +71,42 @@ let generate_packing_module () =
   in
   match compilation_output with
   | Ok packing_module ->
-     state := { !state with packing_module = Some packing_module }
+     synterp_state := { !synterp_state with packing_module = Some packing_module }
   | Error err ->
      CErrors.user_err (Pp.(str "Compilation of packing module failed with error " ++ int err ++ str "."))
 
+let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
+  let new_state =
+    { !synterp_state with
+      dependencies = CString.Set.add_seq (List.to_seq dependencies) !synterp_state.dependencies;
+      modules_dirs = CString.Set.add (Build_files.modules_dir ~file:compiled_file ()) !synterp_state.modules_dirs;
+    }
+  in
+  match name with
+  | Some name ->
+     let compiled_modules = CString.Map.add name out !synterp_state.compiled_modules in
+     synterp_state := { new_state with compiled_modules };
+     generate_packing_module ()
+  | None ->
+     (* Anonymous modules don't trigger a compilation of a new packing module. *)
+     synterp_state := new_state
+
 let load_module m =
   let { name; compilation_output } = m in
-  (* Don't load the module twice. *)
+  let load_module () =
+    let Compiler.{ compiled_file; dependencies } = m.compilation_output in
+    Loader.load_file ~public:true ~dependencies compiled_file;
+    (* Declare the module for it to be included in the module name map. *)
+    declare_module name m.compilation_output
+  in
   match name with
-  | Some name when is_loaded name -> ()
-  | _ ->
-     let Compiler.{ compiled_file; dependencies } = m.compilation_output in
-     Loader.load_file ~public:true ~dependencies compiled_file;
-     state := { !state with loaded_modules = m :: !state.loaded_modules;
-                            loaded_dependencies = dependencies @ !state.loaded_dependencies;
-                            modules_dirs = CString.Set.add (Build_files.modules_dir ~file:compiled_file ()) !state.modules_dirs
-              };
-     generate_packing_module ()
+  | Some name ->
+     (* Don't load the module twice. *)
+     if not (is_loaded name) then begin
+       load_module ();
+       loaded_modules := name :: !loaded_modules;
+     end
+  | None -> load_module ()
 
 (* We persist the runtime environment of each module, so that it can be
    retrieved upon [Require] or [Import]. *)
@@ -155,6 +179,6 @@ let camltac_module : Libobject.locality * camltac_module -> Libobject.obj =
          | Export | SuperGlobal -> Some (locality, v));
   }
 
-let declare_module ~locality name compilation_output =
+let load_module ~locality name compilation_output =
   let m = { name; compilation_output } in
   Lib.add_leaf (camltac_module (locality, m))

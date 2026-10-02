@@ -36,13 +36,13 @@ let ppx_runtime_deps ppxs =
 
 type context =
   { packing_module: string option;
-    loaded_dependencies: string list;
+    dependencies: string list;
     modules_dirs: string list
   }
 
 let empty_context =
   { packing_module = None;
-    loaded_dependencies = [];
+    dependencies = [];
     modules_dirs = []
   }
 
@@ -54,7 +54,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) impl =
   let* compiled_file =
     Ocamlfind.compile
       ~shared:true
-      ~packages:(dependencies @ context.loaded_dependencies @ default_packages)
+      ~packages:(dependencies @ context.dependencies @ default_packages)
       ~linkall:true
       ~include_dirs:(Build_files.modules_dir ~file:impl () :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
@@ -76,7 +76,7 @@ let infer_interface ?(context = empty_context) ~(directives: Build_directives.t)
   let dependencies = ppx_runtime_deps @ directives.libraries in
   let* compiled_file =
     Ocamlfind.infer_interface
-      ~packages:(dependencies @ context.loaded_dependencies @ default_packages)
+      ~packages:(dependencies @ context.dependencies @ default_packages)
       ~include_dirs:(Build_files.modules_dir ~file:impl () :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~extra_args:("-short-paths" :: directives.compiler_options)
