@@ -40,8 +40,6 @@ module Definitions : sig
   type constr = EConstr.constr
   (** Type of well-typed terms. *)
 
-  type open_constr = EConstr.t
-  (** Type of well-typed terms, potentially with holes (evars). *)
 end
 
 include module type of Definitions
@@ -99,7 +97,7 @@ module Constr : sig
 end
 
 module Open_constr : sig
-  type t = open_constr
+  type t = constr
   (** Type of well-typed terms, potentially with holes (evars). *)
 
   val of_constrexpr : constrexpr -> t tactic
