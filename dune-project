@@ -30,13 +30,6 @@
    camltac-directives))
 
 (package
- (name camltac-tests)
- (synopsis "Camltac's test suite")
- (depends
-   camltac
-   rocq-stdlib))
-
-(package
  (name camltac-directives)
  (synopsis "A small preprocessor that handles build directives for Camltac")
  (depends
