@@ -5,7 +5,6 @@
 (using rocq 0.12)
 
 (generate_opam_files true)
-(subst disabled)
 
 (authors "Dario Halilovic")
 (maintainers "Dario Halilovic")

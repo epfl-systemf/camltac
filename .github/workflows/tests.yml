@@ -1,9 +1,9 @@
-name: Examples
+name: Tests
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -23,5 +23,11 @@ jobs:
       - name: Add Rocq-released Opam repository
         run: opam repo add rocq-released https://rocq-prover.github.io/opam/released/
 
+      - name: Install Dune 3.23
+        run: opam install dune.3.23.1
+
       - name: Install Camltac with examples
         run: opam install .
+
+      - name: Run tests
+        run: opam exec -- dune runtest
