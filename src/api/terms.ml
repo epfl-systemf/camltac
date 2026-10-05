@@ -10,7 +10,6 @@ module Definitions = struct
   type glob_constr = Glob_term.glob_constr
   type preterm = glob_constr
   type constr = EConstr.constr
-  type open_constr = EConstr.t
 end
 
 include Definitions
@@ -117,7 +116,7 @@ module Constr = struct
 end
 
 module Open_constr = struct
-  type t = open_constr
+  type t = constr
 
   let of_constrexpr e =
     let* env in

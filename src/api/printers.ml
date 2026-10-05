@@ -21,5 +21,3 @@ let pp_glob_constr = pp_preterm
 
 let pp_constr fmt c =
   with_global_env fmt (fun env sigma -> Printer.pr_econstr_env env sigma c)
-
-let pp_open_constr = pp_constr
