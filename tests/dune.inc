@@ -3,9 +3,8 @@
  (targets Backtrack.output)
  (deps Backtrack.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to Backtrack.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Backtrack.v)))))
+  (with-stdout-to Backtrack.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Backtrack.v))))
 
 (rule
  (alias runtest)
@@ -15,9 +14,8 @@
  (targets Check.output)
  (deps Check.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to Check.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Check.v)))))
+  (with-stdout-to Check.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Check.v))))
 
 (rule
  (alias runtest)
@@ -27,9 +25,8 @@
  (targets Eval.output)
  (deps Eval.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to Eval.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Eval.v)))))
+  (with-stdout-to Eval.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Eval.v))))
 
 (rule
  (alias runtest)
@@ -39,9 +36,8 @@
  (targets InProof.output)
  (deps InProof.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to InProof.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests InProof.v)))))
+  (with-stdout-to InProof.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests InProof.v))))
 
 (rule
  (alias runtest)
@@ -51,9 +47,8 @@
  (targets MatchGoal.output)
  (deps MatchGoal.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to MatchGoal.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests MatchGoal.v)))))
+  (with-stdout-to MatchGoal.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests MatchGoal.v))))
 
 (rule
  (alias runtest)
@@ -63,9 +58,8 @@
  (targets Module.output)
  (deps Module.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to Module.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Module.v)))))
+  (with-stdout-to Module.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Module.v))))
 
 (rule
  (alias runtest)
@@ -75,9 +69,8 @@
  (targets Run.output)
  (deps Run.v (package camltac))
  (action
-  (setenv OCAMLPATH %{project_root}/../install/default/lib
-   (with-stdout-to Run.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Run.v)))))
+  (with-stdout-to Run.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Run.v))))
 
 (rule
  (alias runtest)

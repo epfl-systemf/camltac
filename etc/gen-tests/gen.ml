@@ -8,9 +8,8 @@ let rule name =
  (targets %s.output)
  (deps %s.v (package camltac))
  (action
-  (setenv OCAMLPATH %%{project_root}/../install/default/lib
-   (with-stdout-to %s.output
-    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests %s.v)))))
+  (with-stdout-to %s.output
+   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests %s.v))))
 
 (rule
  (alias runtest)

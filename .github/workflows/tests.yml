@@ -23,11 +23,11 @@ jobs:
       - name: Add Rocq-released Opam repository
         run: opam repo add rocq-released https://rocq-prover.github.io/opam/released/
 
-      - name: Install Dune 3.23
-        run: opam install dune.3.23.1
+      - name: Install dependencies
+        run: opam install . --deps-only
 
-      - name: Install Camltac with examples
-        run: opam install .
+      - name: Build Camltac
+        run: opam exec -- dune build
 
       - name: Run tests
         run: opam exec -- dune runtest
