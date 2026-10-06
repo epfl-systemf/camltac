@@ -7,13 +7,12 @@ license: "LGPL-2.1-only"
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
-  "dune" {>= "3.23"}
+  "dune" {>= "3.17"}
   "camltac"
   "rocq-stdlib"
   "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -27,4 +26,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
-x-maintenance-intent: ["(latest)"]

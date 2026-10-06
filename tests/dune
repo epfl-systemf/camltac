@@ -1,6 +1,6 @@
 (include_subdirs qualified)
 
-(rocq.theory
+(coq.theory
  (name Camltac.Tests)
  (package camltac-tests)
  (plugins camltac.plugin)
@@ -16,3 +16,17 @@
  (targets _dummy_target.v) ;; It's important that it's a .v file, so that it runs before the rocq.theory stanza
  (deps (glob_files *.ml) (package camltac))
  (action (write-file _dummy_target.v "")))
+
+;; We generate Dune rules for expected output tests.
+;; LATER: Use rocq.theory's native support for expected output tests
+;;        when Dune >= 3.23.
+(include dune.inc)
+
+(rule
+ (targets dune.inc.gen)
+ (deps (glob_files *.expected))
+ (action (with-stdout-to dune.inc.gen (run %{exe:../etc/gen-tests/gen.exe} %{deps}))))
+
+(rule
+ (alias runtest)
+ (action (diff dune.inc dune.inc.gen)))
