@@ -1,0 +1,28 @@
+/* Compact hlist: no column separators, minimal padding, no bullets.
+   Used to place a code block next to a footnote marker inside table cells. */
+
+.yue .table-wrapper table.hlist {
+    margin: 0;
+    width: auto;
+}
+
+.yue .table-wrapper table.hlist td {
+    border: 0;
+    padding: 0 .25rem 0 0;
+}
+
+.yue table.hlist ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.yue table.hlist li {
+    margin: 0;
+    padding: 0;
+}
+
+.yue table.hlist li > p,
+.yue table.hlist li > div {
+    margin: 0;
+}

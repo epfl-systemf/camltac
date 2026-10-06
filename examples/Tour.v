@@ -73,7 +73,7 @@ Camltac Module Print_conclusion := ocaml:{{
       Feedback.msg_info pp;
       return ()
     | _ ->
-      fail (Pp.str "No goal focussed")
+      fail (Pp.str "No goal focused")
 }}.
 
 (*|

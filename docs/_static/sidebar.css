@@ -1,0 +1,6 @@
+/* Shibuya places the expand/collapse button of a sidebar entry over its right
+   edge (absolutely positioned, 1.2rem wide): keep long titles clear of it. */
+.globaltoc li:has(> button) > a {
+  display: block;
+  padding-right: 1.8rem;
+}

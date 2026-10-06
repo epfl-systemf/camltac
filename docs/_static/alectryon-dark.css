@@ -1,0 +1,63 @@
+/* Dark-mode overrides for Alectryon (alectryon.css only ships a light palette).
+   Shibuya toggles the `dark` class on <html>. Colors follow catppuccin-mocha. */
+
+html.dark .alectryon-io .alectryon-goals,
+html.dark .alectryon-io .alectryon-messages {
+    background: #181825;
+    border-color: #313244;
+}
+
+html.dark .alectryon-io .alectryon-goal,
+html.dark .alectryon-io .alectryon-message {
+    background: #313244;
+}
+
+html.dark .alectryon-io .goal-hyps > span,
+html.dark .alectryon-io .goal-conclusion,
+html.dark .alectryon-banner {
+    background: #1e1e2e;
+}
+
+html.dark .alectryon-banner {
+    border-color: #45475a;
+}
+
+html.dark .alectryon-banner kbd {
+    background: #313244;
+    border-color: #585b70;
+}
+
+html.dark .alectryon-io .goal-separator hr {
+    border-top-color: #a6adc8;
+}
+
+html.dark .alectryon-bubble:before,
+html.dark .alectryon-toggle-label:before,
+html.dark .alectryon-io label.alectryon-input:after,
+html.dark .alectryon-io .alectryon-goal > label:before {
+    border-color: #585b70;
+}
+
+html.dark .alectryon-toggle:checked + .alectryon-toggle-label:before,
+html.dark .alectryon-io .alectryon-sentence > .alectryon-toggle:checked + label.alectryon-input:after,
+html.dark .alectryon-io .alectryon-extra-goal-toggle:checked + .alectryon-goal > label:before {
+    background-color: #585b70;
+    border-color: #585b70;
+}
+
+@media (any-hover: hover) {
+    html.dark .alectryon-bubble:hover:before,
+    html.dark .alectryon-toggle-label:hover:before,
+    html.dark .alectryon-io label.alectryon-input:hover:after {
+        background: #45475a;
+    }
+
+    html.dark .alectryon-io label.alectryon-input:hover {
+        text-decoration-color: #585b70;
+        text-shadow: 0 0 1px rgba(205, 214, 244, 0.3);
+    }
+}
+
+html.dark .alectryon-windowed {
+    border-color: #cdd6f4;
+}

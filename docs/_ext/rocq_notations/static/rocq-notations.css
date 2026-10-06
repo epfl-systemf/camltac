@@ -1,0 +1,153 @@
+/* Adapted from the Rocq reference manual (notations.css), LGPL 2.1. */
+
+:root {
+  --notation-hole: #ff540a;
+  --notation-bg: #eaeaea;
+  --notation-border: #aaa;
+  --notation-fg: black;
+  --notation-bar: black;
+}
+
+:root[data-theme="dark"], .dark {
+  --notation-hole: #ff7a3d;
+  --notation-bg: #3a3a3a;
+  --notation-border: #666;
+  --notation-fg: #eee;
+  --notation-bar: #ccc;
+}
+
+@font-face { /* edited to center all characters */
+  font-family: 'RocqNotations';
+  font-style: normal;
+  font-weight: 800;
+  src: local('RocqNotations'), url(./RocqNotations.ttf) format('truetype');
+}
+
+.notation {
+  white-space: pre-wrap;
+  font-weight: bold;
+}
+
+.notation .hole {
+  color: var(--notation-hole);
+  font-style: italic;
+  font-weight: bold;
+}
+
+.notation .notation-sup,
+.notation .notation-sub {
+  background: var(--notation-bg);
+  border: 1px solid var(--notation-border);
+  color: var(--notation-fg);
+  display: inline-block;
+  font-size: 0.45em;
+  font-weight: bolder;
+  font-family: RocqNotations, monospace;
+  height: 2.2em;
+  line-height: 1.6em;
+  position: absolute;
+  right: -1em; /* half of the width */
+  text-align: center;
+  width: 2.2em;
+}
+
+.notation .notation-sup { top: -0.4em; }
+.notation .notation-sub { bottom: -0.4em; border-radius: 1rem; }
+
+.notation .repeat,
+.notation .alternative {
+  background: var(--notation-bg);
+  border: 1px solid var(--notation-border);
+  display: inline-block;
+  padding: 0 0.2em 0 0.3em;
+  margin: 0.25em 0;
+}
+
+.notation .repeat { padding-right: 0.6em; } /* room for sub/sup halves */
+.notation .repeated-alternative { display: inline-table; }
+.notation .alternative { display: inline-table; padding: 0 0.2em; }
+.notation .alternative-block { display: table-cell; padding: 0 0.5em; }
+.notation .alternative-separator {
+  border-left: 1px solid var(--notation-bar);
+  display: table-cell;
+  width: 0;
+}
+.alternative-block:first-child { padding-left: 0; }
+.alternative-block:last-child { padding-right: 0; }
+
+.notation .repeat-wrapper,
+.notation .repeat-wrapper-with-sub {
+  display: inline-block;
+  position: relative;
+  margin-right: 0.4em;
+}
+
+/* Production tables (prodn) */
+.prodn-table {
+  display: table;
+  margin: 1.5em 0;
+  vertical-align: baseline;
+  font-weight: bold;
+  font-family: "Lato", var(--sy-f-sys, system-ui), sans-serif;
+  font-size: 1.15em; /* Lato's x-height is smaller than Inter's */
+}
+.prodn-column-group { display: table-column-group; }
+.prodn-column { display: table-column; }
+.prodn-row-group { display: table-row-group; }
+.prodn-row { display: table-row; }
+.prodn-cell-nonterminal,
+.prodn-cell-op,
+.prodn-cell-production,
+.prodn-cell-tag { display: table-cell; }
+.prodn-cell-nonterminal {
+  padding-right: 0.49em;
+  white-space: nowrap;
+  color: var(--notation-hole);
+  font-style: italic;
+}
+.prodn-cell-op { padding-right: 0.9em; font-weight: normal; white-space: nowrap; }
+.prodn-cell-production { width: 99%; }
+.prodn-cell-tag {
+  text-align: right;
+  font-weight: normal;
+  font-size: 75%;
+}
+.prodn-table .notation > .repeat-wrapper { margin-top: 0.28em; }
+.prodn-table .notation > .repeat-wrapper-with-sub { margin: 0.28em 0; }
+
+.inline-grammar-production { font-weight: bold; }
+
+.cmd-signature {
+  display: block;
+  margin: 0.8em 0 0.4em;
+  padding: 0.4em 0.8em;
+  border-left: 3px solid currentColor;
+  background: rgba(127, 127, 127, 0.08);
+  font-weight: bold;
+}
+.cmd-body { margin-left: 1.5em; }
+
+/* :token: references in prose look like the productions they link to. */
+code.xref.std-token,
+code.xref.std-token .pre {
+  color: var(--notation-hole);
+  font-style: italic;
+  font-weight: bold;
+}
+
+table.hlist ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+table.hlist td {
+  vertical-align: top;
+}
+
+.example {
+  margin: 1em 0;
+  padding: 0.2em 1em;
+  border-left: 3px solid var(--notation-hole);
+  background: rgba(127, 127, 127, 0.06);
+}
+.example-title { font-weight: bold; margin-bottom: 0.4em; }

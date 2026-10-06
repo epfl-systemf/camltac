@@ -1,0 +1,169 @@
+/* Styling of the odoc-generated MLtac2 API pages, using Shibuya's variables. */
+
+.odoc .odoc-spec {
+  margin: 1.25rem 0;
+}
+
+.odoc .spec {
+  position: relative;
+  padding: 0.35rem 0.75rem;
+  background: var(--sy-c-surface);
+  border-left: 3px solid var(--sy-c-border);
+  border-radius: 0.25rem;
+  overflow-x: auto;
+}
+
+.odoc .spec:target {
+  border-left-color: var(--sy-c-link);
+}
+
+.odoc .spec > code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--sy-c-text);
+  font-weight: normal;
+  white-space: pre-wrap;
+}
+
+.odoc .spec .keyword {
+  font-weight: bold;
+  color: var(--sy-c-link);
+}
+
+.odoc .spec a {
+  color: inherit;
+  text-decoration: underline dotted;
+}
+
+/* Links to Ltac2 types and Rocq's API in the prose use the same style. */
+.yue a.api-link {
+  color: inherit;
+  text-decoration: underline dotted;
+}
+
+.yue a.api-link code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-weight: normal;
+}
+
+.odoc .spec .xref-unresolved {
+  color: inherit;
+}
+
+/* Every val, type, module, constructor… has an id (odoc's `anchor`): a "#" link
+   shows at the right of the spec on hover. It is inside the box, because the
+   box scrolls horizontally and would clip it otherwise. */
+.odoc .anchored {
+  scroll-margin-top: 5rem; /* keep the target below the sticky header */
+}
+
+.odoc .anchor {
+  position: absolute;
+  right: 0.6rem;
+  text-decoration: none;
+}
+
+.odoc .anchor:before {
+  content: "#";
+  opacity: 0;
+}
+
+.odoc .anchored:hover > .anchor:before,
+.odoc .anchor:focus:before {
+  opacity: 0.6;
+}
+
+.odoc .anchored > .anchor:hover:before {
+  opacity: 1;
+}
+
+.odoc .spec-doc,
+.odoc .odoc-include > .spec-doc {
+  margin: 0.4rem 0 0 0.75rem;
+}
+
+.odoc .spec-doc p {
+  margin: 0.4rem 0;
+}
+
+.odoc ul.at-tags {
+  list-style: none;
+  padding-left: 0;
+}
+
+.odoc .at-tags .at-tag {
+  font-weight: bold;
+  text-transform: capitalize;
+  margin-right: 0.4rem;
+}
+
+.odoc details > summary {
+  cursor: pointer;
+}
+
+/* Constructors, record fields and extension constructors: odoc renders their
+   documentation inline, between (hidden) comment delimiters. */
+.odoc .comment-delim {
+  display: none;
+}
+
+.odoc .spec ol,
+.odoc .spec ul {
+  list-style: none;
+  margin: 0.25rem 0 0.25rem 1.5rem;
+  padding: 0;
+}
+
+.odoc .spec li {
+  position: relative;
+  margin: 0.2rem 0;
+}
+
+.odoc .spec li > code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--sy-c-text);
+  font-weight: normal;
+}
+
+.odoc .spec .def-doc {
+  display: inline;
+  margin-left: 0.75rem;
+}
+
+.odoc .spec .def-doc p {
+  display: inline;
+}
+
+/* Default value of an optional parameter (from `@param x (default = v) …`). */
+.odoc .param-default {
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.85em;
+  color: var(--sy-c-text);
+  background: var(--sy-c-surface);
+  border: 1px solid var(--sy-c-border);
+  border-radius: 1rem;
+}
+
+.odoc .param-default code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* The fully qualified name of a module, below its (short) title. */
+.yue p.module-path {
+  margin-top: -0.5rem;
+  color: var(--sy-c-light);
+}
+
+.yue p.module-path code {
+  color: inherit;
+  font-weight: normal;
+}

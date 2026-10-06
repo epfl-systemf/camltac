@@ -1,0 +1,55 @@
+.search-suggest {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 22rem;
+  overflow-y: auto;
+  background: var(--sy-c-background);
+  border: 1px solid var(--sy-c-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.search-suggest[hidden] { display: none; }
+.search-suggest a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: var(--sy-c-text);
+  font-size: 0.88rem;
+}
+.search-suggest li[aria-selected="true"] a,
+.search-suggest a:hover { background: var(--sy-c-surface); color: var(--sy-c-link-hover); }
+.search-suggest .badge {
+  flex: none;
+  min-width: 2.6rem;
+  text-align: center;
+  padding: 0 4px;
+  font-family: var(--sy-f-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  border: 1px solid var(--sy-c-border);
+  border-radius: 3px;
+  color: var(--sy-c-light);
+}
+.search-suggest .label { overflow-wrap: anywhere; }
+.search-suggest .badge-cmd,
+.search-suggest .badge-attribute { color: var(--sy-c-link); }
+.search-suggest .label { display: flex; flex-direction: column; min-width: 0; }
+.search-suggest .label code {
+  font-family: var(--sy-f-mono);
+  font-size: 0.85em;
+  background: var(--sy-c-surface);
+  border-radius: 3px;
+  padding: 0 4px;
+  align-self: flex-start;
+}
+.search-suggest li[aria-selected="true"] .label code,
+.search-suggest a:hover .label code { background: var(--sy-c-background); }
+.search-suggest .where { font-size: 0.75rem; color: var(--sy-c-light); }
