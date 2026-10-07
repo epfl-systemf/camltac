@@ -65,7 +65,7 @@ let compilation_args
     | None ->
        Build_files.with_extension impl (output_extension ~stop_after ~shared ~native)
   in
-  let args = if not infer_interface then ["-o"; Build_files.locate out] @ args else args in
+  let args = if not infer_interface then ["-o"; Build_files.path out] @ args else args in
   let args =
     match stop_after with
     | Some `parsing -> ["-stop-after"; "parsing"] @ args
@@ -193,7 +193,7 @@ let infer_interface
       ~out:stdout
       impl
   in
-  match run_ocamlfind ~stdout:(Build_files.locate stdout) (compiler :: args) with
+  match run_ocamlfind ~stdout:(Build_files.path stdout) (compiler :: args) with
   | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].

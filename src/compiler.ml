@@ -46,7 +46,7 @@ let empty_context =
     modules_dirs = []
   }
 
-let compile ?(context = empty_context) ~(directives: Build_directives.t) impl =
+let compile ?(context = empty_context) ~(directives: Build_directives.t) (impl: Build_files.t) =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
@@ -56,7 +56,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) impl =
       ~shared:true
       ~packages:(dependencies @ context.dependencies @ default_packages)
       ~linkall:true
-      ~include_dirs:(Build_files.modules_dir ~file:impl () :: context.modules_dirs)
+      ~include_dirs:((Layout.of_root impl.root).modules :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
@@ -69,7 +69,7 @@ let compile_with_directives ?context impl =
   | Ok directives -> compile ?context ~directives impl
   | Error _ as e -> e
 
-let infer_interface ?(context = empty_context) ~(directives: Build_directives.t) impl =
+let infer_interface ?(context = empty_context) ~(directives: Build_directives.t) (impl: Build_files.t) =
   let ( let* ) = Result.bind in
   let* pp = Preprocessors.combine directives.ppx in
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
@@ -77,7 +77,7 @@ let infer_interface ?(context = empty_context) ~(directives: Build_directives.t)
   let* compiled_file =
     Ocamlfind.infer_interface
       ~packages:(dependencies @ context.dependencies @ default_packages)
-      ~include_dirs:(Build_files.modules_dir ~file:impl () :: context.modules_dirs)
+      ~include_dirs:((Layout.of_root impl.root).modules :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp
