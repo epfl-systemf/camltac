@@ -25,15 +25,12 @@ let add_arguments name list acc =
   in
   add list
 
-let output_extension ~stop_after ~shared ~native =
-  match stop_after with
-  | Some `typing -> ".cmi"
-  |_ ->
-    match shared, native with
-    | true, true -> ".cmxs"
-    | true, false -> ".cma"
-    | false, true -> ".cmx"
-    | false, false -> ".cmo"
+let output_extension ~shared ~native =
+  match shared, native with
+  | true, true -> ".cmxs"
+  | true, false -> ".cma"
+  | false, true -> ".cmx"
+  | false, false -> ".cmo"
 
 let native = Dynlink.is_native
 
@@ -46,7 +43,6 @@ let compilation_args
       ~extra_args
       ?optimize
       ~pp
-      ?stop_after
       ~infer_interface
       ?out impl =
   let args = ["-impl"; File.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.locate impl)] in
@@ -54,16 +50,9 @@ let compilation_args
     match out with
     | Some out -> out
     | None ->
-       Build_file.with_extension impl (output_extension ~stop_after ~shared ~native)
+       Build_file.with_extension impl (output_extension ~shared ~native)
   in
   let args = if not infer_interface then ["-o"; Build_file.path out] @ args else args in
-  let args =
-    match stop_after with
-    | Some `parsing -> ["-stop-after"; "parsing"] @ args
-    | Some `typing -> ["-stop-after"; "typing"] @ args
-    | Some `lambda -> ["-stop-after"; "lambda"] @ args
-    | _ -> args
-  in
   let args =
     match optimize with
     | Some `O2 when native -> "-O2" :: args
@@ -109,7 +98,6 @@ let compile
       ?optimize
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
-      ?stop_after
       ?out impl =
   let args, out =
     compilation_args
@@ -121,7 +109,6 @@ let compile
       ~extra_args
       ?optimize
       ~pp
-      ?stop_after
       ~infer_interface:false
       ?out
       impl

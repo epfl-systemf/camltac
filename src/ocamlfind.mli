@@ -18,7 +18,6 @@ val compile :
   ?optimize:[`O2 | `O3] ->
   ?extra_args:string list ->
   ?pp:string ->
-  ?stop_after:[`parsing | `typing | `lambda] ->
   ?out:Build_file.t ->
   Build_file.t ->
   (Build_file.t, int) result
@@ -53,9 +52,6 @@ val compile :
 
     @param pp (default = ["ppx_rocq"])
       Executable to run as a preprocessor.
-
-    @param stop_after (default = [None])
-      Phase to stop compilation after.
 
     @param out (default = inferred)
       Output file.
