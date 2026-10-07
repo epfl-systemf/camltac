@@ -49,7 +49,12 @@ let compile
       ~(directives: Build_directives.t)
       mode (impl: Build_file.t) =
   let ( let* ) = Result.bind in
-  let* pp = Preprocessors.combine directives.ppx in
+  let* pp = Preprocessors.create directives.ppx in
+  let pp =
+    match pp with
+    | Default -> "ppx_rocq"
+    | Custom driver -> Build_file.locate driver
+  in
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
   let dependencies = ppx_runtime_deps @ directives.libraries in
   let* compiled_file =
