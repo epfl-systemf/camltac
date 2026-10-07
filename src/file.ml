@@ -12,3 +12,10 @@ let read filename =
 
 let write ~file contents =
   Out_channel.with_open_text file (fun oc -> output_string oc contents)
+
+(** {1 Utilities} *)
+
+let module_name filename =
+  Filename.basename filename
+  |> Filename.remove_extension
+  |> String.capitalize_ascii

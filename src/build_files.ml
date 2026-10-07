@@ -56,9 +56,7 @@ let of_path path =
     path = String.sub absolute_path prefix_length (String.length absolute_path - prefix_length) }
 
 let module_name build_file =
-  Filename.basename build_file.path
-  |> Filename.remove_extension
-  |> String.capitalize_ascii
+  File.module_name build_file.path
 
 let locate build_file =
   if DirPath.equal build_file.from root_path then

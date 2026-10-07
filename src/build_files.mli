@@ -27,7 +27,9 @@ val locate : t -> CUnix.physical_path
     in the build directory where the file was originally created. *)
 
 val module_name : t -> string
-(** [module_name build_file] returns the module name of [build_file]. *)
+(** [module_name build_file] returns the module name of [build_file].
+
+    Equivalent to [File.module_name (locate build_file)] but more efficient. *)
 
 (** {1 Build directories} *)
 

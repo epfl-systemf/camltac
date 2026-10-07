@@ -106,11 +106,7 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
      { let filename, loc = file in
        (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
        let snippet = Snippet.of_file ~loc filename in
-       let name =
-         Filename.basename filename
-         |> Filename.remove_extension
-         |> String.capitalize_ascii
-       in
+       let name = File.module_name filename in
        let mode = Snippet.Module { name = Some (name, loc); locality } in
        mode, Main.compile_snippet mode snippet }
   -> { let mode, compilation_output = synterp_output in
