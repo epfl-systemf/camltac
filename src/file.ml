@@ -6,9 +6,8 @@ exception Not_found
 (** {1 Read/write} *)
 
 let read filename =
-  if Sys.file_exists filename then
-    In_channel.with_open_text filename In_channel.input_all
-  else
+  try In_channel.with_open_text filename In_channel.input_all
+  with Sys_error _ when Sys.file_exists filename ->
     raise Not_found
 
 let write ~file contents =
