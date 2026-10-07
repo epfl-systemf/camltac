@@ -39,7 +39,7 @@ let write_temp ~dir ~prefix contents =
   { root = Layout.current_root ();
     path = ".camltac" / Filename.basename dir / Filename.basename file }
 
-let write kind contents =
+let write ~kind contents =
   let dir = kind_dir kind in
   let prefix = kind_prefix kind in
   write_temp ~dir ~prefix contents

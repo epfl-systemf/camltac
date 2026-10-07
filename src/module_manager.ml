@@ -56,7 +56,7 @@ let packing_module () =
   Option.map Build_file.module_name !synterp_state.packing_module
 
 let generate_packing_module () =
-  let impl = Build_file.(write Module (module_aliases ())) in
+  let impl = Build_file.(write ~kind:Module (module_aliases ())) in
   let compilation_output =
     Ocamlfind.compile
       ~compile_only:true

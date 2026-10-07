@@ -29,6 +29,6 @@ val module_name : t -> string
 (** Kind of build files. *)
 type kind = Snippet | Module | Ppx_driver
 
-val write : kind -> string -> t
-(** [write kind contents] saves the given contents to a fresh build file. The
+val write : kind:kind -> string -> t
+(** [write ~kind contents] saves the given contents to a fresh build file. The
     exact location where the file is saved depends on [kind]. *)
