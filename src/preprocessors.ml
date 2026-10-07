@@ -8,10 +8,8 @@ let combine preprocessors =
      let result =
        Ocamlfind.ocamlc
          ~packages:(["ppxlib"; "ppx_rocq"] @ preprocessors)
-         ~linkpkg:true
-         ~linkall:true
          ~extra_args:["-predicates"; "ppx_driver"]
-         Ocamlfind.Executable
+         Ocamlfind.(Executable { linkpkg = true; linkall = true })
          ppx_ml_main
      in
      Result.map Build_file.locate result

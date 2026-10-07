@@ -19,19 +19,19 @@ let list_packages ?prefix () =
 let native = Dynlink.is_native
 
 type mode =
-  | Shared_library
-  | Executable
+  | Shared_library of { linkall: bool }
+  | Executable of { linkall: bool; linkpkg: bool }
   | Compile_only
   | Infer_interface
 
 let output_extension mode =
   match mode, native with
-  | Shared_library , true  -> ".cmxs"
-  | Shared_library , false -> ".cma"
-  | Executable     , _     -> ".exe"
-  | Compile_only   , true  -> ".cmx"
-  | Compile_only   , false -> ".cmo"
-  | Infer_interface, _     -> ".check.mli"
+  | Shared_library _, true  -> ".cmxs"
+  | Shared_library _, false -> ".cma"
+  | Executable _    , _     -> ".exe"
+  | Compile_only    , true  -> ".cmx"
+  | Compile_only    , false -> ".cmo"
+  | Infer_interface , _     -> ".check.mli"
 
 let arguments name list =
   let[@tail_mod_cons] rec loop = function
@@ -41,7 +41,7 @@ let arguments name list =
   loop list
 
 let compilation_args
-      ~packages ~linkpkg ~linkall
+      ~packages
       ~include_dirs ~open_modules
       ?optimize
       ~pp
@@ -51,11 +51,11 @@ let compilation_args
   let out = Build_file.with_extension impl (output_extension mode) in
   let args =
      (match mode, native with
-      | Shared_library , true  -> ["-shared"]
-      | Shared_library , false -> ["-a"]
-      | Executable     , _     -> []
-      | Compile_only   , _     -> ["-c"]
-      | Infer_interface, _     -> ["-i"])
+      | Shared_library _, true  -> ["-shared"]
+      | Shared_library _, false -> ["-a"]
+      | Executable _    , _     -> []
+      | Compile_only    , _     -> ["-c"]
+      | Infer_interface , _     -> ["-i"])
     @ ["-impl"; File.relativize_if_under (Build_file.locate impl)]
     @ (if mode <> Infer_interface then ["-o"; Build_file.path out] else [])
     @ (match optimize, native with
@@ -66,14 +66,13 @@ let compilation_args
     @ arguments "-I" include_dirs
     @ arguments "-open" open_modules
     @ ["-pp"; Filename.quote pp ^ " -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true"]
-    @ (match mode, linkall with
-      | (Shared_library | Compile_only | Executable), true -> ["-linkall"]
-      | _                                           , true -> invalid_arg "-linkall not allowed"
-      | _                                           , _    -> [])
-    @ (match mode, linkpkg with
-      | Executable, true -> ["-linkpkg"]
-      | _         , true -> invalid_arg "-linkpkg not allowed"
-      | _         , _    -> [])
+    @ (match mode with
+      | Shared_library { linkall = true }
+      | Executable { linkall = true; _ } -> ["-linkall"]
+      | _                                -> [])
+    @ (match mode with
+      | Executable { linkpkg = true; _ } -> ["-linkpkg"]
+      | _                                -> [])
     @ extra_args
   in
   args, out
@@ -97,7 +96,7 @@ let run_ocamlfind ?stdout args =
 let compiler = if native then "ocamlopt" else "ocamlc"
 
 let ocamlc
-      ?(packages = []) ?(linkpkg = false) ?(linkall = false)
+      ?(packages = [])
       ?(include_dirs = [])
       ?(open_modules = [])
       ?optimize
@@ -106,7 +105,7 @@ let ocamlc
       mode impl =
   let args, out =
     compilation_args
-      ~packages ~linkpkg ~linkall
+      ~packages
       ~include_dirs
       ~open_modules
       ?optimize

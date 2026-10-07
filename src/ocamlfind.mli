@@ -10,11 +10,11 @@ val list_packages : ?prefix:string -> unit -> string list
 
 (** Compilation mode. *)
 type mode =
-  | Shared_library
+  | Shared_library of { linkall : bool }
   (** Build a shared library that can be loaded by [Loader.load_file], i.e.,
       a [.cmxs] file ([-shared]) for native or [.cma] ([-a]) for bytecode. *)
 
-  | Executable
+  | Executable of { linkall : bool; linkpkg : bool }
   (** Build an executable [.exe]. *)
 
   | Compile_only
@@ -25,8 +25,6 @@ type mode =
 
 val ocamlc :
   ?packages:string list ->
-  ?linkpkg:bool ->
-  ?linkall:bool ->
   ?include_dirs:string list ->
   ?open_modules:string list ->
   ?optimize:[`O2 | `O3] ->
@@ -40,12 +38,6 @@ val ocamlc :
 
     @param packages (default = [[]])
       List of additional packages for compilation.
-
-    @param linkpkg (default = [false])
-      If true, link the packages in. Only relevant for executables.
-
-    @param linkall (default = [false])
-      If true, all modules are linked in the final output, even unreferenced one.
 
     @param include_dirs (default = [[]])
       List of additional directories to add to the compilation's search path.
