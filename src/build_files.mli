@@ -11,6 +11,13 @@ type t
     layout-independent.
  *)
 
+(** Kind of build files. *)
+type kind = Snippet | Module | Ppx_driver
+
+val write : kind -> string -> t
+(** [write kind contents] saves the given contents to a fresh build file.
+    The exact location where the file is saved depends on [kind]. *)
+
 val of_path : CUnix.physical_path -> t
 (** [of_path path] checks whether [path] corresponds to a build file, and if so,
     converts it to the correct representation.
@@ -35,17 +42,3 @@ val build_dir : ?file:t -> unit -> CUnix.physical_path
 val modules_dir : ?file:t -> unit -> CUnix.physical_path
 (** [modules_dir ?file ()] is the path of the build directory that stores
     modules, as a subdirectory of [build_dir ?file ()]. *)
-
-(** {1 Write methods} *)
-
-val write_snippet : string -> t
-(** [write_snippet contents] saves the contents of the snippet
-    to a fresh build file in [snippets_dir]. *)
-
-val write_module : string -> t
-(** [write_module contents] saves the contents of the module
-    to a fresh build file in [modules_dir]. *)
-
-val write_ppx_driver : string -> t
-(** [write_ppx_driver contents] saves the contents of the given PPX driver to a
-    fresh build file. *)

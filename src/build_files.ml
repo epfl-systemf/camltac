@@ -77,18 +77,24 @@ let build_dir ?file () =
 let modules_dir ?file () =
   Filename.concat (build_dir ?file ()) "modules"
 
-(** {1 Write methods} *)
+type kind = Snippet | Module | Ppx_driver
 
 let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
   File.write ~file contents;
   of_path file
 
-let write_snippet contents =
-  write_temp ~dir:snippets_dir ~prefix:"snippet" contents
+let kind_dir = function
+  | Snippet -> snippets_dir
+  | Module -> modules_dir ()
+  | Ppx_driver -> ppx_dir
 
-let write_module contents =
-  write_temp ~dir:(modules_dir ()) ~prefix:"camltac_module__" contents
+let kind_prefix = function
+  | Snippet -> "snippet"
+  | Module -> "camltac_module__"
+  | Ppx_driver -> "ppx"
 
-let write_ppx_driver contents =
-  write_temp ~dir:ppx_dir ~prefix:"ppx" contents
+let write kind contents =
+  let dir = kind_dir kind in
+  let prefix = kind_prefix kind in
+  write_temp ~dir ~prefix contents

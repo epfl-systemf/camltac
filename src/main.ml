@@ -44,13 +44,14 @@ let infer_interface ~loc file =
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let compile_scaffold ~loc mode scaffold =
-  let build_file =
+  let file_kind =
     match mode with
     | Snippet.Module { name = Some (name, loc); _ } ->
        check_module_name ~loc name;
-       Build_files.write_module scaffold
-    | _ -> Build_files.write_snippet scaffold
+       Build_files.Module
+    | _ -> Build_files.Snippet
   in
+  let build_file = Build_files.write file_kind scaffold in
   match mode with
   | Check_expression | Check_module -> infer_interface ~loc build_file
   | Module { name; _ } ->
