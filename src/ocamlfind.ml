@@ -15,16 +15,13 @@ let list_packages ?prefix () =
 
 (** {2 Arguments} *)
 
-(** Whether we are using the native compiler or not. *)
-let native = Dynlink.is_native
-
 type mode =
   | Shared_library of { linkall: bool }
   | Executable of { linkall: bool; linkpkg: bool }
   | Compile_only
   | Infer_interface
 
-let output_extension mode =
+let output_extension mode ~native =
   match mode, native with
   | Shared_library _, true  -> ".cmxs"
   | Shared_library _, false -> ".cma"
@@ -41,6 +38,7 @@ let arguments name list =
   loop list
 
 let compilation_args
+      ~native
       ~packages
       ~include_dirs ~open_modules
       ?optimize
@@ -48,7 +46,7 @@ let compilation_args
       ~extra_args
       mode
       impl =
-  let out = Build_file.with_extension impl (output_extension mode) in
+  let out = Build_file.with_extension impl (output_extension mode ~native) in
   let args =
      (match mode, native with
       | Shared_library _, true  -> ["-shared"]
@@ -93,9 +91,8 @@ let run_command ?stdout prog args =
 let run_ocamlfind ?stdout args =
   run_command ?stdout (ocamlfind ()) args
 
-let compiler = if native then "ocamlopt" else "ocamlc"
-
 let ocamlc
+      ?(native = Dynlink.is_native)
       ?(packages = [])
       ?(include_dirs = [])
       ?(open_modules = [])
@@ -103,8 +100,10 @@ let ocamlc
       ?(pp = "ppx_rocq")
       ?(extra_args = [])
       mode impl =
+  let compiler = if native then "ocamlopt" else "ocamlc" in
   let args, out =
     compilation_args
+      ~native
       ~packages
       ~include_dirs
       ~open_modules

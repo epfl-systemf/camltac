@@ -9,7 +9,9 @@ let driver_contents =
 
 let build_custom ppxs =
   let ppx_driver = Build_file.(write ~kind:Ppx_driver driver_contents) in
+  (* We use bytecode mode since it links much faster than native. *)
   Ocamlfind.ocamlc
+    ~native:false
     ~packages:(["ppxlib"; "ppx_rocq"] @ ppxs)
     ~extra_args:["-predicates"; "ppx_driver"]
     Ocamlfind.(Executable { linkpkg = true; linkall = true })
