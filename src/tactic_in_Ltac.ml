@@ -36,7 +36,7 @@ let () =
 
 let interp ist (_, compilation_output) =
   let Compiler.{ compiled_file; dependencies } = compilation_output in
-  Loader.load_file ~public:false ~dependencies compiled_file;
+  Loader.load_file ~dependencies `Private compiled_file;
   let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
   (* Get the resulting tactic. *)
   let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in

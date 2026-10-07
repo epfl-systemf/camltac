@@ -90,7 +90,7 @@ let load_module m =
   let { name; compilation_output } = m in
   let load_module () =
     let Compiler.{ compiled_file; dependencies } = m.compilation_output in
-    Loader.load_file ~public:true ~dependencies compiled_file;
+    Loader.load_file ~dependencies `Public compiled_file;
     (* Declare the module for it to be included in the module name map. *)
     declare_module name m.compilation_output
   in
