@@ -58,10 +58,10 @@ let packing_module () =
 let generate_packing_module () =
   let impl = Build_file.(write ~kind:Module (module_aliases ())) in
   let compilation_output =
-    Ocamlfind.compile
-      ~compile_only:true
+    Ocamlfind.ocamlc
       ~include_dirs:(modules_dirs ())
       ~extra_args:["-no-alias-deps"]
+      Ocamlfind.Compile_only
       impl
   in
   match compilation_output with

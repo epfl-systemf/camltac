@@ -52,8 +52,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) (impl: 
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
   let dependencies = ppx_runtime_deps @ directives.libraries in
   let* compiled_file =
-    Ocamlfind.compile
-      ~shared:true
+    Ocamlfind.ocamlc
       ~packages:(dependencies @ context.dependencies @ default_packages)
       ~linkall:true
       ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
@@ -61,6 +60,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) (impl: 
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp
+      Ocamlfind.Shared_library
       impl
   in Ok { compiled_file; dependencies }
 
@@ -75,12 +75,13 @@ let infer_interface ?(context = empty_context) ~(directives: Build_directives.t)
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
   let dependencies = ppx_runtime_deps @ directives.libraries in
   let* compiled_file =
-    Ocamlfind.infer_interface
+    Ocamlfind.ocamlc
       ~packages:(dependencies @ context.dependencies @ default_packages)
       ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp
+      Ocamlfind.Infer_interface
       impl
   in Ok { compiled_file; dependencies }
 
