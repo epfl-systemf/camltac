@@ -21,10 +21,10 @@ let module_name build_file =
 
 type kind = Snippet | Module | Ppx_driver
 
-let kind_dir = function
-  | Snippet -> (Layout.current ()).snippets
-  | Module -> (Layout.current ()).modules
-  | Ppx_driver -> (Layout.current ()).ppx
+let kind_dir ~(layout: Layout.t) = function
+  | Snippet -> layout.snippets
+  | Module -> layout.modules
+  | Ppx_driver -> layout.ppx
 
 let kind_prefix = function
   | Snippet -> "snippet"
@@ -36,10 +36,12 @@ let (/) = Filename.concat
 let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
   File.write ~file contents;
-  { root = Layout.current_root ();
-    path = ".camltac" / Filename.basename dir / Filename.basename file }
+  file
 
 let write ~kind contents =
-  let dir = kind_dir kind in
+  let layout = Layout.current () in
+  let dir = kind_dir ~layout kind in
   let prefix = kind_prefix kind in
-  write_temp ~dir ~prefix contents
+  let file = write_temp ~dir ~prefix contents in
+  { root = layout.root;
+    path = Filename.dirname (File.relativize_if_under ~dir:layout.build file) }

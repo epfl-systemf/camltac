@@ -19,3 +19,11 @@ let module_name filename =
   Filename.basename filename
   |> Filename.remove_extension
   |> String.capitalize_ascii
+
+let relativize_if_under ?(dir = Sys.getcwd ()) filename =
+  let prefix = dir ^ "/" in
+  if String.starts_with ~prefix filename then
+    let prefix_length = String.length prefix in
+    String.sub filename prefix_length (String.length filename - prefix_length)
+  else
+    filename

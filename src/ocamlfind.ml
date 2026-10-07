@@ -35,15 +35,6 @@ let output_extension ~stop_after ~shared ~native =
     | false, true -> ".cmx"
     | false, false -> ".cmo"
 
-(* Obtain shorter filenames for better error messages. *)
-let shorten_filename impl =
-  let prefix = Sys.getcwd () ^ "/" in
-  if String.starts_with ~prefix impl then
-    let prefix_length = String.length prefix in
-    String.sub impl prefix_length (String.length impl - prefix_length)
-  else
-    impl
-
 let native = Dynlink.is_native
 
 let compilation_args
@@ -58,7 +49,7 @@ let compilation_args
       ?stop_after
       ~infer_interface
       ?out impl =
-  let args = ["-impl"; shorten_filename (Build_file.locate impl)] in
+  let args = ["-impl"; File.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.locate impl)] in
   let out =
     match out with
     | Some out -> out
