@@ -10,3 +10,6 @@ let read filename =
     In_channel.with_open_text filename In_channel.input_all
   else
     raise Not_found
+
+let write ~file contents =
+  Out_channel.with_open_text file (fun oc -> output_string oc contents)

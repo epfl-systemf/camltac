@@ -9,3 +9,7 @@ val read : string -> string
 (** [read filename] returns the contents of the given file.
 
     @raise Not_found if [filename] does not correspond to a file. *)
+
+val write : file:string -> string -> unit
+(** [write ~file contents] writes the given [contents] to [file], creating it if
+    it does not exist, or overwriting its previous content. *)

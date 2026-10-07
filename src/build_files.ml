@@ -79,12 +79,9 @@ let modules_dir ?file () =
 
 (** {1 Write methods} *)
 
-let write ~file contents =
-  Out_channel.with_open_text file (fun out_channel -> output_string out_channel contents)
-
 let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
-  write ~file contents;
+  File.write ~file contents;
   of_path file
 
 let write_snippet contents =
