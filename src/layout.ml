@@ -33,6 +33,7 @@ let path root file =
   match root with
   | Physical physical -> physical / file
   | Logical logical ->
+     (* TODO: This raises a warning on ambiguous load paths. *)
      let dir = Loadpath.find_extra_dep_with_logical_path ~from:logical ~file:"" () in
      dir / file
 
