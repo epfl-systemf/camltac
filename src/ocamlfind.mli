@@ -19,7 +19,7 @@ val compile :
   ?extra_args:string list ->
   ?pp:string ->
   ?stop_after:[`parsing | `typing | `lambda] ->
-  ?out:string ->
+  ?out:Build_files.t ->
   Build_files.t ->
   (Build_files.t, int) result
 (** [compile impl] compiles the OCaml [impl] file, returning either [Ok output] or [Error code].

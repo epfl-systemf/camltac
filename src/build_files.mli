@@ -18,12 +18,9 @@ val write : kind -> string -> t
 (** [write kind contents] saves the given contents to a fresh build file.
     The exact location where the file is saved depends on [kind]. *)
 
-val of_path : CUnix.physical_path -> t
-(** [of_path path] checks whether [path] corresponds to a build file, and if so,
-    converts it to the correct representation.
-
-    @raise Invalid_argument if [path] is not a build file.
- *)
+val with_extension : t -> string -> t
+(** [with_extension build_file ext] returns a build file with the given
+    extension. *)
 
 val locate : t -> CUnix.physical_path
 (** [locate build_file] returns the absolute path of [build_file] by locating it

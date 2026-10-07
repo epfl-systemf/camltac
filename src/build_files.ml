@@ -45,15 +45,15 @@ type t =
     path: CUnix.physical_path (** Path relative to [from]. *)
   }
 
+let with_extension build_file ext =
+  { build_file with path = Filename.remove_extension build_file.path ^ ext }
+
 let of_path path =
-  let absolute_path = if Filename.is_implicit path then Filename.concat (Sys.getcwd ()) path else path in
+  let absolute_path = if Filename.is_relative path then Filename.concat (Sys.getcwd ()) path else path in
   let prefix = root_dir ^ "/" in
-  if String.starts_with ~prefix absolute_path then
-    let prefix_length = String.length prefix in
-    { from = root_path;
-      path = String.sub absolute_path prefix_length (String.length absolute_path - prefix_length) }
-  else
-    invalid_arg (Format.sprintf "%s is not a build file." path)
+  let prefix_length = String.length prefix in
+  { from = root_path;
+    path = String.sub absolute_path prefix_length (String.length absolute_path - prefix_length) }
 
 let module_name build_file =
   Filename.basename build_file.path

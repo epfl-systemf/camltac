@@ -58,17 +58,14 @@ let compilation_args
       ?stop_after
       ~infer_interface
       ?out impl =
-  let impl = Build_files.locate impl in
-  let impl = shorten_filename impl in
-  let args = ["-impl"; impl] in
+  let args = ["-impl"; shorten_filename (Build_files.locate impl)] in
   let out =
     match out with
     | Some out -> out
     | None ->
-       let out_extension = output_extension ~stop_after ~shared ~native in
-       Filename.remove_extension impl ^ out_extension
+       Build_files.with_extension impl (output_extension ~stop_after ~shared ~native)
   in
-  let args = if not infer_interface then ["-o"; out] @ args else args in
+  let args = if not infer_interface then ["-o"; Build_files.locate out] @ args else args in
   let args =
     match stop_after with
     | Some `parsing -> ["-stop-after"; "parsing"] @ args
@@ -92,7 +89,7 @@ let compilation_args
   let args = add_argument ~if_:(shared && not infer_interface) (if native then "-shared" else "-a") args in
   let args = add_argument ~if_:compile_only "-c" args in
   let args = add_argument ~if_:infer_interface "-i" args in
-  args, Build_files.of_path out
+  args, out
 
 (** {2 Calling the compiler} *)
 
@@ -153,7 +150,7 @@ let compile_exe
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let out = Filename.remove_extension (Build_files.locate impl) ^ ".exe" in
+  let out = Build_files.with_extension impl ".exe" in
   let args, out =
     compilation_args
       ~packages ~linkpkg ~linkall
@@ -182,7 +179,7 @@ let infer_interface
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let stdout = Filename.remove_extension (Build_files.locate impl) ^ ".check.mli" in
+  let stdout = Build_files.with_extension impl ".check.mli" in
   let args, out =
     compilation_args
       ~packages ~linkpkg:false ~linkall:false
@@ -196,7 +193,7 @@ let infer_interface
       ~out:stdout
       impl
   in
-  match run_ocamlfind ~stdout (compiler :: args) with
+  match run_ocamlfind ~stdout:(Build_files.locate stdout) (compiler :: args) with
   | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
