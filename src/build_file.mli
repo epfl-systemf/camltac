@@ -2,11 +2,11 @@
 
 (** {1 Build files} *)
 
+type t
 (** A build file is a file in a build directory. *)
-type t = private
-  { root : Layout.root;        (** Root of the layout where the build file is installed. *)
-    path : CUnix.physical_path (** Path relative to [root]. *)
-  }
+
+val layout : t -> Layout.t
+(** [layout file] returns the layout which includes the build file. *)
 
 val locate : t -> CUnix.physical_path
 (** [locate file] looks for the given [file] by locating it in the build

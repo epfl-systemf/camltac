@@ -56,7 +56,7 @@ let compile ?(context = empty_context) ~(directives: Build_directives.t) (impl: 
       ~shared:true
       ~packages:(dependencies @ context.dependencies @ default_packages)
       ~linkall:true
-      ~include_dirs:((Layout.of_root impl.root).modules :: context.modules_dirs)
+      ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
@@ -77,7 +77,7 @@ let infer_interface ?(context = empty_context) ~(directives: Build_directives.t)
   let* compiled_file =
     Ocamlfind.infer_interface
       ~packages:(dependencies @ context.dependencies @ default_packages)
-      ~include_dirs:((Layout.of_root impl.root).modules :: context.modules_dirs)
+      ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
       ~open_modules:(Option.List.cons context.packing_module default_open_modules)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp

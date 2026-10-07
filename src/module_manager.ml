@@ -74,7 +74,7 @@ let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
   let new_state =
     { !synterp_state with
       dependencies = CString.Set.add_seq (List.to_seq dependencies) !synterp_state.dependencies;
-      modules_dirs = CString.Set.add (Layout.of_root compiled_file.root).modules !synterp_state.modules_dirs;
+      modules_dirs = CString.Set.add (Build_file.layout compiled_file).modules !synterp_state.modules_dirs;
     }
   in
   match name with

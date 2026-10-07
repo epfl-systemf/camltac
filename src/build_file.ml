@@ -3,13 +3,13 @@
 (** {1 Build files} *)
 
 type t =
-  { root: Layout.root; path: CUnix.physical_path }
+  { root: Layout.root;        (** Root of the layout. *)
+    path: CUnix.physical_path (** Path relative to [root]. *)
+  }
 
-let locate file =
-  Layout.resolve file.root file.path
-
-let path file =
-  Layout.path file.root file.path
+let layout file = Layout.of_root file.root
+let locate file = Layout.resolve file.root file.path
+let path file = Layout.path file.root file.path
 
 let with_extension file ext =
   { file with path = Filename.remove_extension file.path ^ ext }
