@@ -69,10 +69,9 @@ let compile_snippet mode snippet =
 (** {1 Interpretation} *)
 
 let read_interface file =
-  let in_channel = In_channel.open_text (Build_files.locate file) in
-  let intf = In_channel.input_all in_channel in
-  In_channel.close_noerr in_channel;
-  String.trim intf
+  Build_files.locate file
+  |> File.read
+  |> String.trim
 
 let simplify_interface intf =
   (* Simplify interface for single-values. *)
