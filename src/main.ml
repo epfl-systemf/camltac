@@ -27,7 +27,7 @@ let compile_file ~loc file =
   match Compiler.compile_with_directives ~context file with
   | Ok out -> out
   | Error code ->
-     let file = Build_files.locate file in
+     let file = Build_file.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let infer_interface ~loc file =
@@ -40,7 +40,7 @@ let infer_interface ~loc file =
   match Compiler.infer_interface ~context file with
   | Ok out -> out
   | Error code ->
-     let file = Build_files.locate file in
+     let file = Build_file.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let compile_scaffold ~loc mode scaffold =
@@ -48,10 +48,10 @@ let compile_scaffold ~loc mode scaffold =
     match mode with
     | Snippet.Module { name = Some (name, loc); _ } ->
        check_module_name ~loc name;
-       Build_files.Module
-    | _ -> Build_files.Snippet
+       Build_file.Module
+    | _ -> Build_file.Snippet
   in
-  let build_file = Build_files.write file_kind scaffold in
+  let build_file = Build_file.write file_kind scaffold in
   match mode with
   | Check_expression | Check_module -> infer_interface ~loc build_file
   | Module { name; _ } ->
@@ -70,7 +70,7 @@ let compile_snippet mode snippet =
 (** {1 Interpretation} *)
 
 let read_interface file =
-  Build_files.locate file
+  Build_file.locate file
   |> File.read
   |> String.trim
 

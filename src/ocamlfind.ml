@@ -58,14 +58,14 @@ let compilation_args
       ?stop_after
       ~infer_interface
       ?out impl =
-  let args = ["-impl"; shorten_filename (Build_files.locate impl)] in
+  let args = ["-impl"; shorten_filename (Build_file.locate impl)] in
   let out =
     match out with
     | Some out -> out
     | None ->
-       Build_files.with_extension impl (output_extension ~stop_after ~shared ~native)
+       Build_file.with_extension impl (output_extension ~stop_after ~shared ~native)
   in
-  let args = if not infer_interface then ["-o"; Build_files.path out] @ args else args in
+  let args = if not infer_interface then ["-o"; Build_file.path out] @ args else args in
   let args =
     match stop_after with
     | Some `parsing -> ["-stop-after"; "parsing"] @ args
@@ -150,7 +150,7 @@ let compile_exe
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let out = Build_files.with_extension impl ".exe" in
+  let out = Build_file.with_extension impl ".exe" in
   let args, out =
     compilation_args
       ~packages ~linkpkg ~linkall
@@ -179,7 +179,7 @@ let infer_interface
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let stdout = Build_files.with_extension impl ".check.mli" in
+  let stdout = Build_file.with_extension impl ".check.mli" in
   let args, out =
     compilation_args
       ~packages ~linkpkg:false ~linkall:false
@@ -193,7 +193,7 @@ let infer_interface
       ~out:stdout
       impl
   in
-  match run_ocamlfind ~stdout:(Build_files.path stdout) (compiler :: args) with
+  match run_ocamlfind ~stdout:(Build_file.path stdout) (compiler :: args) with
   | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
