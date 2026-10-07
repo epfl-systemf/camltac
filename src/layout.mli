@@ -9,23 +9,25 @@ open Names
 type root =
   | Logical of DirPath.t
   (** Build artifacts are resolved relative to the logical path.
+
       Used by [rocq c]. This mode supports relocation of build artifacts. *)
 
   | Physical of CUnix.physical_path
   (** Build artifacts are stored at the given physical location.
+
       Used by [rocq top] and IDEs. *)
 
 val current_root : unit -> root
 (** [current_root ()] returns the root of the current layout. *)
 
 val resolve : root -> CUnix.physical_path -> CUnix.physical_path
-(** [resolve root path] resolves the given physical path against the
+(** [resolve root file] resolves the given physical path against the
     root, checking for file existence.
 
-    @raise UserErr if [path] does not resolve to a file. *)
+    @raise UserErr if [file] does not resolve to a file. *)
 
 val path : root -> CUnix.physical_path -> CUnix.physical_path
-(** [path root path] resolves the [path] against the root and
+(** [path root file] resolves the [file] against the root and
     returns the obtained full path. *)
 
 (** {1 Layouts} *)
