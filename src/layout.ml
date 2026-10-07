@@ -10,6 +10,15 @@ type root =
   | Logical of DirPath.t
   | Physical of CUnix.physical_path
 
+let root_path = function
+  | Physical physical -> physical
+  | Logical logical ->
+     match Loadpath.find_with_logical_path logical with
+     | [] -> CErrors.user_err (Pp.(str "No LoadPath found for " ++ DirPath.print logical ++ str "."))
+     | loadpath :: _ ->
+        (* TODO: Warn on ambiguous load paths? *)
+        Loadpath.physical loadpath
+
 let current_root () =
   let library_path = Libnames.pop_dirpath (Lib.library_dp ()) in
   let is_toplevel = DirPath.is_empty library_path in
@@ -30,17 +39,12 @@ let resolve root file =
      Loadpath.find_extra_dep_with_logical_path ~from:logical ~file ()
 
 let path root file =
-  match root with
-  | Physical physical -> physical / file
-  | Logical logical ->
-     (* TODO: This raises a warning on ambiguous load paths. *)
-     let dir = Loadpath.find_extra_dep_with_logical_path ~from:logical ~file:"" () in
-     dir / file
+  root_path root / file
 
 (** {1 Layouts} *)
 
 type t =
-  { root     : root;
+  { root     : CUnix.physical_path;
     build    : CUnix.physical_path;
     snippets : CUnix.physical_path;
     modules  : CUnix.physical_path;
@@ -48,7 +52,8 @@ type t =
   }
 
 let of_root root =
-  let build = path root ".camltac" in
+  let root = root_path root in
+  let build = root / ".camltac" in
   { root;
     build;
     snippets = build / "snippets";

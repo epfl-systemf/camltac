@@ -30,11 +30,11 @@ val path : root -> CUnix.physical_path -> CUnix.physical_path
 (** [path root file] resolves the [file] against the root and
     returns the obtained full path. *)
 
-(** {1 Layouts} *)
+(** {1 Physical layouts} *)
 
 (** Layout for build directories. *)
 type t = private
- { root     : root;                (** Root of the layout. *)
+ { root     : CUnix.physical_path; (** Root of the layout. *)
    build    : CUnix.physical_path; (** Path where build artifacts are stored (i.e., the [.camltac] directory). *)
    snippets : CUnix.physical_path; (** Path where snippets are stored. *)
    modules  : CUnix.physical_path; (** Path where modules are stored. *)

@@ -31,8 +31,6 @@ let kind_prefix = function
   | Module -> "camltac_module__"
   | Ppx_driver -> "ppx"
 
-let (/) = Filename.concat
-
 let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
   File.write ~file contents;
@@ -43,5 +41,5 @@ let write ~kind contents =
   let dir = kind_dir ~layout kind in
   let prefix = kind_prefix kind in
   let file = write_temp ~dir ~prefix contents in
-  { root = layout.root;
-    path = Filename.dirname (File.relativize_if_under ~dir:layout.build file) }
+  { root = Layout.current_root ();
+    path = File.relativize_if_under ~dir:layout.root file }
