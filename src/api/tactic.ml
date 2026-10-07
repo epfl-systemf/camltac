@@ -1,7 +1,5 @@
 (** Standard tactic syntax. *)
 
-open Names
-
 (** {1 Tactic monad} *)
 
 type +'a tactic = 'a Proofview.tactic
@@ -25,7 +23,7 @@ let id id =
   let qualid = Libnames.qualid_of_string id in
   Proofview.IdSelector qualid
 [%%else]
-let id id = Proofview.IdSelector (Id.of_string id)
+let id id = Proofview.IdSelector (Names.Id.of_string id)
 [%%endif]
 
 let only selectors t = Proofview.tclFOCUSSELECTORLIST selectors t
@@ -36,7 +34,7 @@ let nth n = Goal_select.SelectNth n
 let range i j =
   Goal_select.SelectList [(i, j)]
 let id id =
-  Goal_select.SelectId (Id.of_string id)
+  Goal_select.SelectId (Names.Id.of_string id)
 
 let only selectors t =
   (* Fuse [nth] and [range] selectors. *)
