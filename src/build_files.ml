@@ -55,8 +55,10 @@ let of_path path =
   else
     invalid_arg (Format.sprintf "%s is not a build file." path)
 
-let basename build_file =
+let module_name build_file =
   Filename.basename build_file.path
+  |> Filename.remove_extension
+  |> String.capitalize_ascii
 
 let locate build_file =
   if DirPath.equal build_file.from root_path then

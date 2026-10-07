@@ -42,15 +42,10 @@ let dependencies () =
 let modules_dirs () =
   CString.Set.elements !synterp_state.modules_dirs
 
-let module_name filename =
-  Build_files.basename filename
-  |> Filename.remove_extension
-  |> String.capitalize_ascii
-
 (** [module_aliases ()] returns the contents of the packing module. *)
 let module_aliases () =
   let module_alias (name, compilation_output) =
-    let real_name = module_name compilation_output.Compiler.compiled_file in
+    let real_name = Build_files.module_name compilation_output.Compiler.compiled_file in
     Format.sprintf "module %s = %s" name real_name
   in
   (* First element = most recent, so reverse the order. *)
@@ -58,7 +53,7 @@ let module_aliases () =
   String.concat "\n" aliases
 
 let packing_module () =
-  Option.map module_name !synterp_state.packing_module
+  Option.map Build_files.module_name !synterp_state.packing_module
 
 let generate_packing_module () =
   let impl = Build_files.(write Module (module_aliases ())) in
