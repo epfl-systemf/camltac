@@ -71,7 +71,7 @@ let current_context () =
   }
 
 let report_error ~loc err =
-  CErrors.user_err ~loc (Pp.fmt "Compilation failed with exit code %d." err)
+  CErrors.user_err ~loc (Pp.(str "Compilation failed with exit code " ++ int err ++ str "."))
 
 let record_out recorded out =
   let () =
@@ -88,7 +88,7 @@ let rec scaffold_mode snippet = function
      let out = synterp Check_expression snippet in
      begin match Interface.tactic_type (Interface.read out.Compiler.compiled_file) with
      | Some typ -> Show_tactic { typ }
-     | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.fmt "Argument to Eval is not a tactic.")
+     | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.str "Argument to Eval is not a tactic.")
      end
   | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
      Tactic
@@ -119,7 +119,7 @@ let load_module { name; locality } out =
   match name with
   | Some (name, loc) ->
      if Module_manager.is_loaded name then
-       CErrors.user_err ~loc (Pp.fmt "Module %s already exists." name);
+       CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."));
      Module_manager.load_module ~locality (Some name) out
   | None ->
      Module_manager.load_module ~locality None out
