@@ -1,6 +1,8 @@
 DECLARE PLUGIN "camltac.plugin"
 
 {
+open Names
+
 (* Term grammar *)
 open Procq.Constr
 open Procq.Prim
@@ -26,6 +28,20 @@ let get_quotation_contents ~loc ~prefix q =
   let end_shift = - sep_length in
   let loc = Loc.shift_loc start_shift end_shift loc in
   loc, contents
+
+let check_module_name_char ~loc = function
+  | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '\'' -> ()
+  | c ->
+     CErrors.user_err ~loc (Pp.(str "Character '" ++ str (String.make 1 c) ++ str "' is not allowed in an OCaml module name."))
+
+let check_module_name ~loc (name: string) =
+  match String.get name 0 with
+  | 'A'..'Z' ->
+     String.iteri (fun i c -> check_module_name_char ~loc:(Loc.after loc i 1) c) name;
+     name
+  | _ ->
+    let suggestion = String.capitalize_ascii name in
+    CErrors.user_err ~loc (Pp.(str "Module names must be capitalized.\nHint: did you mean " ++ str suggestion ++ str "?"))
 
 }
 
@@ -60,7 +76,7 @@ VERNAC ARGUMENT EXTEND ocaml
 END
 
 VERNAC ARGUMENT EXTEND ocaml_module
-| [ ident(m) ] -> { Names.Id.to_string m, loc }
+| [ ident(m) ] -> { check_module_name ~loc (Id.to_string m), loc }
 END
 
 VERNAC ARGUMENT EXTEND ocaml_file
