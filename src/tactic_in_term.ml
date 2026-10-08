@@ -57,7 +57,7 @@ let make ?loc raw =
 [%%endif]
 
 let from_ocaml snippet =
-  let compilation_output = Command.compile_snippet Command.Tactic_in_term snippet in
+  let compilation_output = Command.synterp Command.Tactic_in_term snippet in
   let raw = { source_code = snippet; compilation_output } in
   make ~loc:(Snippet.loc snippet) raw
 
@@ -112,7 +112,7 @@ let refine_by_tactic = Proof.refine_by_tactic
 let () =
   let interp ?loc:_ ~poly genv sigma tycon ({ source_code; compilation_output }, env) =
     (* Run the code *)
-    let () = Command.interpret Command.Tactic_in_term compilation_output in
+    let () = Command.interp Command.Tactic_in_term compilation_output in
     (* Interpret the result as a tactic *)
     let tac: unit Proofview.tactic = Runtime.Output.get_tactic () in
     let name = Names.Id.of_string "camltac" in

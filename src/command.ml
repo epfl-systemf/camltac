@@ -19,7 +19,9 @@ type t =
   | Tactic_in_Ltac
   | Tactic_in_Ltac2
 
-(** {1 Syntactic interpretation} *)
+(** {1 Synterp} *)
+
+type synterp_result = Compiler.output
 
 (** {2 Build plan} *)
 
@@ -83,7 +85,7 @@ let rec scaffold_mode snippet = function
      Infer_type
   | Eval ->
      (* Infer the type of the tactic to scaffold correctly. *)
-     let out = compile_snippet Check_expression snippet in
+     let out = synterp Check_expression snippet in
      begin match Interface.tactic_type (Interface.read out.Compiler.compiled_file) with
      | Some typ -> Show_tactic { typ }
      | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.fmt "Argument to Eval is not a tactic.")
@@ -93,7 +95,7 @@ let rec scaffold_mode snippet = function
   | Module _ | Check_module ->
      Plain
 
-and compile_snippet cmd snippet =
+and synterp cmd snippet =
   let build = build_of_cmd cmd in
   let scaffold_mode = scaffold_mode snippet cmd in
   Scaffold.make scaffold_mode snippet
@@ -153,9 +155,9 @@ let eval ?proof out =
   let result = run_tactic ?proof tactic in
   Feedback.msg_info result
 
-(** {2 Interpretation function} *)
+(** {1 Interp} *)
 
-let interpret ?proof cmd (out: Compiler.output) =
+let interp ?proof cmd (out: Compiler.output) =
   match cmd with
   | Check_expression | Check_module -> check out
   | Eval -> eval ?proof out
