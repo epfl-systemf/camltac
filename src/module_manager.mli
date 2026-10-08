@@ -19,11 +19,11 @@ val modules_dirs : unit -> string list
 
     OCaml has namespacing issues: [Loader.load_file] cannot load two modules
     with the same name. To work-around that, we generate fresh names for
-    modules, which we link to the name entered by the user through a packing
+    modules, which we link to the name entered by the user through an alias
     module that only contains module aliases. *)
 
-val packing_module : unit -> string option
-(** [packing_module ()] returns the name of the module containing module aliases,
+val alias_module : unit -> string option
+(** [alias_module ()] returns the name of the module containing module aliases,
     or [None] if there are no loaded modules. *)
 
 (** {1 Loading modules} *)

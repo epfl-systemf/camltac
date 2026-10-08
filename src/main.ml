@@ -12,7 +12,7 @@ let check_module_not_loaded ~loc name =
 
 let compile_file ~loc mode file =
   let context = Compiler.{
-    packing_module = Module_manager.packing_module ();
+    alias_module = Module_manager.alias_module ();
     dependencies = Module_manager.dependencies ();
     modules_dirs = Module_manager.modules_dirs ()
   }

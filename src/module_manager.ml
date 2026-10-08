@@ -9,7 +9,7 @@ type synterp_state =
   { compiled_modules: Compiler.output CString.Map.t;
     dependencies: CString.Set.t;
     modules_dirs : CString.Set.t;
-    packing_module: Build_file.t option;
+    alias_module: Build_file.t option;
   }
 
 [%%if rocq >= (9, 4)]
@@ -23,7 +23,7 @@ let synterp_state =
     { compiled_modules = CString.Map.empty;
       dependencies = CString.Set.empty;
       modules_dirs = CString.Set.empty;
-      packing_module = None
+      alias_module = None
     }
 
 (** List of names of loaded modules. *)
@@ -42,8 +42,7 @@ let dependencies () =
 let modules_dirs () =
   CString.Set.elements !synterp_state.modules_dirs
 
-(** [module_aliases ()] returns the contents of the packing module. *)
-let module_aliases () =
+let alias_module_contents () =
   let module_alias (name, compilation_output) =
     let real_name = Build_file.module_name compilation_output.Compiler.compiled_file in
     Format.sprintf "module %s = %s" name real_name
@@ -52,11 +51,11 @@ let module_aliases () =
   let aliases = List.rev_map module_alias (CString.Map.bindings !synterp_state.compiled_modules) in
   String.concat "\n" aliases
 
-let packing_module () =
-  Option.map Build_file.module_name !synterp_state.packing_module
+let alias_module () =
+  Option.map Build_file.module_name !synterp_state.alias_module
 
-let generate_packing_module () =
-  let impl = Build_file.(write ~kind:Module (module_aliases ())) in
+let generate_alias_module () =
+  let impl = Build_file.(write ~kind:Module (alias_module_contents ())) in
   let compilation_output =
     Ocamlfind.ocamlc
       ~include_dirs:(modules_dirs ())
@@ -65,10 +64,10 @@ let generate_packing_module () =
       impl
   in
   match compilation_output with
-  | Ok packing_module ->
-     synterp_state := { !synterp_state with packing_module = Some packing_module }
+  | Ok alias_module ->
+     synterp_state := { !synterp_state with alias_module = Some alias_module }
   | Error err ->
-     CErrors.user_err (Pp.(str "Compilation of packing module failed with error " ++ int err ++ str "."))
+     CErrors.user_err (Pp.(str "Compilation of alias module failed with error " ++ int err ++ str "."))
 
 let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
   let new_state =
@@ -81,9 +80,9 @@ let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
   | Some name ->
      let compiled_modules = CString.Map.add name out !synterp_state.compiled_modules in
      synterp_state := { new_state with compiled_modules };
-     generate_packing_module ()
+     generate_alias_module ()
   | None ->
-     (* Anonymous modules don't trigger a compilation of a new packing module. *)
+     (* Anonymous modules don't trigger a compilation of a new alias module. *)
      synterp_state := new_state
 
 let load_module m =

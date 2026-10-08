@@ -35,13 +35,13 @@ let ppx_runtime_deps ppxs =
   List.concat_map ppx_runtime_deps ppxs
 
 type context =
-  { packing_module: string option;
+  { alias_module: string option;
     dependencies: string list;
     modules_dirs: string list
   }
 
 let empty_context =
-  { packing_module = None;
+  { alias_module = None;
     dependencies = [];
     modules_dirs = []
   }
@@ -58,7 +58,7 @@ let compile_with_directives
     Ocamlfind.ocamlc
       ~packages:(dependencies @ context.dependencies @ default_packages)
       ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
-      ~open_modules:(Option.List.cons context.packing_module default_open_modules)
+      ~open_modules:(Option.List.cons context.alias_module default_open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp

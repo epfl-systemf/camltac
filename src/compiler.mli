@@ -7,7 +7,7 @@ type output =
   }
 
 type context =
-  { packing_module: string option; (** A module containing module aliases. *)
+  { alias_module: string option; (** A module containing module aliases. *)
     dependencies: string list;     (** List of already loaded dependencies. *)
     modules_dirs: string list;     (** List of modules directories to include. *)
   }
