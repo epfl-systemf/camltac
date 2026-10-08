@@ -12,10 +12,7 @@ type context =
     modules_dirs: string list;     (** List of modules directories to include. *)
   }
 
-val compile_with_directives : ?context:context -> Build_file.t -> (output, int) result
-(** [compile file] compiles [file] to a shared library that can be loaded through [Loader.load_file].
-    Build directives are recognized by this method, and integrated in the compilation process.
- *)
+val compile : ?context:context -> Ocamlfind.mode -> Build_file.t -> (output, int) result
+(** [compile mode file] compiles [file] according to [mode].
 
-val infer_interface : ?context:context -> Build_file.t -> (output, int) result
-(** [infer_interface file] type-checks [file] and returns its inferred interface. *)
+    Build directives are recognized by this method, and integrated in the compilation process. *)

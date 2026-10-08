@@ -17,27 +17,14 @@ let check_module_name ~loc (name: string) =
 
 (** {2 Compilation} *)
 
-let compile_file ~loc file =
+let compile_file ~loc mode file =
   let context = Compiler.{
     packing_module = Module_manager.packing_module ();
     dependencies = Module_manager.dependencies ();
     modules_dirs = Module_manager.modules_dirs ()
   }
   in
-  match Compiler.compile_with_directives ~context file with
-  | Ok out -> out
-  | Error code ->
-     let file = Build_file.locate file in
-     CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
-
-let infer_interface ~loc file =
-  let context = Compiler.{
-    packing_module = Module_manager.packing_module ();
-    dependencies = Module_manager.dependencies ();
-    modules_dirs = Module_manager.modules_dirs ()
-  }
-  in
-  match Compiler.infer_interface ~context file with
+  match Compiler.compile ~context mode file with
   | Ok out -> out
   | Error code ->
      let file = Build_file.locate file in
@@ -53,14 +40,15 @@ let compile_scaffold ~loc mode scaffold =
   in
   let build_file = Build_file.write ~kind scaffold in
   match mode with
-  | Check_expression | Check_module -> infer_interface ~loc build_file
+  | Check_expression | Check_module ->
+     compile_file ~loc Ocamlfind.Infer_interface build_file
   | Module { name; _ } ->
      (* Declare the module at synterp time. *)
      let name = Option.map fst name in
-     let out = compile_file ~loc build_file in
+     let out = compile_file ~loc Ocamlfind.(Shared_library { linkall = true }) build_file in
      Module_manager.declare_module name out;
      out
-  | _ -> compile_file ~loc build_file
+  | _ -> compile_file ~loc Ocamlfind.(Shared_library { linkall = true }) build_file
 
 let compile_snippet mode snippet =
   let loc = Snippet.loc snippet in
