@@ -93,60 +93,57 @@ END
 
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
-  SYNTERP AS synterp_output
-     { let check_output = Main.compile_snippet Snippet.Check_expression snippet in
-       let typ = Main.get_type check_output in
-       typ, Main.compile_snippet (Snippet.Eval typ) snippet }
+  SYNTERP AS synterp_result
+     { Command.synterp Command.Eval snippet }
   -> { fun ~pstate:proof ->
-       let typ, compilation_output = synterp_output in
-       Main.interpret ?proof (Snippet.Eval typ) compilation_output }
+       Command.interp ?proof Command.Eval synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
 | #[ locality = Attributes.hint_locality ] [ "Camltac" "Run" ocaml(snippet) ]
-  SYNTERP AS synterp_output
-     { let mode = Snippet.Module { name = None; locality } in
-       mode, Main.compile_snippet mode snippet }
-  -> { let mode, compilation_output = synterp_output in
-       Main.interpret mode compilation_output }
+  SYNTERP AS synterp_result
+     { let cmd = Command.Module { name = None; locality } in
+       cmd, Command.synterp cmd snippet }
+  -> { let cmd, synterp_result = synterp_result in
+       Command.interp cmd synterp_result }
 
 | #[ locality = Attributes.hint_locality ] [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
-  SYNTERP AS synterp_output
-     { let mode = Snippet.Module { name = Some m; locality } in
-       mode, Main.compile_snippet mode snippet }
-  -> { let mode, compilation_output = synterp_output in
-       Main.interpret mode compilation_output }
+  SYNTERP AS synterp_result
+     { let cmd = Command.Module { name = Some m; locality } in
+       cmd, Command.synterp cmd snippet }
+  -> { let cmd, synterp_result = synterp_result in
+       Command.interp cmd synterp_result }
 
 | #[ locality = Attributes.hint_locality ] [ "Camltac" "Load" ocaml_file(file) ]
-  SYNTERP AS synterp_output
+  SYNTERP AS synterp_result
      { let filename, loc = file in
        (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
        let snippet = Snippet.of_file ~loc filename in
        let name = File.module_name filename in
-       let mode = Snippet.Module { name = Some (name, loc); locality } in
-       mode, Main.compile_snippet mode snippet }
-  -> { let mode, compilation_output = synterp_output in
-       Main.interpret mode compilation_output }
+       let cmd = Command.Module { name = Some (name, loc); locality } in
+       cmd, Command.synterp cmd snippet }
+  -> { let cmd, synterp_result = synterp_result in
+       Command.interp cmd synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
 | [ "Camltac" "Check" ocaml(snippet) ]
-  SYNTERP AS compilation_output
-     { Main.compile_snippet Snippet.Check_expression snippet }
-  -> { Main.interpret Snippet.Check_expression compilation_output }
+  SYNTERP AS synterp_result
+     { Command.synterp Command.Check_expression snippet }
+  -> { Command.interp Command.Check_expression synterp_result }
 
 | [ "Camltac" "Check" ocaml_module(m) ]
-  SYNTERP AS compilation_output
+  SYNTERP AS synterp_result
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
        let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
-       Main.compile_snippet Snippet.Check_module snippet }
-  -> { Main.interpret Snippet.Check_module compilation_output }
+       Command.synterp Command.Check_module snippet }
+  -> { Command.interp Command.Check_module synterp_result }
 
 | [ "Camltac" "Check" ocaml_file(file) ]
-  SYNTERP AS compilation_output
+  SYNTERP AS synterp_result
      { let filename, loc = file in
        let snippet = Snippet.of_file ~loc filename in
-       Main.compile_snippet Snippet.Check_module snippet }
-  -> { Main.interpret Snippet.Check_module compilation_output }
+       Command.synterp Command.Check_module snippet }
+  -> { Command.interp Command.Check_module synterp_result }
 END
