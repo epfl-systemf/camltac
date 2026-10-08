@@ -3,10 +3,14 @@
 let load_packages packages =
   Fl_dynload.load_packages packages
 
-let load_file ~public ?(dependencies = []) file =
+let load_file ?(dependencies = []) public file =
   let file = Build_file.locate file in
   assert (String.equal (Filename.extension file) (if Dynlink.is_native then ".cmxs" else ".cma"));
-  let load = if public then Dynlink.loadfile else Dynlink.loadfile_private in
+  let load =
+    match public with
+    | `Public -> Dynlink.loadfile
+    | `Private -> Dynlink.loadfile_private
+  in
   try
     (* Make sure that dependencies are available before loading. *)
     load_packages dependencies;

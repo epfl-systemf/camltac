@@ -104,7 +104,7 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
      let intf = simplify_interface intf in
      Feedback.msg_info (Pp.str intf)
   | Eval typ ->
-     Loader.load_file ~public:false ~dependencies compiled_file;
+     Loader.load_file ~dependencies `Private compiled_file;
      let tactic: string Proofview.tactic = Runtime.Output.get_tactic () in
      let env = Global.env () in
      let proof =
@@ -123,4 +123,4 @@ let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; d
      let name = Option.map fst name in
      Module_manager.load_module ~locality name compilation_output
   | _ ->
-     Loader.load_file ~public:false ~dependencies compiled_file
+     Loader.load_file ~dependencies `Private compiled_file
