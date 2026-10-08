@@ -19,13 +19,4 @@ jobs:
         uses: coq-community/docker-coq-action@v1
         with:
           opam_file: 'camltac.opam'
-          # Add camltac-directives to list of dependencies
-          install: |
-            startGroup "Install dependencies"
-              sudo apt-get update -y -q
-              opam pin add -n -y -k path camltac-directives $WORKDIR
-              opam pin add -n -y -k path $PACKAGE $WORKDIR
-              opam update -y
-              opam install --confirm-level=unsafe-yes -j 2 $PACKAGE --deps-only
-            endGroup
           coq_version: ${{ matrix.rocq_version }}

@@ -26,8 +26,7 @@
    ppx_rocq
    mltac2
    ppx_deriving ;; For Camltac Eval
-   ocamlfind
-   camltac-directives))
+   ocamlfind))
 
 (package
  (name camltac-tests)
@@ -35,15 +34,6 @@
  (depends
    camltac
    rocq-stdlib))
-
-(package
- (name camltac-directives)
- (synopsis "A small preprocessor that handles build directives for Camltac")
- (depends
-   ppxlib
-   ocamlfind
-   sexplib
-   ppx_sexp_conv))
 
 (package
  (name camltac-examples)

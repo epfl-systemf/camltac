@@ -18,8 +18,6 @@ type output =
   { compiled_file: Build_file.t;
     dependencies: string list }
 
-open Camltac_directives
-
 let ppx_runtime_deps ppxs =
   let find_value preds ppx prop =
     let value = Findlib.package_property preds ppx prop in
@@ -46,7 +44,7 @@ let empty_context =
     modules_dirs = []
   }
 
-let compile_with_directives
+let compile
       ?(context = empty_context)
       ~(directives: Build_directives.t)
       mode (impl: Build_file.t) =
@@ -65,8 +63,3 @@ let compile_with_directives
       mode
       impl
   in Ok { compiled_file; dependencies }
-
-let compile ?context mode impl =
-  match Build_directives.get (Build_file.locate impl) with
-  | Ok directives -> compile_with_directives ?context ~directives mode impl
-  | Error _ as e -> e

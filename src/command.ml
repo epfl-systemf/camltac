@@ -95,12 +95,12 @@ let rec scaffold_mode snippet = function
   | Module _ | Check_module ->
      Plain
 
-and synterp cmd snippet =
+and synterp ?(directives = Build_directives.empty) cmd snippet =
   let build = build_of_cmd cmd in
   let scaffold_mode = scaffold_mode snippet cmd in
   Scaffold.make scaffold_mode snippet
   |> Build_file.write ~kind:build.kind
-  |> Compiler.compile ~context:(current_context ()) build.mode
+  |> Compiler.compile ~directives ~context:(current_context ()) build.mode
   |> Result.fold ~ok:(record_out build.recorded) ~error:(report_error ~loc:(Snippet.loc snippet))
 
 (** {1 Interpretation} *)

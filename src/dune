@@ -6,7 +6,6 @@
    dynlink
    camltac.plugin.runtime
    camltac.plugin.api
-   camltac-directives
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2
    findlib

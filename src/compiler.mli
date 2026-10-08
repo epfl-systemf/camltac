@@ -12,7 +12,11 @@ type context =
     modules_dirs: string list;     (** List of modules directories to include. *)
   }
 
-val compile : ?context:context -> Ocamlfind.mode -> Build_file.t -> (output, int) result
-(** [compile mode file] compiles [file] according to [mode].
-
-    Build directives are recognized by this method, and integrated in the compilation process. *)
+val compile :
+  ?context:context ->
+  directives:Build_directives.t ->
+  Ocamlfind.mode ->
+  Build_file.t ->
+  (output, int) result
+(** [compile ?context ~directives mode file] compiles [file] according to
+    [mode] in the given [context]. *)
