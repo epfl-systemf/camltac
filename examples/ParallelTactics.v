@@ -9,9 +9,8 @@ This small example shows one can use Eio to launch tactics in parallel:
 From Camltac Require Import Camltac.
 From Ltac2 Require Import Ltac2.
 
+#[libraries(eio, eio_main)]
 Camltac Run ocaml:{{
-   [@@@using "eio", "eio_main"]
-
    open Eio
 
    (* Each tactic runs in its own domain on a copy of the current evar map; the

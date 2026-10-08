@@ -94,34 +94,40 @@ END
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { Command.synterp Command.Eval snippet }
+     { Command.synterp ~directives:Build_directives.eval_directives Command.Eval snippet }
   -> { fun ~pstate:proof ->
        Command.interp ?proof Command.Eval synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
-| #[ locality = Attributes.hint_locality ] [ "Camltac" "Run" ocaml(snippet) ]
+| #[ locality = Attributes.hint_locality;
+     directives = Build_directives.attribute ]
+   [ "Camltac" "Run" ocaml(snippet) ]
   SYNTERP AS synterp_result
      { let cmd = Command.Module { name = None; locality } in
-       cmd, Command.synterp cmd snippet }
+       cmd, Command.synterp ~directives cmd snippet }
   -> { let cmd, synterp_result = synterp_result in
        Command.interp cmd synterp_result }
 
-| #[ locality = Attributes.hint_locality ] [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
+| #[ locality = Attributes.hint_locality;
+     directives = Build_directives.attribute ]
+   [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS synterp_result
      { let cmd = Command.Module { name = Some m; locality } in
-       cmd, Command.synterp cmd snippet }
+       cmd, Command.synterp ~directives cmd snippet }
   -> { let cmd, synterp_result = synterp_result in
        Command.interp cmd synterp_result }
 
-| #[ locality = Attributes.hint_locality ] [ "Camltac" "Load" ocaml_file(file) ]
+| #[ locality = Attributes.hint_locality;
+     directives = Build_directives.attribute ]
+   [ "Camltac" "Load" ocaml_file(file) ]
   SYNTERP AS synterp_result
      { let filename, loc = file in
        (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
        let snippet = Snippet.of_file ~loc filename in
        let name = File.module_name filename in
        let cmd = Command.Module { name = Some (name, loc); locality } in
-       cmd, Command.synterp cmd snippet }
+       cmd, Command.synterp ~directives cmd snippet }
   -> { let cmd, synterp_result = synterp_result in
        Command.interp cmd synterp_result }
 END

@@ -54,8 +54,8 @@ and module_info =
 type synterp_result = Compiler.output
 (** Type of synterp result. *)
 
-val synterp : t -> Snippet.t -> synterp_result
-(** [synterp cmd snippet] performs the syntactic interpretation phase of [cmd]
+val synterp : ?directives:Build_directives.t -> t -> Snippet.t -> synterp_result
+(** [synterp ?directives cmd snippet] performs the syntactic interpretation phase of [cmd]
     on [snippet]:
 
     - It performs syntactic checks and validations, and eagerly rejects
@@ -63,6 +63,8 @@ val synterp : t -> Snippet.t -> synterp_result
     - The snippet is scaffolded using {!Scaffold.make} and written to a build
       file using {!Build_file.write};
     - The scaffolded file is compiled using {!Compiler.compile}.
+
+    If [directives] is set, they are added as compilation arguments.
 
     The returned value is a {!synterp_result} that can be used by {!interp}.
  *)

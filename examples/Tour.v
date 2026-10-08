@@ -189,14 +189,13 @@ Using OCaml libraries and preprocessors
 
 Camltac supports additional OCaml libraries and preprocessors through special floating attributes:
 
-- The `[@@@using]` attribute allows one to use extra OCaml libraries (see `ParallelTactics.v` for an example)
+- The `[#libraries]` attribute allows one to use extra OCaml libraries (see `ParallelTactics.v` for an example)
 
-- The `[@@@ppx]` attribute is used to specify additional preprocessors, such as `ppx_deriving_yojson`:
+- The `[#ppx]` attribute is used to specify additional preprocessors, such as `ppx_deriving_yojson`:
 |*)
 
+#[ppx(ppx_deriving_yojson)]
 Camltac Module Op := ocaml:{{
-  [@@@ppx "ppx_deriving_yojson"]
-
   (** Here's the type of expressions in a simple lambda calculus.
       [ppx_deriving_yojson] automatically derives JSON conversions methods for us. *)
   type t =
@@ -218,7 +217,7 @@ Camltac Run ocaml:{{
 }}.
 
 (*|
-Both `[@@@using]` and `[@@@ppx]` expect a comma-separated list of packages that are installed on your machine. Camltac is not a package manager however, so you should make sure to list these packages as proper dependencies in your build system.
+Both `[#libraries]` and `[#ppx]` expect a comma-separated list of packages that are installed on your machine. Camltac is not a package manager however, so you should make sure to list these packages as proper dependencies in your build system.
 
 Interoperability with Ltac2
 ===========================

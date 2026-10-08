@@ -14,7 +14,6 @@ depends: [
   "mltac2"
   "ppx_deriving"
   "ocamlfind"
-  "camltac-directives"
   "odoc" {with-doc}
 ]
 build: [

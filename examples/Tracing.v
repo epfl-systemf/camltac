@@ -15,9 +15,8 @@ Inductive my_nat :=
   | NatSucc (n : my_nat)
   | NatMul (n m : my_nat).
 
+#[ppx(ppx_minidebug)]
 Camltac Run ocaml:{{
-  [@@@ppx "ppx_minidebug"]
-
   (* Initialize ppx_minidebug runtime. *)
   let _get_local_debug_runtime =
     let rt = Minidebug_db.debug_db_file "trace" in

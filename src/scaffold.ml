@@ -89,8 +89,7 @@ let header_footer = function
   | Infer_type ->
      Some ("let " ^ Interface.single_value_name ^ " = begin"), Some "end"
   | Show_tactic { typ } ->
-     Some ({|[@@@ppx "ppx_deriving.show"]
-            open Api.Printers
+     Some ({|open Api.Printers
             type t = |} ^ typ ^ {|[@@deriving show]
                                  let () = Runtime.Output.set_tactic begin
                                  let* x =|}),
