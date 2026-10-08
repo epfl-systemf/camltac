@@ -77,7 +77,7 @@ module Scaffold = struct
     Buffer.add_string scaffold "# ";
     Buffer.add_string scaffold (string_of_int line);
     Buffer.add_string scaffold {| "|};
-    Buffer.add_string scaffold file;
+    Buffer.add_string scaffold (String.escaped file);
     Buffer.add_char scaffold '"';
     new_line scaffold
 
