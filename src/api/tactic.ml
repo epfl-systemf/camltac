@@ -82,8 +82,6 @@ let timeout = Tacticals.tclTIMEOUT
 
 let abstract ?opaque ?name t = Abstract.tclABSTRACT ?opaque name t
 
-let ignore t = Proofview.tclIGNORE t
-
 (** {1 Utilities} *)
 
 let env =

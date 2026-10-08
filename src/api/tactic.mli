@@ -106,9 +106,6 @@ val abstract : ?opaque:bool -> ?name:Names.Id.t -> unit tactic -> unit tactic
 (** [abstract ?opaque ?name t] saves the result of the execution of tactic [t]
     as an optionally named subproof. *)
 
-val ignore : 'a tactic -> unit tactic
-(** [ignore t] ignores the result of tactic [t]. *)
-
 (** {1 Utilities} *)
 
 val env : Environ.env tactic
