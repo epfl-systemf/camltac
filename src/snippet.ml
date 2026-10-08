@@ -11,12 +11,8 @@ type t =
 let make ~loc contents = { loc; contents }
 
 let read_file ~loc filename =
-  if Sys.file_exists filename then
-    let in_channel = open_in filename in
-    let contents = In_channel.input_all in_channel in
-    In_channel.close_noerr in_channel;
-    contents
-  else
+  try File.read filename
+  with File.Not_found ->
     CErrors.user_err ~loc (Pp.(str "File " ++ str filename ++ str " does not exist."))
 
 let of_file ~loc filename =

@@ -9,7 +9,7 @@ type synterp_state =
   { compiled_modules: Compiler.output CString.Map.t;
     dependencies: CString.Set.t;
     modules_dirs : CString.Set.t;
-    packing_module: Build_files.t option;
+    packing_module: Build_file.t option;
   }
 
 [%%if rocq >= (9, 4)]
@@ -42,15 +42,10 @@ let dependencies () =
 let modules_dirs () =
   CString.Set.elements !synterp_state.modules_dirs
 
-let module_name filename =
-  Build_files.basename filename
-  |> Filename.remove_extension
-  |> String.capitalize_ascii
-
 (** [module_aliases ()] returns the contents of the packing module. *)
 let module_aliases () =
   let module_alias (name, compilation_output) =
-    let real_name = module_name compilation_output.Compiler.compiled_file in
+    let real_name = Build_file.module_name compilation_output.Compiler.compiled_file in
     Format.sprintf "module %s = %s" name real_name
   in
   (* First element = most recent, so reverse the order. *)
@@ -58,10 +53,10 @@ let module_aliases () =
   String.concat "\n" aliases
 
 let packing_module () =
-  Option.map module_name !synterp_state.packing_module
+  Option.map Build_file.module_name !synterp_state.packing_module
 
 let generate_packing_module () =
-  let impl = Build_files.write_module (module_aliases ()) in
+  let impl = Build_file.(write ~kind:Module (module_aliases ())) in
   let compilation_output =
     Ocamlfind.compile
       ~compile_only:true
@@ -79,7 +74,7 @@ let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
   let new_state =
     { !synterp_state with
       dependencies = CString.Set.add_seq (List.to_seq dependencies) !synterp_state.dependencies;
-      modules_dirs = CString.Set.add (Build_files.modules_dir ~file:compiled_file ()) !synterp_state.modules_dirs;
+      modules_dirs = CString.Set.add (Build_file.layout compiled_file).modules !synterp_state.modules_dirs;
     }
   in
   match name with

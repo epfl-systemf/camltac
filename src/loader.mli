@@ -3,7 +3,7 @@
 val load_packages : string list -> unit
 (** [load_packages packages] loads the given list of packages. *)
 
-val load_file : public:bool -> ?dependencies:string list -> Build_files.t -> unit
+val load_file : public:bool -> ?dependencies:string list -> Build_file.t -> unit
 (** [load_file ~public ?dependencies file] loads the given compiled file into the current Rocq
     context.
 

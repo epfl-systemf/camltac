@@ -27,7 +27,7 @@ let compile_file ~loc file =
   match Compiler.compile_with_directives ~context file with
   | Ok out -> out
   | Error code ->
-     let file = Build_files.locate file in
+     let file = Build_file.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let infer_interface ~loc file =
@@ -40,17 +40,18 @@ let infer_interface ~loc file =
   match Compiler.infer_interface ~context file with
   | Ok out -> out
   | Error code ->
-     let file = Build_files.locate file in
+     let file = Build_file.locate file in
      CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
 let compile_scaffold ~loc mode scaffold =
-  let build_file =
+  let kind =
     match mode with
     | Snippet.Module { name = Some (name, loc); _ } ->
        check_module_name ~loc name;
-       Build_files.write_module scaffold
-    | _ -> Build_files.write_snippet scaffold
+       Build_file.Module
+    | _ -> Build_file.Snippet
   in
+  let build_file = Build_file.write ~kind scaffold in
   match mode with
   | Check_expression | Check_module -> infer_interface ~loc build_file
   | Module { name; _ } ->
@@ -69,10 +70,9 @@ let compile_snippet mode snippet =
 (** {1 Interpretation} *)
 
 let read_interface file =
-  let in_channel = In_channel.open_text (Build_files.locate file) in
-  let intf = In_channel.input_all in_channel in
-  In_channel.close_noerr in_channel;
-  String.trim intf
+  Build_file.locate file
+  |> File.read
+  |> String.trim
 
 let simplify_interface intf =
   (* Simplify interface for single-values. *)

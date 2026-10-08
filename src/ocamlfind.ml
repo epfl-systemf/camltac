@@ -35,15 +35,6 @@ let output_extension ~stop_after ~shared ~native =
     | false, true -> ".cmx"
     | false, false -> ".cmo"
 
-(* Obtain shorter filenames for better error messages. *)
-let shorten_filename impl =
-  let prefix = Sys.getcwd () ^ "/" in
-  if String.starts_with ~prefix impl then
-    let prefix_length = String.length prefix in
-    String.sub impl prefix_length (String.length impl - prefix_length)
-  else
-    impl
-
 let native = Dynlink.is_native
 
 let compilation_args
@@ -58,17 +49,14 @@ let compilation_args
       ?stop_after
       ~infer_interface
       ?out impl =
-  let impl = Build_files.locate impl in
-  let impl = shorten_filename impl in
-  let args = ["-impl"; impl] in
+  let args = ["-impl"; File.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.locate impl)] in
   let out =
     match out with
     | Some out -> out
     | None ->
-       let out_extension = output_extension ~stop_after ~shared ~native in
-       Filename.remove_extension impl ^ out_extension
+       Build_file.with_extension impl (output_extension ~stop_after ~shared ~native)
   in
-  let args = if not infer_interface then ["-o"; out] @ args else args in
+  let args = if not infer_interface then ["-o"; Build_file.path out] @ args else args in
   let args =
     match stop_after with
     | Some `parsing -> ["-stop-after"; "parsing"] @ args
@@ -92,7 +80,7 @@ let compilation_args
   let args = add_argument ~if_:(shared && not infer_interface) (if native then "-shared" else "-a") args in
   let args = add_argument ~if_:compile_only "-c" args in
   let args = add_argument ~if_:infer_interface "-i" args in
-  args, Build_files.of_path out
+  args, out
 
 (** {2 Calling the compiler} *)
 
@@ -153,7 +141,7 @@ let compile_exe
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let out = Filename.remove_extension (Build_files.locate impl) ^ ".exe" in
+  let out = Build_file.with_extension impl ".exe" in
   let args, out =
     compilation_args
       ~packages ~linkpkg ~linkall
@@ -182,7 +170,7 @@ let infer_interface
       ?(extra_args = [])
       ?(pp = "ppx_rocq")
       impl =
-  let stdout = Filename.remove_extension (Build_files.locate impl) ^ ".check.mli" in
+  let stdout = Build_file.with_extension impl ".check.mli" in
   let args, out =
     compilation_args
       ~packages ~linkpkg:false ~linkall:false
@@ -196,7 +184,7 @@ let infer_interface
       ~out:stdout
       impl
   in
-  match run_ocamlfind ~stdout (compiler :: args) with
+  match run_ocamlfind ~stdout:(Build_file.path stdout) (compiler :: args) with
   | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
