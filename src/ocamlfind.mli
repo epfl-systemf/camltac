@@ -24,6 +24,7 @@ type mode =
   (** Infer the interface ([-i]). *)
 
 val ocamlc :
+  ?native:bool ->
   ?packages:string list ->
   ?include_dirs:string list ->
   ?open_modules:string list ->
@@ -35,6 +36,9 @@ val ocamlc :
   (Build_file.t, int) result
 (** [ocamlc mode impl] calls the OCaml compiler on the [impl] file according to
     [mode], returning either [Ok output] or [Error code].
+
+    @param native (default = [Dynlink.is_native])
+      Whether to use the native compiler or not.
 
     @param packages (default = [[]])
       List of additional packages for compilation.
