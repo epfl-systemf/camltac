@@ -2,6 +2,7 @@
 
 open Names
 open Snippet
+open Scaffold
 
 (** {1 Syntactic interpretation} *)
 
@@ -37,7 +38,7 @@ let build_of_mode = function
        mode = Shared_library { linkall = true };
        recorded = Record None
      }
-  | Eval _ | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
+  | Eval | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
      { kind = Snippet;
        mode = Shared_library { linkall = true };
        recorded = Do_not_record
@@ -62,9 +63,25 @@ let record_out recorded out =
     | Record name -> Module_manager.declare_module name out
   in out
 
-let compile_snippet mode snippet =
+let rec scaffold_mode snippet = function
+  | Check_expression ->
+     Infer_type
+  | Eval ->
+     (* Infer the type of the tactic to scaffold correctly. *)
+     let out = compile_snippet Check_expression snippet in
+     begin match Interface.tactic_type (Interface.read out.Compiler.compiled_file) with
+     | Some typ -> Show_tactic { typ }
+     | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.fmt "Argument to Eval is not a tactic.")
+     end
+  | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
+     Tactic
+  | Module _ | Check_module ->
+     Plain
+
+and compile_snippet mode snippet =
   let build = build_of_mode mode in
-  Snippet.scaffold mode snippet
+  let scaffold_mode = scaffold_mode snippet mode in
+  Scaffold.make scaffold_mode snippet
   |> Build_file.write ~kind:build.kind
   |> Compiler.compile ~context:(current_context ()) build.mode
   |> Result.fold ~ok:(record_out build.recorded) ~error:(report_error ~loc:(Snippet.loc snippet))
@@ -115,17 +132,17 @@ let run_tactic ?proof tactic =
   let (_, _, result) = Proof.run_tactic env tactic proof in
   result
 
-let eval ?proof typ out =
+let eval ?proof out =
   load out;
-  let tactic : string Proofview.tactic = Runtime.Output.get_tactic () in
+  let tactic : Pp.t Proofview.tactic = Runtime.Output.get_tactic () in
   let result = run_tactic ?proof tactic in
-  Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
+  Feedback.msg_info result
 
 (** {2 Interpretation function} *)
 
 let interpret ?proof mode (out: Compiler.output) =
   match mode with
   | Check_expression | Check_module -> check out
-  | Eval typ -> eval ?proof typ out
+  | Eval -> eval ?proof out
   | Module m -> load_module m out
   | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 -> load out

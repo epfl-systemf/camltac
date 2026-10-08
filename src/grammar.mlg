@@ -93,17 +93,10 @@ END
 
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
-  SYNTERP AS synterp_output
-     { let check_output = Main.compile_snippet Snippet.Check_expression snippet in
-       let intf = Interface.read check_output.compiled_file in
-       match Interface.tactic_type intf with
-       | Some typ ->
-          typ, Main.compile_snippet (Snippet.Eval typ) snippet
-       | None ->
-          CErrors.user_err (Pp.str "Argument to Eval must be a tactic.") }
+  SYNTERP AS compilation_output
+     { Main.compile_snippet Snippet.Eval snippet }
   -> { fun ~pstate:proof ->
-       let typ, compilation_output = synterp_output in
-       Main.interpret ?proof (Snippet.Eval typ) compilation_output }
+       Main.interpret ?proof Snippet.Eval compilation_output }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF

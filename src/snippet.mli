@@ -20,20 +20,14 @@ val loc : t -> Loc.t
 val contents : t -> string
 (** [contents snippet] returns the contents of the snippet. *)
 
-(** {1 Scaffolds} *)
+(** {1 Execution mode} *)
 
-(** A scaffold is a temporary file used for compiling snippets. Its content
-    depends on the expected execution mode of the snippet, i.e., how the snippet
-    should be interpreted.
-
-    For example, tactic-in-term snippets should be of type [constr tactic], and
-    this constraint is expressed by scaffolding the snippet as
-    [let res : constr tactic = <snippet> in res]. *)
+(* TODO: Move to a different file. *)
 
 (** Execution mode of a snippet, determining how a snippet should be
     interpreted. *)
 type execution_mode =
-  | Eval of string
+  | Eval
   (** Evaluation of OCaml tactics: [Camltac Eval ocaml:(…)]. *)
 
   | Check_expression
@@ -59,7 +53,3 @@ and camltac_module =
   { name: (string * Loc.t) option; (** Name of the module, or [None] for [Camltac Run]. *)
     locality: Libobject.locality   (** Locality of the module. *)
   }
-
-val scaffold : execution_mode -> t -> string
-(** [scaffold mode snippet] returns the contents of the scaffold file for the
-    given [snippet], assuming [mode] is the execution mode. *)

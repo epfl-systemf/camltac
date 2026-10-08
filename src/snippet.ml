@@ -1,7 +1,5 @@
 (** Representation of OCaml code snippets. *)
 
-open Names
-
 (** {1 Snippets} *)
 
 type t =
@@ -33,7 +31,7 @@ let loc { loc; _ } = loc
 
 let contents { contents; _ } = contents
 
-(** {1 Scaffolds} *)
+(** {1 Execution modes} *)
 
 type camltac_module =
   { name: (string * Loc.t) option;
@@ -41,108 +39,10 @@ type camltac_module =
   }
 
 type execution_mode =
-  | Eval of string
+  | Eval
   | Check_expression
   | Check_module
   | Module of camltac_module
   | Tactic_in_term
   | Tactic_in_Ltac
   | Tactic_in_Ltac2
-
-module Scaffold = struct
-  (** Name of the scaffold file. *)
-  let scaffold_file = "_scaffold_"
-
-  let new_line scaffold =
-    Buffer.add_char scaffold '\n'
-
-  let require_new_line scaffold =
-    let length = Buffer.length scaffold in
-    if length > 0 && Buffer.nth scaffold (length - 1) <> '\n' then
-      new_line scaffold
-
-  let line_count scaffold =
-    1 + (Buffer.to_seq scaffold
-         |> Seq.filter (fun c -> Char.equal c '\n')
-         |> Seq.length)
-
-  (** Adds a line number directive to [scaffold].
-
-      A line number directive is of the form #<line>"<source_file>",
-      and is used by preprocessors to map line numbers in generated code
-      to their original locations.
-
-      @see <https://ocaml.org/manual/5.4/lex.html#sss:lex-linedir> *)
-  let add_line_number_directive ~line ~file scaffold =
-    require_new_line scaffold;
-    Buffer.add_string scaffold "# ";
-    Buffer.add_string scaffold (string_of_int line);
-    Buffer.add_string scaffold {| "|};
-    Buffer.add_string scaffold (String.escaped file);
-    Buffer.add_char scaffold '"';
-    new_line scaffold
-
-  let add_header ?header scaffold =
-    match header with
-    | None -> ()
-    | Some header ->
-       add_line_number_directive ~line:1 ~file:scaffold_file scaffold;
-       Buffer.add_string scaffold header
-
-  let indent ~n scaffold =
-    for _ = 1 to n do Buffer.add_char scaffold ' ' done
-
-  let add_contents ~(loc: Loc.t) contents scaffold =
-    let file =
-      match loc.fname with
-      | ToplevelInput ->
-         (* Use the module name set by the [-top] option, if any. *)
-         let _, top_module_name = Libnames.split_dirpath (Lib.library_dp ()) in
-         begin match Id.to_string top_module_name with
-         | "Top" (* default *) -> "_toplevel_"
-         | name -> name ^ ".v"
-         end
-      | InFile { file; _ } -> file
-    in
-    add_line_number_directive ~line:loc.line_nb ~file scaffold;
-    (* Pad the first line to obtain correct error locations. *)
-    indent ~n:(loc.bp - loc.bol_pos) scaffold;
-    Buffer.add_string scaffold contents
-
-  let add_footer ?footer scaffold =
-    match footer with
-    | None -> ()
-    | Some footer ->
-       require_new_line scaffold;
-       let line = line_count scaffold in
-       add_line_number_directive ~line ~file:scaffold_file scaffold;
-       Buffer.add_string scaffold footer
-
-  let make ?header ?footer { loc; contents } =
-    (* Estimate approx. final buffer size to avoid most allocations. *)
-    let scaffold = Buffer.create (String.length contents + 256) in
-    add_header ?header scaffold;
-    add_contents ~loc contents scaffold;
-    add_footer ?footer scaffold;
-    Buffer.contents scaffold
-
-end
-
-let scaffold mode snippet =
-  let header, footer =
-    match mode with
-    | Check_expression ->
-       Some ("let " ^ Interface.single_value_name ^ " = begin"), Some "end"
-    | Eval typ ->
-       Some ({|[@@@ppx "ppx_deriving.show"]
-              open Api.Printers
-              type t = |} ^ typ ^ {|[@@deriving show]
-              let () = Runtime.Output.set_tactic begin
-                let* x =|}),
-       Some "in (return (show x)) end"
-    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-       Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
-    | Module _ | Check_module ->
-       None, None
-  in
-  Scaffold.make ?header ?footer snippet
