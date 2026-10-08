@@ -1,8 +1,23 @@
 (** Entry point for Camltac vernacular commands. *)
 
 open Names
-open Snippet
 open Scaffold
+
+(** {1 Commands} *)
+
+type module_info =
+  { name: (string * Loc.t) option;
+    locality: Libobject.locality;
+  }
+
+type t =
+  | Eval
+  | Check_expression
+  | Check_module
+  | Module of module_info
+  | Tactic_in_term
+  | Tactic_in_Ltac
+  | Tactic_in_Ltac2
 
 (** {1 Syntactic interpretation} *)
 
@@ -22,7 +37,7 @@ type build =
     recorded : recorded;        (** Whether the snippet compilation is recorded in [Libobject]. *)
   }
 
-let build_of_mode = function
+let build_of_cmd = function
   | Check_expression | Check_module ->
      { kind = Snippet;
        mode = Infer_interface;
@@ -78,9 +93,9 @@ let rec scaffold_mode snippet = function
   | Module _ | Check_module ->
      Plain
 
-and compile_snippet mode snippet =
-  let build = build_of_mode mode in
-  let scaffold_mode = scaffold_mode snippet mode in
+and compile_snippet cmd snippet =
+  let build = build_of_cmd cmd in
+  let scaffold_mode = scaffold_mode snippet cmd in
   Scaffold.make scaffold_mode snippet
   |> Build_file.write ~kind:build.kind
   |> Compiler.compile ~context:(current_context ()) build.mode
@@ -140,8 +155,8 @@ let eval ?proof out =
 
 (** {2 Interpretation function} *)
 
-let interpret ?proof mode (out: Compiler.output) =
-  match mode with
+let interpret ?proof cmd (out: Compiler.output) =
+  match cmd with
   | Check_expression | Check_module -> check out
   | Eval -> eval ?proof out
   | Module m -> load_module m out

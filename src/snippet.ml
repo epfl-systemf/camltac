@@ -31,18 +31,3 @@ let loc { loc; _ } = loc
 
 let contents { contents; _ } = contents
 
-(** {1 Execution modes} *)
-
-type camltac_module =
-  { name: (string * Loc.t) option;
-    locality: Libobject.locality;
-  }
-
-type execution_mode =
-  | Eval
-  | Check_expression
-  | Check_module
-  | Module of camltac_module
-  | Tactic_in_term
-  | Tactic_in_Ltac
-  | Tactic_in_Ltac2

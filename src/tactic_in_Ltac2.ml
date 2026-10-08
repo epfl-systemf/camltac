@@ -12,7 +12,7 @@ let wit_ocaml_in_ltac2: (t, t) Tac2dyn.Arg.tag = Tac2dyn.Arg.create "ocaml-in-lt
 
 let from_ocaml snippet =
   let loc = Snippet.loc snippet in
-  let compilation_output = Command.compile_snippet Snippet.Tactic_in_Ltac2 snippet in
+  let compilation_output = Command.compile_snippet Command.Tactic_in_Ltac2 snippet in
   CAst.make ~loc (CTacExt (wit_ocaml_in_ltac2, (snippet, compilation_output)))
 
 (** {2 Internalization} *)
@@ -38,7 +38,7 @@ let subst _ x = x
 
 let interp _ltac2_env (_, compilation_output) =
   (* Run the code *)
-  let () = Command.interpret Snippet.Tactic_in_Ltac2 compilation_output in
+  let () = Command.interpret Command.Tactic_in_Ltac2 compilation_output in
   (* Interpret the result as a tactic *)
   let open Proofview.Monad in
   Runtime.Output.get_tactic () >> return v_unit

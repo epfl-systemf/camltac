@@ -17,7 +17,7 @@ let wit_ocaml_in_ltac : (t, t, Util.Empty.t) Genarg.genarg_type =
 [%%endif]
 
 let from_ocaml snippet =
-  let compilation_output = Command.compile_snippet Snippet.Tactic_in_Ltac snippet in
+  let compilation_output = Command.compile_snippet Command.Tactic_in_Ltac snippet in
   Tacexpr.TacGeneric (Some "ocaml", Genarg.(in_gen (rawwit wit_ocaml_in_ltac) (snippet, compilation_output)))
 
 (** {2 Internalization} *)
