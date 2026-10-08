@@ -33,16 +33,32 @@ val contents : t -> string
 (** Execution mode of a snippet, determining how a snippet should be
     interpreted. *)
 type execution_mode =
-  | Eval of string             (** Evaluation of OCaml tactics ([Camltac Eval ocaml:(…)]). *)
-  | Check_expression           (** Type-checking OCaml expressions ([Camltac Check ocaml:(…)]). *)
-  | Check_module               (** Type-checking OCaml modules ([Camltac Check M]). *)
-  | Module of {
-      name: (string * Loc.t) option;
-      locality: Libobject.locality
-    }                          (** OCaml top-level declarations ([Camltac Module M := ocaml:(…)] or [Camltac Run] if [name] is [None]). *)
-  | Tactic_in_term             (** Tactic-in-term modality (e.g. [Definition x := ocaml:(…)]). *)
-  | Tactic_in_Ltac             (** Tactic-in-Ltac modality (e.g. [Ltac f := ocaml:(…)]). *)
-  | Tactic_in_Ltac2            (** Tactic-in-Ltac2 modality (e.g. [Ltac2 f () := ocaml:(…)]). *)
+  | Eval of string
+  (** Evaluation of OCaml tactics: [Camltac Eval ocaml:(…)]. *)
+
+  | Check_expression
+  (** Type-checking OCaml expressions: [Camltac Check ocaml:(…)]. *)
+
+  | Check_module
+  (** Type-checking OCaml modules: [Camltac Check M]. *)
+
+  | Module of camltac_module
+  (** OCaml top-level declarations: [Camltac Module M := ocaml:(…)] or
+      [Camltac Run] if [name] is [None]). *)
+
+  | Tactic_in_term
+  (** Tactic-in-term modality: [Definition x := ocaml:(…)]. *)
+
+  | Tactic_in_Ltac
+  (** Tactic-in-Ltac modality: [Ltac f := ocaml:(…)]. *)
+
+  | Tactic_in_Ltac2
+  (** Tactic-in-Ltac2 modality: [Ltac2 f () := ocaml:(…)]. *)
+
+and camltac_module =
+  { name: (string * Loc.t) option; (** Name of the module, or [None] for [Camltac Run]. *)
+    locality: Libobject.locality   (** Locality of the module. *)
+  }
 
 val scaffold : execution_mode -> t -> string
 (** [scaffold mode snippet] returns the contents of the scaffold file for the

@@ -35,11 +35,16 @@ let contents { contents; _ } = contents
 
 (** {1 Scaffolds} *)
 
+type camltac_module =
+  { name: (string * Loc.t) option;
+    locality: Libobject.locality;
+  }
+
 type execution_mode =
   | Eval of string
   | Check_expression
   | Check_module
-  | Module of { name: (string * Loc.t) option; locality: Libobject.locality }
+  | Module of camltac_module
   | Tactic_in_term
   | Tactic_in_Ltac
   | Tactic_in_Ltac2
@@ -127,7 +132,7 @@ let scaffold mode snippet =
   let header, footer =
     match mode with
     | Check_expression ->
-       Some "let (-) = begin", Some "end"
+       Some ("let " ^ Interface.single_value_name ^ " = begin"), Some "end"
     | Eval typ ->
        Some ({|[@@@ppx "ppx_deriving.show"]
               open Api.Printers

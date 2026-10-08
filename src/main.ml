@@ -1,74 +1,99 @@
 (** Entry point for Camltac vernacular commands. *)
 
+open Names
+open Snippet
+
 (** {1 Syntactic interpretation} *)
 
-(** {2 Validation} *)
+(** {2 Build plan} *)
 
-let check_module_not_loaded ~loc name =
-  if Module_manager.is_loaded name then
-    CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."))
+(** Whether a snippet's compilation should be recorded in [Libobject]. *)
+type recorded =
+  | Do_not_record
+  (** Do not persist the snippet in the [.vo] file. *)
+
+  | Record of string option
+  (** Record the snippet with the given name. *)
+
+type build =
+  { kind     : Build_file.kind; (** Kind of build file generated. *)
+    mode     : Ocamlfind.mode;  (** Mode of the OCaml compiler to use. *)
+    recorded : recorded;        (** Whether the snippet compilation is recorded in [Libobject]. *)
+  }
+
+let build_of_mode = function
+  | Check_expression | Check_module ->
+     { kind = Snippet;
+       mode = Infer_interface;
+       recorded = Do_not_record
+     }
+  | Module { name = Some (name, _); _ } ->
+     { kind = Module;
+       mode = Shared_library { linkall = true };
+       recorded = Record (Some name)
+     }
+  | Module { name = None; _ } ->
+     { kind = Snippet;
+       mode = Shared_library { linkall = true };
+       recorded = Record None
+     }
+  | Eval _ | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
+     { kind = Snippet;
+       mode = Shared_library { linkall = true };
+       recorded = Do_not_record
+     }
 
 (** {2 Compilation} *)
 
-let compile_file ~loc mode file =
-  let context = Compiler.{
-    alias_module = Module_manager.alias_module ();
-    dependencies = Module_manager.dependencies ();
-    modules_dirs = Module_manager.modules_dirs ()
+let current_context () =
+  Compiler.{
+      alias_module = Module_manager.alias_module ();
+      dependencies = Module_manager.dependencies ();
+      modules_dirs = Module_manager.modules_dirs ()
   }
-  in
-  match Compiler.compile ~context mode file with
-  | Ok out -> out
-  | Error code ->
-     let file = Build_file.locate file in
-     CErrors.user_err ~loc (Pp.(str "Compilation of " ++ str file ++ str " failed with error " ++ int code ++ str "."))
 
-let compile_scaffold ~loc mode scaffold =
-  let kind =
-    match mode with
-    | Snippet.Module { name = Some (name, loc); _ } ->
-       check_module_not_loaded ~loc name;
-       Build_file.Module
-    | _ -> Build_file.Snippet
-  in
-  let build_file = Build_file.write ~kind scaffold in
-  match mode with
-  | Check_expression | Check_module ->
-     compile_file ~loc Ocamlfind.Infer_interface build_file
-  | Module { name; _ } ->
-     (* Declare the module at synterp time. *)
-     let name = Option.map fst name in
-     let out = compile_file ~loc Ocamlfind.(Shared_library { linkall = true }) build_file in
-     Module_manager.declare_module name out;
-     out
-  | _ -> compile_file ~loc Ocamlfind.(Shared_library { linkall = true }) build_file
+let report_error ~loc err =
+  CErrors.user_err ~loc (Pp.fmt "Compilation failed with exit code %d." err)
+
+let record_out recorded out =
+  let () =
+    match recorded with
+    | Do_not_record -> ()
+    | Record name -> Module_manager.declare_module name out
+  in out
 
 let compile_snippet mode snippet =
-  let loc = Snippet.loc snippet in
-  let scaffold = Snippet.scaffold mode snippet in
-  compile_scaffold ~loc mode scaffold
+  let build = build_of_mode mode in
+  Snippet.scaffold mode snippet
+  |> Build_file.write ~kind:build.kind
+  |> Compiler.compile ~context:(current_context ()) build.mode
+  |> Result.fold ~ok:(record_out build.recorded) ~error:(report_error ~loc:(Snippet.loc snippet))
 
 (** {1 Interpretation} *)
 
-let read_interface file =
-  Build_file.locate file
-  |> File.read
-  |> String.trim
+(** {2 [Check]} *)
 
-let simplify_interface intf =
-  (* Simplify interface for single-values. *)
-  let prefix = "val ( - )" in
-  if String.starts_with ~prefix intf then
-    let l = String.length prefix in
-    "-" ^ String.sub intf l (String.length intf - l)
-  else
-    intf
+let check out =
+  let open Compiler in
+  Interface.read out.compiled_file
+  |> Interface.pp
+  |> Feedback.msg_info
 
-let get_type Compiler.{ compiled_file = mli_file; _ } =
-  let intf = read_interface mli_file in
-  let regexp = Str.regexp {|val ( - ) : \([^ ]+\) tactic|} in
-  let _ = Str.search_forward regexp intf 0 in
-  Str.matched_group 1 intf
+(** {2 [Module]} *)
+
+let load_module { name; locality } out =
+  match name with
+  | Some (name, loc) ->
+     if Module_manager.is_loaded name then
+       CErrors.user_err ~loc (Pp.fmt "Module %s already exists." name);
+     Module_manager.load_module ~locality (Some name) out
+  | None ->
+     Module_manager.load_module ~locality None out
+
+(** {2 [Eval]} *)
+
+let load Compiler.{ dependencies; compiled_file } =
+  Loader.load_file ~dependencies `Private compiled_file
 
 [%%if rocq >= (9, 2)]
 let poly_default = PolyFlags.default
@@ -76,32 +101,31 @@ let poly_default = PolyFlags.default
 let poly_default = false
 [%%endif]
 
-let interpret ?proof (mode: Snippet.execution_mode) (Compiler.{ compiled_file; dependencies } as compilation_output) =
+let run_tactic ?proof tactic =
+  let env = Global.env () in
+  let proof =
+    match proof with
+    | None ->
+       let sigma = Evd.from_env env in
+       let name = Id.of_string "camltac" in
+       Proof.start ~name ~poly:poly_default sigma []
+    | Some proof ->
+       Declare.Proof.get proof
+  in
+  let (_, _, result) = Proof.run_tactic env tactic proof in
+  result
+
+let eval ?proof typ out =
+  load out;
+  let tactic : string Proofview.tactic = Runtime.Output.get_tactic () in
+  let result = run_tactic ?proof tactic in
+  Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
+
+(** {2 Interpretation function} *)
+
+let interpret ?proof mode (out: Compiler.output) =
   match mode with
-  | Check_expression | Check_module ->
-     (* Read the interface from the [.mli] file. *)
-     let mli_file = compiled_file in
-     let intf = read_interface mli_file in
-     let intf = simplify_interface intf in
-     Feedback.msg_info (Pp.str intf)
-  | Eval typ ->
-     Loader.load_file ~dependencies `Private compiled_file;
-     let tactic: string Proofview.tactic = Runtime.Output.get_tactic () in
-     let env = Global.env () in
-     let proof =
-       match proof with
-       | None ->
-          let sigma = Evd.from_env env in
-          let name = Names.Id.of_string "camltac" in
-          Proof.start ~name ~poly:poly_default sigma []
-       | Some proof ->
-          Declare.Proof.get proof
-     in
-     let (_, _, result) = Proof.run_tactic env tactic proof in
-     Feedback.msg_info Pp.(str "- : " ++ str typ ++ spc () ++ str "=" ++ spc () ++ str result)
-  | Module { locality; name; _ } ->
-     (* [Module_manager] handles module loading. *)
-     let name = Option.map fst name in
-     Module_manager.load_module ~locality name compilation_output
-  | _ ->
-     Loader.load_file ~dependencies `Private compiled_file
+  | Check_expression | Check_module -> check out
+  | Eval typ -> eval ?proof typ out
+  | Module m -> load_module m out
+  | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 -> load out
