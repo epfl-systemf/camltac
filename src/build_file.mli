@@ -1,9 +1,18 @@
 (** Build artifacts. *)
 
-(** {1 Build files} *)
+(** {1 Build files}
+
+    A build file is a file in a build directory, i.e., in a specific
+    {!Layout.t}. Build files are used to temporarily store source files and
+    build artifacts, such as compiled libraries or executables.
+ *)
 
 type t
-(** A build file is a file in a build directory. *)
+(** Type of build files.
+
+    This type is marshallable, and build files with a [Logical] layout root can
+    be safely written to [.vo] files (they support relocation).
+ *)
 
 val layout : t -> Layout.t
 (** [layout file] returns the layout which includes the build file. *)
