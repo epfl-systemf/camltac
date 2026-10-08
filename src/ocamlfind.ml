@@ -15,71 +15,66 @@ let list_packages ?prefix () =
 
 (** {2 Arguments} *)
 
-let add_argument ~if_ arg args =
-  if if_ then arg :: args else args
-
-let add_arguments name list acc =
-  let[@tail_mod_cons] rec add = function
-    | [] -> acc
-    | arg :: args -> name :: arg :: add args
-  in
-  add list
-
-let output_extension ~stop_after ~shared ~native =
-  match stop_after with
-  | Some `typing -> ".cmi"
-  |_ ->
-    match shared, native with
-    | true, true -> ".cmxs"
-    | true, false -> ".cma"
-    | false, true -> ".cmx"
-    | false, false -> ".cmo"
-
+(** Whether we are using the native compiler or not. *)
 let native = Dynlink.is_native
 
+type mode =
+  | Shared_library of { linkall: bool }
+  | Executable of { linkall: bool; linkpkg: bool }
+  | Compile_only
+  | Infer_interface
+
+let output_extension mode =
+  match mode, native with
+  | Shared_library _, true  -> ".cmxs"
+  | Shared_library _, false -> ".cma"
+  | Executable _    , _     -> ".exe"
+  | Compile_only    , true  -> ".cmx"
+  | Compile_only    , false -> ".cmo"
+  | Infer_interface , _     -> ".check.mli"
+
+let arguments name list =
+  let[@tail_mod_cons] rec loop = function
+    | [] -> []
+    | arg :: args -> name :: arg :: loop args
+  in
+  loop list
+
 let compilation_args
-      ~packages ~linkpkg ~linkall
-      ~compile_only
-      ~shared
-      ~include_dirs
-      ~open_modules
-      ~extra_args
+      ~packages
+      ~include_dirs ~open_modules
       ?optimize
       ~pp
-      ?stop_after
-      ~infer_interface
-      ?out impl =
-  let args = ["-impl"; File.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.locate impl)] in
-  let out =
-    match out with
-    | Some out -> out
-    | None ->
-       Build_file.with_extension impl (output_extension ~stop_after ~shared ~native)
-  in
-  let args = if not infer_interface then ["-o"; Build_file.path out] @ args else args in
+      ~extra_args
+      mode
+      impl =
+  let out = Build_file.with_extension impl (output_extension mode) in
   let args =
-    match stop_after with
-    | Some `parsing -> ["-stop-after"; "parsing"] @ args
-    | Some `typing -> ["-stop-after"; "typing"] @ args
-    | Some `lambda -> ["-stop-after"; "lambda"] @ args
-    | _ -> args
+     (match mode, native with
+      | Shared_library _, true  -> ["-shared"]
+      | Shared_library _, false -> ["-a"]
+      | Executable _    , _     -> []
+      | Compile_only    , _     -> ["-c"]
+      | Infer_interface , _     -> ["-i"])
+    @ ["-impl"; File.relativize_if_under (Build_file.locate impl)]
+    @ (if mode <> Infer_interface then ["-o"; Build_file.path out] else [])
+    @ (match optimize, native with
+      | Some `O2, true -> ["-O2"]
+      | Some `O3, true -> ["-O3"]
+      | _       , _    -> [])
+    @ arguments "-package" packages
+    @ arguments "-I" include_dirs
+    @ arguments "-open" open_modules
+    @ ["-pp"; Filename.quote pp ^ " -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true"]
+    @ (match mode with
+      | Shared_library { linkall = true }
+      | Executable { linkall = true; _ } -> ["-linkall"]
+      | _                                -> [])
+    @ (match mode with
+      | Executable { linkpkg = true; _ } -> ["-linkpkg"]
+      | _                                -> [])
+    @ extra_args
   in
-  let args =
-    match optimize with
-    | Some `O2 when native -> "-O2" :: args
-    | Some `O3 when native -> "-O3" :: args
-    | _ -> args
-  in
-  let args = ["-pp"; pp ^ " -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true"] @ args in
-  let args = extra_args @ args in
-  let args = add_arguments "-open" open_modules args in
-  let args = add_arguments "-I" include_dirs args in
-  let args = add_argument ~if_:linkall "-linkall" args in
-  let args = add_argument ~if_:linkpkg "-linkpkg" args in
-  let args = add_arguments "-package" packages args in
-  let args = add_argument ~if_:(shared && not infer_interface) (if native then "-shared" else "-a") args in
-  let args = add_argument ~if_:compile_only "-c" args in
-  let args = add_argument ~if_:infer_interface "-i" args in
   args, out
 
 (** {2 Calling the compiler} *)
@@ -98,93 +93,33 @@ let run_command ?stdout prog args =
 let run_ocamlfind ?stdout args =
   run_command ?stdout (ocamlfind ()) args
 
-let compiler = if Dynlink.is_native then "ocamlopt" else "ocamlc"
+let compiler = if native then "ocamlopt" else "ocamlc"
 
-let compile
-      ?(packages = []) ?(linkall = false)
-      ?(compile_only = false)
-      ?(shared = false)
-      ?(include_dirs = [])
-      ?(open_modules = [])
-      ?optimize
-      ?(extra_args = [])
-      ?(pp = "ppx_rocq")
-      ?stop_after
-      ?out impl =
-  let args, out =
-    compilation_args
-      ~packages ~linkpkg:false ~linkall
-      ~compile_only
-      ~shared
-      ~include_dirs
-      ~open_modules
-      ~extra_args
-      ?optimize
-      ~pp
-      ?stop_after
-      ~infer_interface:false
-      ?out
-      impl
-  in
-  match run_ocamlfind (compiler :: args) with
-  | Ok () -> Ok out
-  | Error _ as e ->
-     (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
-        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
-     e
-
-let compile_exe
-      ?(packages = []) ?(linkpkg = false) ?(linkall = false)
-      ?(include_dirs = [])
-      ?(open_modules = [])
-      ?optimize
-      ?(extra_args = [])
-      ?(pp = "ppx_rocq")
-      impl =
-  let out = Build_file.with_extension impl ".exe" in
-  let args, out =
-    compilation_args
-      ~packages ~linkpkg ~linkall
-      ~compile_only:false
-      ~shared:false
-      ~include_dirs
-      ~open_modules
-      ~extra_args
-      ?optimize
-      ~pp
-      ~infer_interface:false
-      ~out
-      impl
-  in
-  match run_ocamlfind (compiler :: args) with
-  | Ok () -> Ok out
-  | Error _ as e ->
-     (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
-        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
-     e
-
-let infer_interface
+let ocamlc
       ?(packages = [])
       ?(include_dirs = [])
       ?(open_modules = [])
-      ?(extra_args = [])
+      ?optimize
       ?(pp = "ppx_rocq")
-      impl =
-  let stdout = Build_file.with_extension impl ".check.mli" in
+      ?(extra_args = [])
+      mode impl =
   let args, out =
     compilation_args
-      ~packages ~linkpkg:false ~linkall:false
-      ~compile_only:false
-      ~shared:false
+      ~packages
       ~include_dirs
       ~open_modules
-      ~extra_args
+      ?optimize
       ~pp
-      ~infer_interface:true
-      ~out:stdout
-      impl
+      ~extra_args
+      mode impl
   in
-  match run_ocamlfind ~stdout:(Build_file.path stdout) (compiler :: args) with
+  (* The output of [Infer_interface] is printed on the standard output. *)
+  let stdout =
+    match mode with
+    | Infer_interface -> Some (Build_file.path out)
+    | _ -> None
+  in
+  match run_ocamlfind ?stdout (compiler :: args) with
   | Ok () -> Ok out
   | Error _ as e ->
      (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
