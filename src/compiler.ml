@@ -1,14 +1,10 @@
 (** Compilation of OCaml snippets to shared libraries. *)
 
-(** List of Rocq packages that are automatically linked in. *)
-let rocq_packages = Ocamlfind.list_packages ~prefix:"rocq-runtime" ()
-
 (** Set of packages linked by default. *)
 let default_packages =
   ["camltac.plugin.runtime";
    "camltac.plugin.api";
    "ppx_rocq.runtime"]
-  @ rocq_packages
 
 (** Set of modules open by default. *)
 let default_open_modules =
