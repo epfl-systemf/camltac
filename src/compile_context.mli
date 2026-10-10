@@ -8,8 +8,7 @@
 
     - The map from module names to compiled shared libraries;
     - The set of packages that are available, as required by a previous snippet;
-    - The set of module directories from external packages to include;
-    - An alias module to correctly map module names to their mangled (real) name.
+    - The set of module directories from external packages to include.
 
     Since compilation runs at synterp time, compilation state is kept in the
     synterp phase as well.
@@ -20,15 +19,22 @@ type state = private
   { modules      : Build_file.t CString.Map.t; (** Map from module names to compiled files. *)
     packages     : CString.Set.t;              (** Loaded library dependencies. *)
     modules_dirs : CString.Set.t;              (** Set of module directories. *)
-    alias_module : alias_module;               (** The alias module. *)
   }
-
-(** Type of alias modules. *)
-and alias_module
 
 val declare_module : locality:Libobject.locality -> name:(string * Loc.t) option -> Compiler.compiled -> unit
 (** [declare_module ~locality ~name out] updates the current compilation state by adding
     the given module. *)
+
+(** {2 Module aliases}
+
+    OCaml cannot load a module with the same name twice, which causes issues
+    with backtracking. Hence, we add module aliases to the top of each scaffold,
+    of the form [module Name = Camltac_module__XXX].
+ *)
+
+val module_aliases : unit -> (string * string) list
+(** [module_aliases ()] returns the list of mapping from user module names to
+    their real names in the current state. *)
 
 (** {1 Compilation context}
 

@@ -42,12 +42,40 @@ let add_line_number_directive ~line ~file scaffold =
   Buffer.add_char scaffold '"';
   new_line scaffold
 
-let add_header ?header scaffold =
-  match header with
+let module_aliases_format : _ format =
+  {|
+open struct
+  [%@%@%@warning "-60"]
+  %s
+end
+;;
+|}
+
+let module_aliases () =
+  match Compile_context.module_aliases () with
+  | [] -> None
+  | aliases ->
+     let contents =
+       List.map (fun (name, mangled) -> Format.sprintf "module %s = %s" name mangled) aliases
+       |> String.concat "\n  "
+       |> Format.sprintf module_aliases_format
+     in Some contents
+
+let add_module_aliases scaffold =
+  match module_aliases () with
   | None -> ()
-  | Some header ->
+  | Some aliases ->
      add_line_number_directive ~line:1 ~file:scaffold_file scaffold;
-     Buffer.add_string scaffold header
+     Buffer.add_string scaffold aliases
+
+let add_part ?part scaffold =
+  match part with
+  | None -> ()
+  | Some part ->
+     require_new_line scaffold;
+     let line = line_count scaffold in
+     add_line_number_directive ~line ~file:scaffold_file scaffold;
+     Buffer.add_string scaffold part
 
 let indent ~n scaffold =
   for _ = 1 to n do Buffer.add_char scaffold ' ' done
@@ -68,21 +96,13 @@ let add_contents ~(loc: Loc.t) contents scaffold =
   indent ~n:(loc.bp - loc.bol_pos) scaffold;
   Buffer.add_string scaffold contents
 
-let add_footer ?footer scaffold =
-  match footer with
-  | None -> ()
-  | Some footer ->
-     require_new_line scaffold;
-     let line = line_count scaffold in
-     add_line_number_directive ~line ~file:scaffold_file scaffold;
-     Buffer.add_string scaffold footer
-
 let make ~loc ?header ?footer contents =
   (* Estimate approx. final buffer size to avoid most allocations. *)
   let scaffold = Buffer.create (String.length contents + 256) in
-  add_header ?header scaffold;
+  add_module_aliases scaffold;
+  add_part ?part:header scaffold;
   add_contents ~loc contents scaffold;
-  add_footer ?footer scaffold;
+  add_part ?part:footer scaffold;
   Buffer.contents scaffold
 
 let header_footer = function
