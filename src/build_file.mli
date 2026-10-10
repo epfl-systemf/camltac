@@ -14,6 +14,17 @@ type t
     be safely written to [.vo] files (they support relocation).
  *)
 
+val equal : t -> t -> bool
+(** [equal a b] tests for equality of two build files, i.e., whether they
+    correspond to the same file. This is only valid for existing files. *)
+
+val compare : t -> t -> int
+(** [compare a b] compares two build files. This is only valid for existing
+    files. *)
+
+module Set : Set.S with type elt = t
+(** Sets of build files. *)
+
 val layout : t -> Layout.t
 (** [layout file] returns the layout which includes the build file. *)
 

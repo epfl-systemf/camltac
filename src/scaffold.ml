@@ -8,6 +8,7 @@ type mode =
   | Infer_type
   | Tactic
   | Show_tactic of { typ: string }
+  | Module of string
   | Plain
 
 (** Name of the scaffold file. *)
@@ -116,6 +117,17 @@ let header_footer = function
      Some ({|in (return (Pp.(str "- : " ++ str "|} ^ typ ^ {|" ++ spc () ++ str "=" ++ spc () ++ str (show x)))) end|})
   | Tactic ->
      Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
+  | Module name ->
+     Some
+{|open struct
+  module Make () = struct
+|},
+     Some (Format.sprintf
+{|  end
+end
+let () = Runtime.Output.register_module %S (fun () -> let module _ = Make () in ())
+include Make ()
+|} name)
   | Plain ->
      None, None
 

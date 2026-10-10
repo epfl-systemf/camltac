@@ -43,9 +43,6 @@ let with_env ~env f =
 let load_module_with_env ~env ~name out =
   with_env ~env (fun () -> load_module ~name out)
 
-let replay_module ~env ~name out =
-  ignore (load_module_with_env ~env ~name out)
-
 (** {2 Replaying modules}
 
     We record non-local modules in {!Libobject} to be able to replay them from
@@ -53,13 +50,24 @@ let replay_module ~env ~name out =
     take the environment from the original module's load, so that globalization
     is performed correctly. *)
 
+let run_module_initializers ~name =
+  Runtime.Output.get_module name ()
+
+let replay_module ~env ~name (out: Compiler.compiled) =
+  (* Re-trigger module initializers for already loaded modules. *)
+  match name with
+  | Some name when Loader.is_loaded out.file ->
+     with_env ~env (fun () -> run_module_initializers ~name)
+  | _ ->
+     load_module_with_env ~env ~name out
+
 open Libobject
 
 let module_replay_object =
   declare_object
     { (object_with_locality
          ~stage:Summary.Stage.Interp
-         ~cache:(fun (env, name, out) -> replay_module ~env ~name out)
+         ~cache:(fun (env, name, out) -> ignore (replay_module ~env ~name out))
          ~subst:None
          ~discharge:Fun.id
          "camltac:replay_module")

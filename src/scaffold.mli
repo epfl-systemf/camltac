@@ -16,6 +16,7 @@ type mode =
   | Infer_type                     (** The type of a single value is inferred. *)
   | Tactic                         (** A single tactic value is registered. *)
   | Show_tactic of { typ: string } (** A single tactic value is registered and printed. *)
+  | Module of string               (** A module and its initializers are registered. *)
   | Plain                          (** No scaffolding is performed. *)
 
 val make : mode -> Snippet.t -> string

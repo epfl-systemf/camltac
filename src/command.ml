@@ -83,7 +83,9 @@ let rec scaffold_mode snippet = function
      end
   | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
      Tactic
-  | Module _ | Check_module ->
+  | Module { name = Some (name, _); _ } ->
+     Module name
+  | Module { name = None; _ } | Check_module ->
      Plain
 
 and synterp ?(directives = Build_directives.empty) cmd snippet =
