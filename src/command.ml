@@ -109,11 +109,11 @@ let check out =
 let load_module { name; locality } out =
   match name with
   | Some (name, loc) ->
-     if Module_manager.is_loaded name then
+     if Loaded_modules.is_loaded name then
        CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."));
-     Module_manager.load_module ~locality (Some name) out
+     Loaded_modules.load_module ~locality ~name:(Some name) out
   | None ->
-     Module_manager.load_module ~locality None out
+     Loaded_modules.load_module ~locality ~name:None out
 
 (** {2 [Eval]} *)
 
