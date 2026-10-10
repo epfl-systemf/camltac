@@ -11,8 +11,10 @@ let () = Findlib.init ()
 let list_packages ?prefix () =
   Findlib.list_packages' ?prefix ()
 
+let packages = lazy (list_packages ())
+
 let package_exists name =
-  let packages = list_packages () in
+  let packages = Lazy.force packages in
   if List.mem name packages then
     Ok ()
   else
