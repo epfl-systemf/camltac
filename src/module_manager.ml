@@ -2,29 +2,11 @@
 
 type camltac_module =
   { name: string option;
-    compilation_output: Compiler.output }
-
-(** State required for compiling modules properly. *)
-type synterp_state =
-  { compiled_modules: Compiler.output CString.Map.t;
-    dependencies: CString.Set.t;
-    modules_dirs : CString.Set.t;
-    alias_module: Build_file.t option;
-  }
+    compilation_output: Compiler.compiled }
 
 [%%if rocq >= (9, 4)]
 open Summary.Ref
 [%%endif]
-
-let synterp_state =
-  Summary.ref
-    ~stage:Synterp
-    ~name:"camltac:synterp-state"
-    { compiled_modules = CString.Map.empty;
-      dependencies = CString.Set.empty;
-      modules_dirs = CString.Set.empty;
-      alias_module = None
-    }
 
 (** List of names of loaded modules. *)
 let loaded_modules =
@@ -36,62 +18,11 @@ let loaded_modules =
 let is_loaded m =
   List.exists (String.equal m) !loaded_modules
 
-let dependencies () =
-  CString.Set.elements !synterp_state.dependencies
-
-let modules_dirs () =
-  CString.Set.elements !synterp_state.modules_dirs
-
-let alias_module_contents () =
-  let module_alias (name, compilation_output) =
-    let real_name = Build_file.module_name compilation_output.Compiler.compiled_file in
-    Format.sprintf "module %s = %s" name real_name
-  in
-  (* First element = most recent, so reverse the order. *)
-  let aliases = List.rev_map module_alias (CString.Map.bindings !synterp_state.compiled_modules) in
-  String.concat "\n" aliases
-
-let alias_module () =
-  Option.map Build_file.module_name !synterp_state.alias_module
-
-let generate_alias_module () =
-  let impl = Build_file.(write ~kind:Module (alias_module_contents ())) in
-  let compilation_output =
-    Ocamlfind.ocamlc
-      ~include_dirs:(modules_dirs ())
-      ~extra_args:["-no-alias-deps"]
-      Ocamlfind.Compile_only
-      impl
-  in
-  match compilation_output with
-  | Ok alias_module ->
-     synterp_state := { !synterp_state with alias_module = Some alias_module }
-  | Error err ->
-     CErrors.user_err (Pp.(str "Compilation of alias module failed with error " ++ int err ++ str "."))
-
-let declare_module name (Compiler.{ compiled_file; dependencies } as out)  =
-  let new_state =
-    { !synterp_state with
-      dependencies = CString.Set.add_seq (List.to_seq dependencies) !synterp_state.dependencies;
-      modules_dirs = CString.Set.add (Build_file.layout compiled_file).modules !synterp_state.modules_dirs;
-    }
-  in
-  match name with
-  | Some name ->
-     let compiled_modules = CString.Map.add name out !synterp_state.compiled_modules in
-     synterp_state := { new_state with compiled_modules };
-     generate_alias_module ()
-  | None ->
-     (* Anonymous modules don't trigger a compilation of a new alias module. *)
-     synterp_state := new_state
-
 let load_module m =
   let { name; compilation_output } = m in
   let load_module () =
-    let Compiler.{ compiled_file; dependencies } = m.compilation_output in
-    Loader.load_file ~dependencies `Public compiled_file;
-    (* Declare the module for it to be included in the module name map. *)
-    declare_module name m.compilation_output
+    let Compiler.{ file; packages } = m.compilation_output in
+    Loader.load_file ~dependencies:packages `Public file;
   in
   match name with
   | Some name ->

@@ -4,7 +4,7 @@ open Ltac_plugin
 
 (** {1 Tactics in Ltac} *)
 
-type t = Snippet.t * Compiler.output
+type t = Snippet.t * Compiler.compiled
 
 [%%if rocq >= (9, 3)]
 let wit_ocaml_in_ltac : (t, t, Geninterp.Val.t) Genarg.genarg_type =
@@ -34,9 +34,8 @@ let () =
 
 (** {2 Interpretation} *)
 
-let interp ist (_, compilation_output) =
-  let Compiler.{ compiled_file; dependencies } = compilation_output in
-  Loader.load_file ~dependencies `Private compiled_file;
+let interp ist (_, out) =
+  Command.interp Command.Tactic_in_Ltac out;
   let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
   (* Get the resulting tactic. *)
   let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in

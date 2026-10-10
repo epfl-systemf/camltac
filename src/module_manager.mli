@@ -1,38 +1,12 @@
 (** Global state manager. *)
 
-(** {1 Compilation state}
-
-    This state comprises all information relevant for compiling a new module
-    (i.e. at synterp time). *)
-
-val declare_module : string option -> Compiler.output -> unit
-(** [declare_module name compilation_output] declares a new Camltac module
-    with the given name. *)
-
-val dependencies : unit -> string list
-(** [dependencies ()] returns all dependencies of compiled modules. *)
-
-val modules_dirs : unit -> string list
-(** [modules_dirs ()] returns the list of all directories to modules to include. *)
-
-(** {2 Module aliases}
-
-    OCaml has namespacing issues: [Loader.load_file] cannot load two modules
-    with the same name. To work-around that, we generate fresh names for
-    modules, which we link to the name entered by the user through an alias
-    module that only contains module aliases. *)
-
-val alias_module : unit -> string option
-(** [alias_module ()] returns the name of the module containing module aliases,
-    or [None] if there are no loaded modules. *)
-
 (** {1 Loading modules} *)
 
 val is_loaded : string -> bool
 (** [is_loaded m] returns [true] if a module named [m] is already loaded into
     the main program. *)
 
-val load_module : locality:Libobject.locality -> string option -> Compiler.output -> unit
+val load_module : locality:Libobject.locality -> string option -> Compiler.compiled -> unit
 (** [load_module ~locality m compilation_output] loads the Camltac module
     named [m]. The [locality] argument specifies whether the module is accessible outside of the
     current module:

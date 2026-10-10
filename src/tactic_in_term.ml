@@ -37,8 +37,8 @@ open Names
     Note that snippets are compiled once at parsing time, so that the compilation
     overhead is amortized over each interpretation. *)
 type raw_ocaml = {
-    source_code: Snippet.t;              (** Source code of the snippet. *)
-    compilation_output: Compiler.output; (** Compilation output. *)
+    source_code: Snippet.t;                (** Source code of the snippet. *)
+    compilation_output: Compiler.compiled; (** Compilation output. *)
 }
 
 (** Representation of OCaml snippets in [Glob_term.glob_constr] terms. *)

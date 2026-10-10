@@ -51,7 +51,7 @@ and module_info =
     and load the compiled files during interp.
  *)
 
-type synterp_result = Compiler.output
+type synterp_result = Compiler.compiled
 (** Type of synterp result. *)
 
 val synterp : ?directives:Build_directives.t -> t -> Snippet.t -> synterp_result
