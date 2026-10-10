@@ -1,18 +1,39 @@
-(** Compilation of OCaml snippets to shared libraries. *)
+(** Compilation of OCaml snippets. *)
 
-(** Set of packages linked by default. *)
-let default_packages =
-  ["camltac.plugin.runtime";
-   "camltac.plugin.api";
-   "ppx_rocq.runtime"]
+(** {1 Compilation} *)
 
-(** Set of modules open by default. *)
-let default_open_modules =
-  ["Api"; "Prelude"]
+type compiled =
+  { file     : Build_file.t;
+    packages : string list
+  }
 
-type output =
-  { compiled_file: Build_file.t;
-    dependencies: string list }
+type args =
+  { packages     : string list;
+    include_dirs : string list;
+    open_modules : string list;
+  }
+
+type mode = Ocamlfind.mode =
+  | Shared_library of { linkall : bool }
+  | Executable of { linkall : bool; linkpkg : bool }
+  | Compile_only
+  | Infer_interface
+
+(** {2 Compilation errors} *)
+
+type error =
+  | Preprocessors of Build_file.t * int
+  | Compilation_failed of Build_file.t * int
+
+let pp_error = function
+  | Preprocessors (file, err) ->
+     Pp.(str "Compilation of preprocessors for " ++ str (Build_file.module_name file) ++
+         str " failed with exit code " ++ int err ++ str ".")
+  | Compilation_failed (file, err) ->
+     Pp.(str "Compilation of " ++ str (Build_file.path file) ++
+         str " failed with exit code " ++ int err ++ str ".")
+
+(** {2 Compilation method} *)
 
 let ppx_runtime_deps ppxs =
   let find_value preds ppx prop =
@@ -28,39 +49,26 @@ let ppx_runtime_deps ppxs =
   in
   List.concat_map ppx_runtime_deps ppxs
 
-type context =
-  { alias_module: string option;
-    dependencies: string list;
-    modules_dirs: string list
-  }
-
-let empty_context =
-  { alias_module = None;
-    dependencies = [];
-    modules_dirs = []
-  }
-
-let compile
-      ?(context = empty_context)
-      ~(directives: Build_directives.t)
-      mode (impl: Build_file.t) =
-  let ( let* ) = Result.bind in
-  let* pp = Preprocessors.create directives.ppx in
-  let pp =
-    match pp with
-    | Default -> "ppx_rocq"
-    | Custom driver -> Build_file.locate driver
+let compile ~args ~(directives: Build_directives.t) mode (impl: Build_file.t) =
+  let (let*) = Result.bind in
+  let* pp =
+    match Preprocessors.create directives.ppx with
+    | Ok Default -> Ok "ppx_rocq"
+    | Ok (Custom driver) -> Ok (Build_file.locate driver)
+    | Error err -> Error (Preprocessors (impl, err))
   in
   let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
-  let dependencies = ppx_runtime_deps @ directives.libraries in
-  let* compiled_file =
+  let packages = ppx_runtime_deps @ directives.libraries in
+  match
     Ocamlfind.ocamlc
-      ~packages:(dependencies @ context.dependencies @ default_packages)
-      ~include_dirs:((Build_file.layout impl).modules :: context.modules_dirs)
-      ~open_modules:(Option.List.cons context.alias_module default_open_modules)
+      ~packages:(packages @ args.packages)
+      ~include_dirs:((Build_file.layout impl).modules :: args.include_dirs)
+      ~open_modules:(args.open_modules)
       ~optimize:(`O3)
       ~extra_args:("-short-paths" :: directives.compiler_options)
       ~pp
       mode
       impl
-  in Ok { compiled_file; dependencies }
+  with
+  | Ok file -> Ok { file; packages  }
+  | Error code -> Error (Compilation_failed (impl, code))

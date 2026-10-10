@@ -21,7 +21,7 @@ type t =
 
 (** {1 Synterp} *)
 
-type synterp_result = Compiler.output
+type synterp_result = Compiler.compiled
 
 (** {2 Build plan} *)
 
@@ -30,7 +30,7 @@ type recorded =
   | Do_not_record
   (** Do not persist the snippet in the [.vo] file. *)
 
-  | Record of string option
+  | Record of module_info
   (** Record the snippet with the given name. *)
 
 type build =
@@ -45,15 +45,12 @@ let build_of_cmd = function
        mode = Infer_interface;
        recorded = Do_not_record
      }
-  | Module { name = Some (name, _); _ } ->
-     { kind = Module;
+  | Module info ->
+     { kind = (match info.name with
+              | Some _ -> Module
+              | None -> Snippet);
        mode = Shared_library { linkall = true };
-       recorded = Record (Some name)
-     }
-  | Module { name = None; _ } ->
-     { kind = Snippet;
-       mode = Shared_library { linkall = true };
-       recorded = Record None
+       recorded = Record info
      }
   | Eval | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
      { kind = Snippet;
@@ -63,21 +60,15 @@ let build_of_cmd = function
 
 (** {2 Compilation} *)
 
-let current_context () =
-  Compiler.{
-      alias_module = Module_manager.alias_module ();
-      dependencies = Module_manager.dependencies ();
-      modules_dirs = Module_manager.modules_dirs ()
-  }
-
-let report_error ~loc err =
-  CErrors.user_err ~loc (Pp.(str "Compilation failed with exit code " ++ int err ++ str "."))
-
 let record_out recorded out =
   let () =
     match recorded with
     | Do_not_record -> ()
-    | Record name -> Module_manager.declare_module name out
+    | Record module_info ->
+       Compile_context.declare_module
+         ~name:module_info.name
+         ~locality:module_info.locality
+         out
   in out
 
 let rec scaffold_mode snippet = function
@@ -86,7 +77,7 @@ let rec scaffold_mode snippet = function
   | Eval ->
      (* Infer the type of the tactic to scaffold correctly. *)
      let out = synterp Check_expression snippet in
-     begin match Interface.tactic_type (Interface.read out.Compiler.compiled_file) with
+     begin match Interface.tactic_type (Interface.read out.Compiler.file) with
      | Some typ -> Show_tactic { typ }
      | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.str "Argument to Eval is not a tactic.")
      end
@@ -100,8 +91,8 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
   let scaffold_mode = scaffold_mode snippet cmd in
   Scaffold.make scaffold_mode snippet
   |> Build_file.write ~kind:build.kind
-  |> Compiler.compile ~directives ~context:(current_context ()) build.mode
-  |> Result.fold ~ok:(record_out build.recorded) ~error:(report_error ~loc:(Snippet.loc snippet))
+  |> Compiler.compile ~args:(Compile_context.current ()) ~directives build.mode
+  |> Result.fold ~ok:(record_out build.recorded) ~error:(fun err -> CErrors.user_err ~loc:(Snippet.loc snippet) (Compiler.pp_error err))
 
 (** {1 Interpretation} *)
 
@@ -109,7 +100,7 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
 
 let check out =
   let open Compiler in
-  Interface.read out.compiled_file
+  Interface.read out.file
   |> Interface.pp
   |> Feedback.msg_info
 
@@ -126,8 +117,8 @@ let load_module { name; locality } out =
 
 (** {2 [Eval]} *)
 
-let load Compiler.{ dependencies; compiled_file } =
-  Loader.load_file ~dependencies `Private compiled_file
+let load Compiler.{ packages; file } =
+  Loader.load_file ~dependencies:packages `Private file
 
 [%%if rocq >= (9, 2)]
 let poly_default = PolyFlags.default
@@ -157,7 +148,7 @@ let eval ?proof out =
 
 (** {1 Interp} *)
 
-let interp ?proof cmd (out: Compiler.output) =
+let interp ?proof cmd (out: Compiler.compiled) =
   match cmd with
   | Check_expression | Check_module -> check out
   | Eval -> eval ?proof out

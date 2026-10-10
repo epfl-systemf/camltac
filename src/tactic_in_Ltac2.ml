@@ -5,7 +5,7 @@ open Tac2expr
 
 (** {1 OCaml tactics in Ltac2} *)
 
-type t = Snippet.t * Compiler.output
+type t = Snippet.t * Compiler.compiled
 
 (** Generic tag for OCaml snippets in Ltac2. *)
 let wit_ocaml_in_ltac2: (t, t) Tac2dyn.Arg.tag = Tac2dyn.Arg.create "ocaml-in-ltac2"
