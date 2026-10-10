@@ -22,7 +22,12 @@ let load_module m =
   let { name; compilation_output } = m in
   let load_module () =
     let Compiler.{ file; packages } = m.compilation_output in
-    Loader.load_file ~dependencies:packages `Public file;
+    let visibility =
+      match name with
+      | Some _ -> `Public
+      | None -> `Private
+    in
+    Loader.load_file ~dependencies:packages visibility file;
   in
   match name with
   | Some name ->
