@@ -56,11 +56,15 @@ let string_list_parser ~check ?loc acc value =
 (** {2 Validation} *)
 
 let check_package ?loc string =
-  let packages = Findlib.list_packages' () in
-  if List.mem string packages then string
-  else
-    (* TODO: Add suggestion using spellcheck (OCaml 5.4). *)
-    CErrors.user_err ?loc (Pp.(str "Cannot find package named " ++ str string ++ str "."))
+  match Ocamlfind.package_exists string with
+  | Ok () -> string
+  | Error suggestion ->
+     let hint =
+       match suggestion with
+       | Some package -> Pp.(fnl () ++ str {|Hint: did you mean "|} ++ str package ++ str {|"?|})
+       | None -> Pp.mt ()
+     in
+     CErrors.user_err ?loc (Pp.(str "Cannot find package named " ++ str string ++ str "." ++ hint))
 
 let check_compiler_option ?loc flag =
   (* TODO: Perform verification. *)

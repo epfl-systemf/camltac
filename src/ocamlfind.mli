@@ -6,6 +6,10 @@ val list_packages : ?prefix:string -> unit -> string list
 (** [list_packages ?prefix ()] returns the list of packages
     whose name starts with [prefix]. *)
 
+val package_exists : string -> (unit, string option) result
+(** [package_exists name] returns [Ok ()] if [name] corresponds to a package, or
+    [Error name'] with the closest match otherwise. *)
+
 (** {1 Compilation} *)
 
 (** Compilation mode. *)
