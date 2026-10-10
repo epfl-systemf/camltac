@@ -11,3 +11,13 @@ let get_tactic () =
      tactic := None;
      Obj.obj result
   | None -> assert false
+
+let modules = ref CString.Map.empty
+
+let register_module m (f: unit -> unit) =
+  modules := CString.Map.add m f !modules
+
+let get_module m =
+  match CString.Map.find_opt m !modules with
+  | Some f -> f
+  | None -> Fun.id

@@ -11,6 +11,17 @@ let layout file = Layout.of_root file.root
 let locate file = Layout.resolve file.root file.path
 let path file = Layout.path file.root file.path
 
+let compare file1 file2 =
+  String.compare (locate file1) (locate file2)
+
+let equal file1 file2 =
+  String.equal (locate file1) (locate file2)
+
+module Set = Set.Make(struct
+                 type nonrec t = t
+                 let compare = compare
+               end)
+
 let with_extension file ext =
   { file with path = Filename.remove_extension file.path ^ ext }
 
