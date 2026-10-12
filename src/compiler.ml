@@ -65,7 +65,7 @@ let compile ~args ~(directives: Build_directives.t) mode (impl: Build_file.t) =
       ~include_dirs:((Build_file.layout impl).modules :: args.include_dirs)
       ~open_modules:(args.open_modules)
       ~optimize:(`O3)
-      ~extra_args:("-short-paths" :: directives.compiler_options)
+      ~extra_args:("-no-alias-deps" :: "-short-paths" :: directives.compiler_options)
       ~pp
       mode
       impl
