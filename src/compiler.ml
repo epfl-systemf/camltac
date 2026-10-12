@@ -39,6 +39,7 @@ let compile ~args ~(directives: Build_directives.t) mode (impl: Build_file.t) =
   let (let*) = Result.bind in
   let ppxs = directives.ppx in
   let* pp =
+    (* TODO: Avoid reading [impl] just for preprocessing heuristics. *)
     match Preprocessing.prepare ~ppxs ~source:(Build_file.read impl) with
     | Ok pp -> Ok (Preprocessing.pp_flag pp)
     | Error err -> Error (Preprocessors (impl, err))
