@@ -44,7 +44,10 @@ val module_name : t -> string
 (** [module_name file] is equivalent to [File.module_name (locate file)] but
     more efficient. *)
 
-(** {1 Creation} *)
+(** {1 Read/write} *)
+
+val read : t -> string
+(** [read file] reads the given build file. *)
 
 (** Kind of build files. *)
 type kind = Snippet | Module | Ppx_driver

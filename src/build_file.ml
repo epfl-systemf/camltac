@@ -28,7 +28,9 @@ let with_extension file ext =
 let module_name build_file =
   File.module_name build_file.path
 
-(** {1 Creation} *)
+(** {1 Read/write} *)
+
+let read file = File.read (locate file)
 
 type kind = Snippet | Module | Ppx_driver
 

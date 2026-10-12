@@ -35,29 +35,15 @@ let pp_error = function
 
 (** {2 Compilation method} *)
 
-let ppx_runtime_deps ppxs =
-  let find_value preds ppx prop =
-    let value = Findlib.package_property preds ppx prop in
-    String.split_on_char ' ' value
-  in
-  let ppx_runtime_deps ppx =
-    (* Check ppx_runtime_deps first. *)
-    try find_value [] ppx "ppx_runtime_deps"
-    with Not_found ->
-       try find_value ["custom_ppx"] ppx "requires"
-       with Not_found -> []
-  in
-  List.concat_map ppx_runtime_deps ppxs
-
 let compile ~args ~(directives: Build_directives.t) mode (impl: Build_file.t) =
   let (let*) = Result.bind in
+  let ppxs = directives.ppx in
   let* pp =
-    match Preprocessors.create directives.ppx with
-    | Ok Default -> Ok "ppx_rocq"
-    | Ok (Custom driver) -> Ok (Build_file.locate driver)
+    match Preprocessing.prepare ~ppxs ~source:(Build_file.read impl) with
+    | Ok pp -> Ok (Preprocessing.pp_flag pp)
     | Error err -> Error (Preprocessors (impl, err))
   in
-  let ppx_runtime_deps = ppx_runtime_deps directives.ppx in
+  let ppx_runtime_deps = Preprocessing.runtime_deps ~ppxs in
   let packages = ppx_runtime_deps @ directives.libraries in
   match
     Ocamlfind.ocamlc
@@ -66,7 +52,7 @@ let compile ~args ~(directives: Build_directives.t) mode (impl: Build_file.t) =
       ~open_modules:(args.open_modules)
       ~optimize:(`O3)
       ~extra_args:("-no-alias-deps" :: "-short-paths" :: directives.compiler_options)
-      ~pp
+      ?pp
       mode
       impl
   with

@@ -46,7 +46,7 @@ let add_line_number_directive ~line ~file scaffold =
 let module_aliases_format : _ format =
   {|
 open struct
-  [%@%@%@warning "-60"]
+  [%@%@%@ocaml.warning "-60"]
   %s
 end
 ;;

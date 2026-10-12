@@ -52,7 +52,7 @@ val ocamlc :
     @param optimize (default = [None])
       Set the optimization level. Only relevant in native mode.
 
-    @param pp (default = ["ppx_rocq"])
+    @param pp (default = [None])
       Executable to run as a preprocessor.
 
     @param extra_args (default = [[]])

@@ -53,7 +53,7 @@ let compilation_args
       ~packages
       ~include_dirs ~open_modules
       ?optimize
-      ~pp
+      ?pp
       ~extra_args
       mode
       impl =
@@ -74,7 +74,9 @@ let compilation_args
     @ arguments "-package" packages
     @ arguments "-I" include_dirs
     @ arguments "-open" open_modules
-    @ ["-pp"; Filename.quote pp ^ " -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true"]
+    @ (match pp with
+      | Some pp -> ["-pp"; pp]
+      | None    -> [])
     @ (match mode with
       | Shared_library { linkall = true }
       | Executable { linkall = true; _ } -> ["-linkall"]
@@ -108,7 +110,7 @@ let ocamlc
       ?(include_dirs = [])
       ?(open_modules = [])
       ?optimize
-      ?(pp = "ppx_rocq")
+      ?pp
       ?(extra_args = [])
       mode impl =
   let compiler = if native then "ocamlopt" else "ocamlc" in
@@ -119,7 +121,7 @@ let ocamlc
       ~include_dirs
       ~open_modules
       ?optimize
-      ~pp
+      ?pp
       ~extra_args
       mode impl
   in
