@@ -24,7 +24,7 @@
    (dune (< 3.24))
    (coq-core (>= 9.0))
    ppx_rocq
-   mltac2
+   rocq-mltac2
    ppx_deriving ;; For Camltac Eval
    ocamlfind))
 
