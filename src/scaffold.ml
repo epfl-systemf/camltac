@@ -106,15 +106,31 @@ let make ~loc ?header ?footer contents =
   add_part ?part:footer scaffold;
   Buffer.contents scaffold
 
+let show_tactic_start =
+  {|
+let () = Runtime.Output.set_tactic begin
+  let* x = begin
+|}
+
+let show_tactic_end : _ format =
+{|
+  end in
+  let* env = Tactic.env in
+  let* sigma = Tactic.sigma in
+  let open Api.Printers.Env_printers(struct
+    let env = env
+    let sigma = sigma
+  end) in
+  let open struct type t = %s [%@%@deriving show] end in
+  return (Pp.(str "- : " ++ str %S ++ spc () ++ str "=" ++ spc () ++ str (show x)))
+end
+|}
+
 let header_footer = function
   | Infer_type ->
      Some ("let " ^ Interface.single_value_name ^ " = begin"), Some "end"
   | Show_tactic { typ } ->
-     Some ({|open Api.Printers
-            type t = |} ^ typ ^ {|[@@deriving show]
-                                 let () = Runtime.Output.set_tactic begin
-                                 let* x =|}),
-     Some ({|in (return (Pp.(str "- : " ++ str "|} ^ typ ^ {|" ++ spc () ++ str "=" ++ spc () ++ str (show x)))) end|})
+     Some show_tactic_start, Some (Format.sprintf show_tactic_end typ typ)
   | Tactic ->
      Some "let t : unit tactic =", Some "in Runtime.Output.set_tactic t"
   | Module name ->

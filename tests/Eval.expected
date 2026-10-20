@@ -1,6 +1,6 @@
 - : string = "Hello"
 - : constr = (1 + 1)
-- : constr = ?X2
+- : constr = ?x
 - : constr = (forall x : nat, x = S x)
 - : expr = x
 - : string = "Hello"
