@@ -30,7 +30,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/epfl-systemf/camltac.git"
-pin-depends: [
-  ["ppx_rocq.dev" "git+https://github.com/epfl-systemf/ppx_rocq.git"]
-  ["rocq-mltac2.dev" "git+https://github.com/epfl-systemf/mltac2.git"]
-]
