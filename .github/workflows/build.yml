@@ -18,5 +18,5 @@ jobs:
       - name: Build Camltac on Rocq ${{ matrix.rocq_version }}
         uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'camltac.opam'
+          opam_file: 'rocq-camltac.opam'
           coq_version: ${{ matrix.rocq_version }}

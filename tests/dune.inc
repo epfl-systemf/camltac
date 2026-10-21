@@ -1,7 +1,7 @@
 
 (rule
  (targets Backtrack.output)
- (deps Backtrack.v (package camltac))
+ (deps Backtrack.v (package rocq-camltac))
  (action
   (with-stdout-to Backtrack.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Backtrack.v))))
@@ -12,7 +12,7 @@
 
 (rule
  (targets Check.output)
- (deps Check.v (package camltac))
+ (deps Check.v (package rocq-camltac))
  (action
   (with-stdout-to Check.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Check.v))))
@@ -23,7 +23,7 @@
 
 (rule
  (targets Eval.output)
- (deps Eval.v (package camltac))
+ (deps Eval.v (package rocq-camltac))
  (action
   (with-stdout-to Eval.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Eval.v))))
@@ -34,7 +34,7 @@
 
 (rule
  (targets InProof.output)
- (deps InProof.v (package camltac))
+ (deps InProof.v (package rocq-camltac))
  (action
   (with-stdout-to InProof.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests InProof.v))))
@@ -45,7 +45,7 @@
 
 (rule
  (targets MatchGoal.output)
- (deps MatchGoal.v (package camltac))
+ (deps MatchGoal.v (package rocq-camltac))
  (action
   (with-stdout-to MatchGoal.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests MatchGoal.v))))
@@ -56,7 +56,7 @@
 
 (rule
  (targets Module.output)
- (deps Module.v (package camltac))
+ (deps Module.v (package rocq-camltac))
  (action
   (with-stdout-to Module.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Module.v))))
@@ -67,7 +67,7 @@
 
 (rule
  (targets Run.output)
- (deps Run.v (package camltac))
+ (deps Run.v (package rocq-camltac))
  (action
   (with-stdout-to Run.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Run.v))))

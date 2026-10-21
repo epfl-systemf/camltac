@@ -2,7 +2,7 @@
 (using coq 0.10)
 (using directory-targets 0.1)
 
-(name camltac)
+(name rocq-camltac)
 
 (generate_opam_files true)
 (subst disabled) ;; Work-around for Dune 3.17 subst bug: https://github.com/ocaml/dune/issues/11045
@@ -17,7 +17,7 @@
 (bug_reports "https://github.com/epfl-systemf/camltac/issues")
 
 (package
- (name camltac)
+ (name rocq-camltac)
  (synopsis "OCaml as a Tactic Language for Rocq")
  (depends
    (ocaml (>= 4.14))
@@ -29,17 +29,17 @@
    ocamlfind))
 
 (package
- (name camltac-tests)
+ (name rocq-camltac-tests)
  (synopsis "Camltac's test suite")
  (depends
-   camltac
+   rocq-camltac
    rocq-stdlib))
 
 (package
- (name camltac-examples)
+ (name rocq-camltac-examples)
  (synopsis "A collection of examples using Camltac")
  (depends
-   camltac
+   rocq-camltac
    rocq-stdlib
    rocq-stdpp
    ppx_minidebug

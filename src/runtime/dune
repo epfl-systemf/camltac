@@ -1,6 +1,6 @@
 (library
  (name runtime)
- (public_name camltac.plugin.runtime)
+ (public_name rocq-camltac.plugin.runtime)
  (synopsis "Camltac's runtime")
  (libraries
    rocq-runtime.engine

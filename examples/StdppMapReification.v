@@ -44,7 +44,7 @@ Camltac Run ocaml:{{
 (*|
 … and we can immediately use it!
 |*)
-Ltac2 @external reify : constr -> constr := "camltac.plugin.runtime" "reify".
+Ltac2 @external reify : constr -> constr := "rocq-camltac.plugin.runtime" "reify".
 
 Ltac2 Eval (reify constr:(insert 0 "Hello" (insert 1 "World" empty) : gmap nat string)).
 (* - : constr = constr:(MapInsert 0 "Hello" (MapInsert 1 "World" MapEmpty)) *)

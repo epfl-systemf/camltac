@@ -109,7 +109,7 @@ Section MLReification.
 … and export it to Ltac2:
 |*)
 
-  Ltac2 @external ml_reify : constr -> constr := "camltac.plugin.runtime" "reify".
+  Ltac2 @external ml_reify : constr -> constr := "rocq-camltac.plugin.runtime" "reify".
 
   Goal True.
   Proof.

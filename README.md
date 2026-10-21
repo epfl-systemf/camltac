@@ -83,7 +83,7 @@ Camltac Run ocaml:{{
   Ltac2.FFI.(define "print_conclusion" (unit @-> tac unit) Print_conclusion.run)
 }}.
 
-Ltac2 @external print_conclusion : unit -> unit := "camltac.plugin.runtime" "print_conclusion".
+Ltac2 @external print_conclusion : unit -> unit := "rocq-camltac.plugin.runtime" "print_conclusion".
 
 Goal forall x : nat, x = x.
 Proof.

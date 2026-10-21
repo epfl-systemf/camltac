@@ -63,7 +63,7 @@ Camltac Run ocaml:{{
 
 (* TODO: This is a work-around, I've yet to find a way to register tactics
          that does not rely on plugins.  Surely there must be some way to emulate Ltac definitions? *)
-Declare ML Module "camltac.plugin.runtime".
+Declare ML Module "rocq-camltac.plugin.runtime".
 
 Goal forall a b, andb a b = andb b a.
 Proof.

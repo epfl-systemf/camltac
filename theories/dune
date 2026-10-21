@@ -1,5 +1,5 @@
 (coq.theory
  (name Camltac)
- (package camltac)
+ (package rocq-camltac)
  (stdlib no)
- (plugins camltac.plugin))
+ (plugins rocq-camltac.plugin))

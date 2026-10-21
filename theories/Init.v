@@ -1,1 +1,1 @@
-Declare ML Module "camltac.plugin".
+Declare ML Module "rocq-camltac.plugin".

@@ -1,4 +1,4 @@
-DECLARE PLUGIN "camltac.plugin"
+DECLARE PLUGIN "rocq-camltac.plugin"
 
 {
 open Names

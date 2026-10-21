@@ -48,7 +48,7 @@ Camltac Run ocaml:{{
 
 }}.
 
-Ltac2 @external reify : constr -> constr := "camltac.plugin.runtime" "reify".
+Ltac2 @external reify : constr -> constr := "rocq-camltac.plugin.runtime" "reify".
 
 (* Calling our recursive procedure triggers the tracing: *)
 Ltac2 Eval (reify constr:(1 * 2 * 3)).

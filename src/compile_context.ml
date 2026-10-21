@@ -82,7 +82,7 @@ type t = Compiler.args =
   }
 
 let default =
-  { packages     = ["camltac.plugin.runtime"; "camltac.plugin.api"; "ppx_rocq.runtime"];
+  { packages     = ["rocq-camltac.plugin.runtime"; "rocq-camltac.plugin.api"; "ppx_rocq.runtime"];
     include_dirs = [];
     open_modules = ["Api"; "Prelude"]
   }

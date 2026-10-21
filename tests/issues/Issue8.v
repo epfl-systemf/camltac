@@ -5,7 +5,7 @@ Camltac Run ocaml:{{
   Ltac2.FFI.(define "foo" (unit @-> ret unit) (fun () -> ()))
 }}.
 
-Ltac2 @external foo : unit -> unit := "camltac.plugin.runtime" "foo".
+Ltac2 @external foo : unit -> unit := "rocq-camltac.plugin.runtime" "foo".
 
 (** Should suceed: *)
 Succeed Ltac2 Eval (foo ()).

@@ -51,7 +51,7 @@ val default : t
 (** Default compilation context:
 
     - [packages] includes the list of [rocq-runtime] packages,
-      [camltac.plugin.runtime], [camltac.plugin.api], and [ppx_rocq.runtime];
+      [rocq-camltac.plugin.runtime], [rocq-camltac.plugin.api], and [ppx_rocq.runtime];
     - [include_dirs] is empty;
     - [open_modules] includes [Api] and [Prelude].
  *)

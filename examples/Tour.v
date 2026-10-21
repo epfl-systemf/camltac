@@ -235,7 +235,7 @@ Camltac Run ocaml:{{
 }}.
 
 Ltac2 @external reify : constr -> constr :=
-  "camltac.plugin.runtime" "reify".
+  "rocq-camltac.plugin.runtime" "reify".
 
 Ltac2 Eval (reify constr:(2 * 3)).
 

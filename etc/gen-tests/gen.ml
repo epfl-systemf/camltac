@@ -6,7 +6,7 @@ let rule name =
 {|
 (rule
  (targets %s.output)
- (deps %s.v (package camltac))
+ (deps %s.v (package rocq-camltac))
  (action
   (with-stdout-to %s.output
    (run coqc -q -Q ../theories Camltac -R . Camltac.Tests %s.v))))

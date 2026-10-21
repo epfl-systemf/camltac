@@ -1,11 +1,11 @@
 (library
  (name camltac_plugin)
- (public_name camltac.plugin)
+ (public_name rocq-camltac.plugin)
  (synopsis "OCaml as a Tactic Language")
  (libraries
    dynlink
-   camltac.plugin.runtime
-   camltac.plugin.api
+   rocq-camltac.plugin.runtime
+   rocq-camltac.plugin.api
    rocq-runtime.plugins.ltac
    rocq-runtime.plugins.ltac2
    findlib

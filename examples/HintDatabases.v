@@ -50,8 +50,8 @@ Camltac Run ocaml:{{
   let () = FFI.(define "with_hint_db" (list string @-> fun1 constr unit @-> tac unit) with_hint_db)
 }}.
 
-Ltac2 @external add_to_db : constr -> string -> unit := "camltac.plugin.runtime" "add_resolve_to_db".
-Ltac2 @external with_hint_db : string list -> (constr -> unit) -> unit := "camltac.plugin.runtime" "with_hint_db".
+Ltac2 @external add_to_db : constr -> string -> unit := "rocq-camltac.plugin.runtime" "add_resolve_to_db".
+Ltac2 @external with_hint_db : string list -> (constr -> unit) -> unit := "rocq-camltac.plugin.runtime" "with_hint_db".
 
 (*|
 Demo:
