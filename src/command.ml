@@ -93,8 +93,8 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
   let scaffold_mode = scaffold_mode snippet cmd in
   Scaffold.make scaffold_mode snippet
   |> Build_file.write ~kind:build.kind
-  |> Compiler.compile ~args:(Compile_context.current ()) ~directives build.mode
-  |> Result.fold ~ok:(record_out build.recorded) ~error:(fun err -> CErrors.user_err ~loc:(Snippet.loc snippet) (Compiler.pp_error err))
+  |> Compiler.compile ~args:(Compile_context.current ()) ~directives ~source:snippet build.mode
+  |> Result.fold ~ok:(record_out build.recorded) ~error:(Compiler.report_error ~loc:(Snippet.loc snippet))
 
 (** {1 Interpretation} *)
 

@@ -54,7 +54,7 @@ let build_custom ~ppxs =
   | Some driver -> Ok driver
   | None ->
      Custom_driver.build ~ppxs
-     |> Result.map (fun driver -> Cache.add cache ppxs driver; driver)
+     |> Result.map (fun (driver, _) -> Cache.add cache ppxs driver; driver)
 
 (** {2 Preprocessing heuristic}
 

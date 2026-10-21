@@ -9,7 +9,7 @@
 type t
 (** Type of preprocessing to apply to a source file. *)
 
-val prepare : ppxs:string list -> source:string -> (t, int) result
+val prepare : ppxs:string list -> source:string -> (t, int * Diagnostic.t list) result
 (** [prepare ~ppxs ~source] determines how [source] should be preprocessed,
     building a custom driver if necessary. *)
 

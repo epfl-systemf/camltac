@@ -35,11 +35,17 @@ type mode = Ocamlfind.mode =
 type error
 (** Type of compilation errors. *)
 
-val pp_error : error -> Pp.t
-(** [pp_error error] pretty-prints the compilation error. *)
+val report_error : loc:Loc.t -> error -> 'a
+(** [report_error error] pretty-prints the compilation error(s). *)
 
 (** {2 Compilation method} *)
 
-val compile : args:args -> directives:Build_directives.t -> mode -> Build_file.t -> (compiled, error) result
-(** [compile ~args ~directives mode file] is the main compilation procedure,
+val compile :
+  args:args ->
+  directives:Build_directives.t ->
+  source:Snippet.t ->
+  mode ->
+  Build_file.t ->
+  (compiled, error) result
+(** [compile ~args ~directives ~source mode file] is the main compilation procedure,
     compiling [file] according to compilation [mode]. *)

@@ -84,6 +84,7 @@ let compilation_args
     @ (match mode with
       | Executable { linkpkg = true; _ } -> ["-linkpkg"]
       | _                                -> [])
+    @ ["-color"; "never"; "-error-style"; "short"] (* Options for easier parsing. *)
     @ extra_args
   in
   args, out
@@ -96,13 +97,20 @@ let ocamlfind () = Boot.Env.ocamlfind ()
 let ocamlfind () = Envars.ocamlfind ()
 [%%endif]
 
-let run_command ?stdout prog args =
-  let command = Filename.quote_command prog ?stdout args in
+let run_command ?stdout ?stderr prog args =
+  let command = Filename.quote_command prog ?stdout ?stderr args in
   let err = Sys.command command in
   if err = 0 then Ok () else Error err
 
-let run_ocamlfind ?stdout args =
-  run_command ?stdout (ocamlfind ()) args
+let run_ocamlfind ?stdout ?stderr args =
+  run_command ?stdout ?stderr (ocamlfind ()) args
+
+let get_diagnostics ?source stderr =
+  match source with
+  | Some source -> In_channel.with_open_text stderr (Diagnostic.parse ~source)
+  | None ->
+     (* The file is synthetic, so we can't report diagnostics. *)
+     []
 
 let ocamlc
       ?(native = Dynlink.is_native)
@@ -112,6 +120,7 @@ let ocamlc
       ?optimize
       ?pp
       ?(extra_args = [])
+      ?source
       mode impl =
   let compiler = if native then "ocamlopt" else "ocamlc" in
   let args, out =
@@ -131,9 +140,7 @@ let ocamlc
     | Infer_interface -> Some (Build_file.path out)
     | _ -> None
   in
-  match run_ocamlfind ?stdout (compiler :: args) with
-  | Ok () -> Ok out
-  | Error _ as e ->
-     (* TODO: Capture OCaml compilation errors instead of printing them to integrate with [Fail].
-        This would be doable once https://github.com/ocaml/ocaml/pull/13766 is merged. *)
-     e
+  let stderr = Build_file.path (Build_file.with_extension out ".stderr") in
+  match run_ocamlfind ?stdout ~stderr (compiler :: args) with
+  | Ok () -> Ok (out, get_diagnostics ?source stderr)
+  | Error code -> Error (code, get_diagnostics ?source stderr)

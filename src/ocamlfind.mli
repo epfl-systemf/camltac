@@ -31,11 +31,12 @@ val ocamlc :
   ?optimize:[`O2 | `O3] ->
   ?pp:string ->
   ?extra_args:string list ->
+  ?source:Snippet.t ->
   mode ->
   Build_file.t ->
-  (Build_file.t, int) result
+  (Build_file.t * Diagnostic.t list, int * Diagnostic.t list) result
 (** [ocamlc mode impl] calls the OCaml compiler on the [impl] file according to
-    [mode], returning either [Ok output] or [Error code].
+    [mode], returning either [Ok (output, warnings)] or [Error (code, errors)].
 
     @param native (default = [Dynlink.is_native])
       Whether to use the native compiler or not.
