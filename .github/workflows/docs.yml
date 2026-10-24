@@ -1,6 +1,17 @@
 name: Docs
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'theories/**'
+      - 'dune'
+      - 'dune-project'
+      - 'rocq-camltac.opam'
+      - '.github/workflows/docs.yml'
 
 jobs:
   build:
