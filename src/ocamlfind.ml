@@ -85,6 +85,7 @@ let compilation_args
       | Executable { linkpkg = true; _ } -> ["-linkpkg"]
       | _                                -> [])
     @ ["-color"; "never"; "-error-style"; "short"] (* Options for easier parsing. *)
+    @ ["-thread"] (* Silence [ocamlfind] warning on OCaml 4.14; see PR #79. *)
     @ extra_args
   in
   args, out
