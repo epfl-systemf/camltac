@@ -7,9 +7,12 @@ on:
     paths:
       - 'src/**'
       - 'theories/**'
+      - 'tests/**'
+      - 'etc/gen-tests/**'
       - 'dune'
       - 'dune-project'
       - 'rocq-camltac.opam'
+      - 'rocq-camltac-tests.opam'
       - '.github/workflows/build.yml'
 
 jobs:
@@ -30,3 +33,6 @@ jobs:
         with:
           opam_file: 'rocq-camltac.opam'
           coq_version: ${{ matrix.rocq_version }}
+          export: 'OPAMWITHTEST'
+        env:
+          OPAMWITHTEST: 'true'
