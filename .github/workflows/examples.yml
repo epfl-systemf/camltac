@@ -1,4 +1,4 @@
-name: Tests
+name: Examples
 
 on:
   push:
@@ -7,16 +7,14 @@ on:
     paths:
       - 'src/**'
       - 'theories/**'
-      - 'tests/**'
       - 'examples/**'
-      - 'etc/gen-tests/**'
       - 'dune'
       - 'dune-project'
       - '*.opam'
-      - '.github/workflows/tests.yml'
+      - '.github/workflows/examples.yml'
 
 jobs:
-  test:
+  build:
     strategy:
       fail-fast: false
       matrix:
@@ -39,8 +37,5 @@ jobs:
       - name: Install dependencies
         run: opam install . --deps-only
 
-      - name: Build Camltac
+      - name: Build Camltac examples
         run: opam exec -- dune build
-
-      - name: Run tests
-        run: opam exec -- dune runtest
