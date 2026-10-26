@@ -23,6 +23,7 @@
    (ocaml (>= 4.14))
    (dune (< 3.24))
    (coq-core (>= 9.0))
+   rocq-core
    ppx_rocq
    rocq-mltac2
    ppx_deriving ;; For Camltac Eval
