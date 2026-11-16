@@ -27,4 +27,7 @@ module Env_printers(E : Env) = struct
   let pp_constr fmt c =
     print fmt (Printer.pr_econstr_env E.env E.sigma c)
 
+  let pp_pattern fmt c =
+    print fmt (Printer.pr_constr_pattern_env E.env E.sigma c)
+
 end

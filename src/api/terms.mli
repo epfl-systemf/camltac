@@ -40,6 +40,9 @@ module Definitions : sig
   type constr = EConstr.constr
   (** Type of well-typed terms. *)
 
+  type pattern = Pattern.constr_pattern
+  (** Type of match patterns. *)
+
 end
 
 include module type of Definitions
