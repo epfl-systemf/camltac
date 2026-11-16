@@ -1,4 +1,4 @@
-(coq.theory
+(rocq.theory
  (name Camltac.Examples)
  (package rocq-camltac-examples)
  (plugins rocq-runtime.plugins.ltac2)

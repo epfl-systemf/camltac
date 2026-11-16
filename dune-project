@@ -1,11 +1,10 @@
-(lang dune 3.17)
-(using coq 0.10)
+(lang dune 3.21)
+(using rocq 0.11)
 (using directory-targets 0.1)
 
 (name rocq-camltac)
 
 (generate_opam_files true)
-(subst disabled) ;; Work-around for Dune 3.17 subst bug: https://github.com/ocaml/dune/issues/11045
 
 (authors "Dario Halilovic")
 (maintainers "Dario Halilovic")
@@ -46,8 +45,6 @@ Camltac is both a tactic and a meta-programming language:
    "date:2026-10-26"))
  (depends
    (ocaml (>= 4.14))
-   (dune (< 3.24))
-   (coq-core (>= 9.0))
    rocq-core
    ppx_rocq
    rocq-mltac2
