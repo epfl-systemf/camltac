@@ -10,6 +10,7 @@ module Definitions = struct
   type glob_constr = Glob_term.glob_constr
   type preterm = glob_constr
   type constr = EConstr.constr
+  type pattern = Pattern.constr_pattern
 end
 
 include Definitions
