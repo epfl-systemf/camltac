@@ -1,4 +1,4 @@
-(coq.theory
+(rocq.theory
  (name Camltac)
  (package rocq-camltac)
  (stdlib no)
