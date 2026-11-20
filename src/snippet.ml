@@ -10,15 +10,9 @@ type t =
 
 let make ~loc contents = { loc; contents }
 
-let read_file ~loc filename =
-  try File.read filename
-  with File.Not_found ->
-    CErrors.user_err ~loc (Pp.(str "File " ++ str filename ++ str " does not exist."))
-
-let of_file ~loc filename =
-  let contents = read_file ~loc filename in
+let of_file ~file contents =
   let loc = Loc.{
-     fname = InFile { dirpath = None; file = filename };
+     fname = InFile { dirpath = None; file };
      line_nb = 1;
      bol_pos = 0;
      bp = 0;

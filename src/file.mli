@@ -10,6 +10,10 @@ val read : CUnix.physical_path -> string
 
     @raise Not_found if [filename] does not correspond to a file. *)
 
+val read_or_error : loc:Loc.t -> CUnix.physical_path -> string
+(** [read_or_error ~loc filename] reads the contents of [filename],
+    or raises using [CErrors.user_error]. *)
+
 val write : file:CUnix.physical_path -> string -> unit
 (** [write ~file contents] writes the given [contents] to [file], creating it if
     it does not exist, or overwriting its previous content. *)

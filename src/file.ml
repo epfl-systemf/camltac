@@ -10,6 +10,11 @@ let read filename =
   with Sys_error _ when not (Sys.file_exists filename) ->
     raise Not_found
 
+let read_or_error ~loc filename =
+  try read filename
+  with Not_found ->
+    CErrors.user_err ~loc (Pp.(str "File " ++ str filename ++ str " does not exist."))
+
 let write ~file contents =
   Out_channel.with_open_text file (fun oc -> output_string oc contents)
 
