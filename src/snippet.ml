@@ -1,4 +1,4 @@
-(** Representation of OCaml code snippets. *)
+(** OCaml code snippets. *)
 
 (** {1 Snippets} *)
 
