@@ -3,7 +3,7 @@
 (** {1 Build files} *)
 
 type t =
-  { root: Layout.root;        (** Root of the layout. *)
+  { root: Layout.Root.t;      (** Root of the layout. *)
     path: CUnix.physical_path (** Path relative to [root]. *)
   }
 
@@ -54,5 +54,5 @@ let write ~kind contents =
   let dir = kind_dir ~layout kind in
   let prefix = kind_prefix kind in
   let file = write_temp ~dir ~prefix contents in
-  { root = Layout.current_root ();
+  { root = Layout.Root.current ();
     path = File.relativize_if_under ~dir:layout.root file }
