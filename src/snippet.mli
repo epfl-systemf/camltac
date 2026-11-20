@@ -24,10 +24,3 @@ val loc : t -> Loc.t
 
 val contents : t -> string
 (** [contents snippet] returns the contents of the snippet. *)
-
-(** {2 Subsnippets} *)
-
-val sub : lines:(int * int) -> chars:(int * int) -> t -> t
-(** [sub ~lines ~chars snippet] returns the subsnippet that contains the given
-    lines and characters. Both [lines] and [chars] must be included in the
-    snippet location. *)
