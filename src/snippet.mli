@@ -13,8 +13,9 @@ type t
 val make : loc:Loc.t -> string -> t
 (** [make ~loc contents] creates a snippet with the given contents. *)
 
-val of_file : loc:Loc.t -> string -> t
-(** [of_file ~loc filename] creates a snippet for the given file. *)
+val of_file : file:CUnix.physical_path -> string -> t
+(** [of_file ~file contents] creates a snippet from the source
+    [contents] present in [file]. This is used by [Camltac Load]. *)
 
 (** {2 Getters} *)
 
