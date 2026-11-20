@@ -72,21 +72,20 @@ let record_out recorded out =
   in out
 
 let rec scaffold_mode snippet = function
-  | Check_expression ->
-     Infer_type
+  | Check_expression -> Expression
   | Eval ->
      (* Infer the type of the tactic to scaffold correctly. *)
      let out = synterp Check_expression snippet in
      begin match Interface.tactic_type (Interface.read out.Compiler.file) with
-     | Some typ -> Show_tactic { typ }
+     | Some typ -> Value_tactic { typ }
      | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.str "Argument to Eval is not a tactic.")
      end
   | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-     Tactic
+     Unit_tactic
   | Module { name = Some (name, _); _ } ->
-     Module name
+     Module { name = Some name }
   | Module { name = None; _ } | Check_module ->
-     Plain
+     Module { name = None }
 
 and synterp ?(directives = Build_directives.empty) cmd snippet =
   let build = build_of_cmd cmd in
