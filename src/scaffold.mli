@@ -1,23 +1,37 @@
-(** Snippet scaffolding. *)
+(** Scaffolding snippets. *)
 
-(** {1 Scaffolds} *)
+(** {1 Scaffolding}
 
-(** A scaffold is a temporary file used for compiling snippets. Its content
-    depends on the expected mode of the snippet, i.e., how the snippet should be
-    interpreted.
+    While a snippet is valid OCaml on its own, it usually does not
+    represent a complete program, since it lacks the proper setup code
+    to run on its own. For example, a snippet inside a term must be a
+    [unit tactic] that registers itself in {!Runtime.Output}, while the
+    input to [Camltac Module] must be a whole module. These two snippets
+    require different setup code to work properly.
 
-    For example, tactic-in-term snippets should be of type [constr tactic], and
-    this constraint is expressed by scaffolding the snippet as
-    [let res : constr tactic = <snippet> in res].
+    Scaffolding is the operation that wraps a {!Snippet.t} in additional
+    setup code to turn it into a complete program. Scaffolding may also
+    add structural or type constraints to capture the intended meaning
+    of the snippet, so that mistakes become ordinary compilation errors
+    in the user's code.
+
+    The exact scaffolding depends on the scaffolding type {!kind}, which
+    describes how the snippet is to be interpreted.
  *)
 
-(** The scaffolding mode determines how the scaffold is constructed. *)
-type mode =
-  | Infer_type                     (** The type of a single value is inferred. *)
-  | Tactic                         (** A single tactic value is registered. *)
-  | Show_tactic of { typ: string } (** A single tactic value is registered and printed. *)
-  | Module of string               (** A module and its initializers are registered. *)
-  | Plain                          (** No scaffolding is performed. *)
+(** Describes how a snippet should be scaffolded. *)
+type kind =
+  | Expression
+  (** A single expression. *)
 
-val make : mode -> Snippet.t -> string
-(** [make mode snippet] scaffolds the given snippet according to [mode]. *)
+  | Module of { name: string option }
+  (** A whole OCaml module. *)
+
+  | Unit_tactic
+  (** A tactic of type [unit tactic]. *)
+
+  | Value_tactic of { typ: string }
+  (** A tactic of type [typ tactic]. Its return value is printed. *)
+
+val make : kind -> Snippet.t -> string
+(** [make kind snippet] scaffolds [snippet] according to [kind]. *)
