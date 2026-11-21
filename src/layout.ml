@@ -6,30 +6,32 @@ let (/) = Filename.concat
 
 (** {1 Layout root} *)
 
-type root =
+module Root = struct
+  type t =
   | Logical of DirPath.t
   | Physical of CUnix.physical_path
 
-let root_path = function
-  | Physical physical -> physical
-  | Logical logical ->
-     match Loadpath.find_with_logical_path logical with
-     | [] -> CErrors.user_err (Pp.(str "No LoadPath found for " ++ DirPath.print logical ++ str "."))
-     | loadpath :: _ ->
-        (* TODO: Warn on ambiguous load paths? *)
-        Loadpath.physical loadpath
+  let root_path = function
+    | Physical physical -> physical
+    | Logical logical ->
+       match Loadpath.find_with_logical_path logical with
+       | [] -> CErrors.user_err (Pp.(str "No LoadPath found for " ++ DirPath.print logical ++ str "."))
+       | loadpath :: _ ->
+          (* TODO: Warn on ambiguous load paths? *)
+          Loadpath.physical loadpath
 
-let current_root () =
-  let library_path = Libnames.pop_dirpath (Lib.library_dp ()) in
-  let is_toplevel = DirPath.is_empty library_path in
-  if is_toplevel then
-    Physical (Sys.getcwd ())
-  else
-    Logical library_path
+  let current () =
+    let library_path = Libnames.pop_dirpath (Lib.library_dp ()) in
+    let is_toplevel = DirPath.is_empty library_path in
+    if is_toplevel then
+      Physical (Sys.getcwd ())
+    else
+      Logical library_path
+end
 
 let resolve root file =
   match root with
-  | Physical physical ->
+  | Root.Physical physical ->
      let path = physical / file in
      if Sys.file_exists path then
        path
@@ -39,7 +41,7 @@ let resolve root file =
      Loadpath.find_extra_dep_with_logical_path ~from:logical ~file ()
 
 let path root file =
-  root_path root / file
+  Root.root_path root / file
 
 (** {1 Layouts} *)
 
@@ -52,7 +54,7 @@ type t =
   }
 
 let of_root root =
-  let root = root_path root in
+  let root = Root.root_path root in
   let build = root / ".camltac" in
   { root;
     build;
@@ -72,6 +74,6 @@ let ensure_exists layout =
   mkdir layout.ppx
 
 let current () =
-  let layout = of_root (current_root ()) in
+  let layout = of_root (Root.current ()) in
   ensure_exists layout;
   layout
