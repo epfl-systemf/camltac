@@ -6,10 +6,16 @@
     units can only grow, and we keep track of them to avoid name clashes.
  *)
 
-let loaded_units = ref Build_file.Set.empty
+let loaded_units = ref CString.Set.empty
+
+let unit_name file =
+  Build_file.path file
+  |> Filename.basename
+  |> Filename.remove_extension
+  |> String.capitalize_ascii
 
 let is_loaded file =
-  Build_file.Set.mem file !loaded_units
+  CString.Set.mem (unit_name file) !loaded_units
 
 (** {1 Loading shared libraries} *)
 
@@ -29,7 +35,7 @@ let load_file ?(dependencies = []) public unit =
     load_packages dependencies;
     Debug.print (fun () -> Pp.(str "Loading file " ++ str file ++ str "."));
     load file;
-    loaded_units := Build_file.Set.add unit !loaded_units;
+    loaded_units := CString.Set.add (unit_name unit) !loaded_units;
     Debug.print (fun () -> Pp.(str "File " ++ str file ++ str " successfully loaded."));
   with
   | Dynlink.Error (Dynlink.Library's_module_initializers_failed exn) ->
