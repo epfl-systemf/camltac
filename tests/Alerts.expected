@@ -1,0 +1,8 @@
+File "./Alerts.v", line 3, characters 27-32:
+Alert camltac_io: Api.Prelude.stdin
+stdin does not work in Camltac.
+
+File "./Alerts.v", line 4, characters 23-31:
+Alert camltac_io: Api.Prelude.read_int
+read_int does not work in Camltac.
+
