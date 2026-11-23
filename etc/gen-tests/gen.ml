@@ -9,12 +9,12 @@ let rule name =
  (deps %s.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to %s.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests %s.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/%s.vo %s.v"))))
 
 (rule
  (alias runtest)
  (action (diff %s.expected %s.output)))
-|} name name name name name name
+|} name name name name name name name
 
 let () =
   Sys.argv
