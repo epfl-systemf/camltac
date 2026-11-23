@@ -4,7 +4,7 @@
  (deps Backtrack.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to Backtrack.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Backtrack.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Backtrack.vo Backtrack.v"))))
 
 (rule
  (alias runtest)
@@ -15,7 +15,7 @@
  (deps Check.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to Check.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Check.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Check.vo Check.v"))))
 
 (rule
  (alias runtest)
@@ -26,7 +26,7 @@
  (deps Eval.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to Eval.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Eval.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Eval.vo Eval.v"))))
 
 (rule
  (alias runtest)
@@ -37,7 +37,7 @@
  (deps InProof.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to InProof.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests InProof.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/InProof.vo InProof.v"))))
 
 (rule
  (alias runtest)
@@ -48,7 +48,7 @@
  (deps MatchGoal.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to MatchGoal.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests MatchGoal.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/MatchGoal.vo MatchGoal.v"))))
 
 (rule
  (alias runtest)
@@ -59,7 +59,7 @@
  (deps Module.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to Module.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Module.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Module.vo Module.v"))))
 
 (rule
  (alias runtest)
@@ -70,7 +70,7 @@
  (deps Run.v _dummy_target.v (package rocq-camltac))
  (action
   (with-stdout-to Run.output
-   (run coqc -q -Q ../theories Camltac -R . Camltac.Tests Run.v))))
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Run.vo Run.v"))))
 
 (rule
  (alias runtest)
