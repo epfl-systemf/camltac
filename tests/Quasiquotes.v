@@ -1,11 +1,9 @@
 Require Import Camltac.Camltac.
 
-Camltac Run ocaml:{{
+Camltac Eval ocaml:{{
    let a = {%expr| 1 |} in
    let b = {%expr| 2 |} in
-   let c = {%expr| %expr:{a} + %expr:{b} |} in
-   let* pp = Terms.Expr.print c in
-   return (Feedback.msg_info pp)
+   return {%expr| %expr:{a} + %expr:{b} |}
 }}.
 
 Camltac Run ocaml:{{

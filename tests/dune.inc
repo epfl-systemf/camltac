@@ -1,5 +1,16 @@
 
 (rule
+ (targets Alerts.output)
+ (deps Alerts.v _dummy_target.v (package rocq-camltac))
+ (action
+  (with-stdout-to Alerts.output
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Alerts.vo Alerts.v"))))
+
+(rule
+ (alias runtest)
+ (action (diff Alerts.expected Alerts.output)))
+
+(rule
  (targets Backtrack.output)
  (deps Backtrack.v _dummy_target.v (package rocq-camltac))
  (action
@@ -44,6 +55,28 @@
  (action (diff InProof.expected InProof.output)))
 
 (rule
+ (targets Load.output)
+ (deps Load.v _dummy_target.v (package rocq-camltac))
+ (action
+  (with-stdout-to Load.output
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Load.vo Load.v"))))
+
+(rule
+ (alias runtest)
+ (action (diff Load.expected Load.output)))
+
+(rule
+ (targets Ltac2.output)
+ (deps Ltac2.v _dummy_target.v (package rocq-camltac))
+ (action
+  (with-stdout-to Ltac2.output
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Ltac2.vo Ltac2.v"))))
+
+(rule
+ (alias runtest)
+ (action (diff Ltac2.expected Ltac2.output)))
+
+(rule
  (targets MatchGoal.output)
  (deps MatchGoal.v _dummy_target.v (package rocq-camltac))
  (action
@@ -64,6 +97,17 @@
 (rule
  (alias runtest)
  (action (diff Module.expected Module.output)))
+
+(rule
+ (targets Quasiquotes.output)
+ (deps Quasiquotes.v _dummy_target.v (package rocq-camltac))
+ (action
+  (with-stdout-to Quasiquotes.output
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/Quasiquotes.vo Quasiquotes.v"))))
+
+(rule
+ (alias runtest)
+ (action (diff Quasiquotes.expected Quasiquotes.output)))
 
 (rule
  (targets Run.output)
