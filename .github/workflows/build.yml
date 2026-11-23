@@ -8,7 +8,6 @@ on:
       - 'src/**'
       - 'theories/**'
       - 'tests/**'
-      - 'etc/gen-tests/**'
       - 'dune'
       - 'dune-project'
       - 'rocq-camltac.opam'

@@ -23,7 +23,7 @@ tags: [
 homepage: "https://github.com/epfl-systemf/camltac"
 bug-reports: "https://github.com/epfl-systemf/camltac/issues"
 depends: [
-  "dune" {>= "3.21"}
+  "dune" {>= "3.22"}
   "ocaml" {>= "4.14"}
   "rocq-core"
   "ppx_rocq"

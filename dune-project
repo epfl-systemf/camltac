@@ -1,5 +1,5 @@
-(lang dune 3.21)
-(using rocq 0.11)
+(lang dune 3.22)
+(using rocq 0.12)
 (using directory-targets 0.1)
 
 (name rocq-camltac)
