@@ -34,27 +34,21 @@ type recorded =
   (** Record the snippet with the given name. *)
 
 type build =
-  { kind     : Build_file.kind; (** Kind of build file generated. *)
-    mode     : Ocamlfind.mode;  (** Mode of the OCaml compiler to use. *)
+  { mode     : Ocamlfind.mode;  (** Mode of the OCaml compiler to use. *)
     recorded : recorded;        (** Whether the snippet compilation is recorded in [Libobject]. *)
   }
 
 let build_of_cmd = function
   | Check_expression | Check_module ->
-     { kind = Snippet;
-       mode = Infer_interface;
+     { mode = Infer_interface;
        recorded = Do_not_record
      }
   | Module info ->
-     { kind = (match info.name with
-              | Some _ -> Module
-              | None -> Snippet);
-       mode = Shared_library { linkall = true };
+     { mode = Shared_library { linkall = true };
        recorded = Record info
      }
   | Eval | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-     { kind = Snippet;
-       mode = Shared_library { linkall = true };
+     { mode = Shared_library { linkall = true };
        recorded = Do_not_record
      }
 
@@ -87,11 +81,24 @@ let rec scaffold_mode snippet = function
   | Module { name = None; _ } | Check_module ->
      Module { name = None }
 
+(** Writes the scaffolded snippet to a source file, then copies it to the build
+    directory. Module checks are not meant to be inspected, hence the source is
+    only generated in the build directory. *)
+and create_build_file ~workspace ~file ~loaded_units cmd contents =
+  match cmd with
+  | Check_module -> Build_file.generate ~workspace ~dir:".check" ~name:file contents
+  | _ ->
+     Source_file.create ~workspace ~file contents
+     |> Build_file.copy_source ~workspace ~loaded_units
+
 and synterp ?(directives = Build_directives.empty) cmd snippet =
   let build = build_of_cmd cmd in
   let scaffold_mode = scaffold_mode snippet cmd in
+  let workspace = Workspace.at (Current_library.cwd ()) in
+  let file = Current_library.top_module_name () in
+  let loaded_units = Loader.loaded_units () in
   Scaffold.make scaffold_mode snippet
-  |> Build_file.write ~kind:build.kind
+  |> create_build_file ~workspace ~file ~loaded_units cmd
   |> Compiler.compile ~args:(Compile_context.current ()) ~directives ~source:snippet build.mode
   |> Result.fold ~ok:(record_out build.recorded) ~error:(Compiler.report_error ~loc:(Snippet.loc snippet))
 

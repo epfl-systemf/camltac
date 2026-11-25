@@ -3,6 +3,8 @@
     The driver is the executable file that runs the source-to-source (or
     AST-to-AST) transformation. *)
 
+open Filesystem
+
 (** {1 Preprocessor drivers} *)
 
 type t
@@ -14,7 +16,7 @@ val empty : t
 val ppx_rocq : t
 (** [ppx_rocq] is the [ppx_rocq] driver. *)
 
-val resolve : t -> string option
+val resolve : t -> Path.t option
 (** [resolve driver] returns the absolute path of the driver. *)
 
 (** {1 Custom drivers}
@@ -28,6 +30,7 @@ val resolve : t -> string option
     {:https://dune.readthedocs.io/en/stable/explanation/preprocessing.html}.
  *)
 
-val build_custom : ppxs:string list -> (t, int) result
-(** [build_custom ~ppxs] combines [ppxs] with [ppx_rocq] in a single
-    custom driver. *)
+val build_custom : workspace:Workspace.t -> file:string -> ppxs:string list -> (t, int) result
+(** [build_custom ~workspace ~file ~ppxs] combines [ppxs] with
+    [ppx_rocq] in a single custom driver that is written in
+    [workspace]. *)

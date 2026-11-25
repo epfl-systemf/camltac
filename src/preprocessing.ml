@@ -30,11 +30,11 @@ let needs_ppx ~source =
 
 (** {2 Preprocessing} *)
 
-let select_driver ~ppxs ~source =
+let select_driver ~workspace ~file ~ppxs ~source =
   match ppxs with
   | [] when needs_ppx ~source -> Ok Ppx_driver.ppx_rocq
   | []                        -> Ok Ppx_driver.empty
-  | _                         -> Ppx_driver.build_custom ~ppxs
+  | _                         -> Ppx_driver.build_custom ~workspace ~file ~ppxs
 
 (** {1 Compiler options} *)
 

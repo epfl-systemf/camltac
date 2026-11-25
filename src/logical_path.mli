@@ -1,5 +1,6 @@
 (** Logical paths. *)
 
+open Filesystem
 open Names
 
 (** {1 Logical paths}
@@ -16,14 +17,14 @@ open Names
 type t
 (** Type of logical paths. *)
 
-val make : DirPath.t -> CUnix.physical_path -> t
+val make : DirPath.t -> Path.t -> t
 (** [make root path] creates a new logical path from the given [root],
     where [path] is relative to [root]. *)
 
 val root : t -> DirPath.t
 (** [root path] returns the logical root of [path]. *)
 
-val path : t -> CUnix.physical_path
+val path : t -> Path.t
 (** [path logical_path] returns the physical path of [logical_path]
     relative to the root. *)
 

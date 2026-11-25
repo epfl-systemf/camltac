@@ -18,7 +18,7 @@ let parse intf =
     Signature intf
 
 let read mli_file =
-  Build_file.locate mli_file
+  Build_file.resolve mli_file
   |> Filesystem.read
   |> String.trim
   |> parse

@@ -9,10 +9,7 @@
 let loaded_units = ref CString.Set.empty
 
 let unit_name file =
-  Build_file.path file
-  |> Filename.basename
-  |> Filename.remove_extension
-  |> String.capitalize_ascii
+  Filesystem.Path.module_name (Build_file.resolve file)
 
 let is_loaded file =
   CString.Set.mem (unit_name file) !loaded_units
@@ -23,7 +20,7 @@ let load_packages packages =
   Fl_dynload.load_packages packages
 
 let load_file ?(dependencies = []) public unit =
-  let file = Build_file.locate unit in
+  let file = Build_file.resolve unit in
   assert (String.equal (Filename.extension file) (if Dynlink.is_native then ".cmxs" else ".cma"));
   let load =
     match public with
@@ -47,3 +44,5 @@ let load_file ?(dependencies = []) public unit =
   | Dynlink.Error e ->
      let message = Dynlink.error_message e in
      CErrors.user_err (Pp.str message)
+
+let loaded_units () = !loaded_units

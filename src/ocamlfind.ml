@@ -35,7 +35,7 @@ let compilation_args
       ~extra_args
       mode
       impl =
-  let out = Build_file.with_extension impl (output_extension mode ~native) in
+  let out = Build_file.with_extension (output_extension mode ~native) impl in
   let args =
      (match mode, native with
       | Shared_library _, true  -> ["-shared"]
@@ -43,8 +43,8 @@ let compilation_args
       | Executable _    , _     -> []
       | Compile_only    , _     -> ["-c"]
       | Infer_interface , _     -> ["-i"])
-    @ ["-impl"; Filesystem.Path.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.locate impl)]
-    @ (if mode <> Infer_interface then ["-o"; Build_file.path out] else [])
+    @ ["-impl"; Filesystem.Path.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.resolve impl)]
+    @ (if mode <> Infer_interface then ["-o"; Build_file.resolve out] else [])
     @ (match optimize, native with
       | Some `O2, true -> ["-O2"]
       | Some `O3, true -> ["-O3"]
@@ -108,10 +108,10 @@ let ocamlc
   (* The output of [Infer_interface] is printed on the standard output. *)
   let stdout =
     match mode with
-    | Infer_interface -> Some (Build_file.path out)
+    | Infer_interface -> Some (Build_file.resolve out)
     | _ -> None
   in
-  let stderr = Build_file.path (Build_file.with_extension out ".stderr") in
+  let stderr = Build_file.resolve (Build_file.with_extension ".stderr" out) in
   let get_diagnostics () = In_channel.with_open_text stderr Diagnostic.parse in
   match run_ocamlfind ?stdout ~stderr (compiler :: args) with
   | Ok ()      -> Ok out, get_diagnostics ()
