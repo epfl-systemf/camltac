@@ -45,7 +45,7 @@ val module_aliases : unit -> (string * string) list
  *)
 
 (** Type of compilation contexts. *)
-type t = Compiler.args
+type t = Compilation_args.t
 
 val default : t
 (** Default compilation context:

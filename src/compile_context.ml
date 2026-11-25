@@ -75,22 +75,18 @@ let module_aliases () =
 
 (** {1 Compilation context} *)
 
-type t = Compiler.args =
-  { packages     : string list; (** List of packages to link ([-package]). *)
-    include_dirs : string list; (** List of directories to include ([-I]). *)
-    open_modules : string list; (** List of modules to open ([-open]. *)
-  }
+type t = Compilation_args.t
 
 let default =
-  { packages     = ["rocq-camltac.plugin.runtime"; "rocq-camltac.plugin.api"; "ppx_rocq.runtime"];
-    include_dirs = [];
-    open_modules = ["Api"; "Prelude"]
-  }
+  let open Compilation_args in
+  empty
+  |> add_packages ["rocq-camltac.plugin.runtime"; "rocq-camltac.plugin.api"; "ppx_rocq.runtime"]
+  |> add_open_modules ["Api"; "Prelude"]
 
 let of_state (state: state) =
-  { packages     = CString.Set.elements state.packages @ default.packages;
-    include_dirs = CString.Set.elements state.modules_dirs @ default.include_dirs;
-    open_modules = default.open_modules
-  }
+  let open Compilation_args in
+  default
+  |> add_packages (CString.Set.elements state.packages)
+  |> add_include_dirs (CString.Set.elements state.modules_dirs)
 
 let current () = of_state !state
