@@ -59,15 +59,30 @@ let record_out recorded out =
     match recorded with
     | Do_not_record -> ()
     | Record module_info ->
-       Compile_context.declare_module
-         ~name:module_info.name
+       Synterp.declare
+         ~name:(Option.map fst module_info.name)
          ~locality:module_info.locality
          out
   in out
 
+(** Default compilation arguments, which are always passed. *)
+let default_args =
+  let open Compilation_args in
+  empty
+  |> add_packages ["rocq-camltac.plugin.runtime"; "rocq-camltac.plugin.api"; "ppx_rocq.runtime"]
+  |> add_open_modules ["Api"; "Prelude"]
+
+(** Compilation arguments that depend on the modules declared in [state]. *)
+let current_args ~state =
+  let artifacts = Synterp.artifacts state in
+  let open Compilation_args in
+  default_args
+  |> add_packages (List.concat_map Compiler.Artifact.dependencies artifacts)
+  |> add_include_dirs (List.map Compiler.Artifact.dirname artifacts)
+
 (** Compilation arguments for [snippet]: the current compilation context,
     extended with the build directives and the preprocessor. *)
-let compilation_args ~workspace ~file ~directives snippet =
+let compilation_args ~workspace ~file ~directives ~state snippet =
   let ppxs = directives.Directives.ppx in
   let pp =
     match Preprocessing.select_driver ~workspace ~file ~ppxs ~source:(Snippet.contents snippet) with
@@ -76,7 +91,7 @@ let compilation_args ~workspace ~file ~directives snippet =
        CErrors.user_err ~loc:(Snippet.loc snippet)
          Pp.(str "Compilation of PPX driver failed with exit code " ++ int err)
   in
-  Compile_context.current ()
+  current_args ~state
   |> Directives.extend_args directives
   |> Compilation_args.add_pp pp
 
@@ -125,8 +140,10 @@ and synterp ?(directives = Directives.empty) cmd snippet =
   let workspace = Workspace.at (Current_library.cwd ()) in
   let file = Current_library.top_module_name () in
   let loaded_units = Loader.loaded_units () in
-  let args = compilation_args ~workspace ~file ~directives snippet in
-  Scaffold.make scaffold_mode snippet
+  let state = Synterp.current () in
+  let aliases = CString.Map.bindings (Synterp.module_name_map state) in
+  let args = compilation_args ~workspace ~file ~directives ~state snippet in
+  Scaffold.make scaffold_mode ~aliases snippet
   |> create_build_file ~workspace ~file ~loaded_units ~args cmd
   |> compile ~args ~source:snippet build.mode
   |> record_out build.recorded
@@ -142,14 +159,16 @@ let check out =
 
 (** {2 [Module]} *)
 
+let check_module_shadowing state = function
+  | Some name ->
+     if Interp.is_loaded name state then
+       Feedback.msg_warning (Pp.(str "Module " ++ str name ++ str " shadows a previously-defined module."))
+  | None -> ()
+
 let load_module { name; locality } out =
-  match name with
-  | Some (name, loc) ->
-     if Loaded_modules.is_loaded name then
-       CErrors.user_err ~loc (Pp.(str "Module " ++ str name ++ str " already exists."));
-     Loaded_modules.load_module ~locality ~name:(Some name) out
-  | None ->
-     Loaded_modules.load_module ~locality ~name:None out
+  let name = Option.map fst name in
+  check_module_shadowing (Interp.current ()) name;
+  Interp.load_module ~locality ~name out
 
 (** {2 [Eval]} *)
 

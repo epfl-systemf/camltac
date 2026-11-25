@@ -39,6 +39,12 @@ let set_env e =
 let unset_env () =
   env := None
 
+let with_env ~env f =
+  set_env env;
+  Fun.protect
+    (fun () -> f (); get_env ())
+    ~finally:unset_env
+
 let lookup var =
   let env = get_env () in
   match Id.Map.find var env with

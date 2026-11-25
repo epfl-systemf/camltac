@@ -47,6 +47,10 @@ val get_env : unit -> t
 (** Set the current implicit environment that is available to the runtime. *)
 val set_env : t -> unit
 
+val with_env : env:t -> (unit -> unit) -> t
+(** [with_env ~env f] runs [f] in environment [env], and returns the output
+    environment. The environment is unset after [f] finishes. *)
+
 (** Clear the current environment. *)
 val unset_env : unit -> unit
 
