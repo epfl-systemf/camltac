@@ -102,14 +102,14 @@ END
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { Command.synterp ~directives:Build_directives.eval_directives Command.Eval snippet }
+     { Command.synterp ~directives:Directives.eval_directives Command.Eval snippet }
   -> { fun ~pstate:proof ->
        Command.interp ?proof Command.Eval synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
 | #[ locality = Attributes.hint_locality;
-     directives = Build_directives.attribute ]
+     directives = Directives.attribute ]
    [ "Camltac" "Run" ocaml(snippet) ]
   SYNTERP AS synterp_result
      { let cmd = Command.Module { name = None; locality } in
@@ -118,7 +118,7 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
        Command.interp cmd synterp_result }
 
 | #[ locality = Attributes.hint_locality;
-     directives = Build_directives.attribute ]
+     directives = Directives.attribute ]
    [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS synterp_result
      { let cmd = Command.Module { name = Some m; locality } in
@@ -127,7 +127,7 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
        Command.interp cmd synterp_result }
 
 | #[ locality = Attributes.hint_locality;
-     directives = Build_directives.attribute ]
+     directives = Directives.attribute ]
    [ "Camltac" "Load" ocaml_file(file) ]
   SYNTERP AS synterp_result
      { let file, loc = file in

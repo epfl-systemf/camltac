@@ -20,7 +20,14 @@ let eval_directives =
     compiler_options = []
   }
 
-(** {1 Attributes} *)
+let extend_args directives args =
+  let open Compilation_args in
+  args
+  |> add_packages directives.libraries
+  |> add_packages (List.concat_map Ocaml_packages.ppx_runtime_deps directives.ppx)
+  |> add_extras directives.compiler_options
+
+(** {1 Rocq attributes} *)
 
 open Attributes
 
