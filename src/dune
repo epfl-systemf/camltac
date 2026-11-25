@@ -3,15 +3,11 @@
  (public_name rocq-camltac.plugin)
  (synopsis "OCaml as a Tactic Language")
  (libraries
-   dynlink
    rocq-camltac.plugin.runtime
    rocq-camltac.plugin.api
-   rocq-runtime.plugins.ltac
-   rocq-runtime.plugins.ltac2
-   findlib
-   findlib.dynload
-   ppx_rocq.runtime)
- (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{coq:version.major}, %{coq:version.minor}))")))
+   rocq-camltac.plugin.state
+   rocq-camltac.plugin.driver
+   rocq-camltac.plugin.tactic_in))
 
 (rocq.pp
  (modules grammar))

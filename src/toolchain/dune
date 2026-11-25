@@ -1,0 +1,8 @@
+(library
+ (name camltac_toolchain)
+ (public_name rocq-camltac.plugin.toolchain)
+ (synopsis "OCaml toolchain utilities")
+ (libraries
+   rocq-camltac.plugin.workspace
+   findlib)
+ (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{coq:version.major}, %{coq:version.minor}))")))

@@ -1,0 +1,10 @@
+(library
+ (name camltac_loader)
+ (public_name rocq-camltac.plugin.loader)
+ (synopsis "Execution of Camltac snippets")
+ (libraries
+   rocq-camltac.plugin.workspace
+   rocq-camltac.plugin.toolchain
+   rocq-camltac.plugin.runtime
+   findlib.dynload
+   dynlink))
