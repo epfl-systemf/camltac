@@ -56,7 +56,7 @@ let string_list_parser ~check ?loc acc value =
 (** {2 Validation} *)
 
 let check_package ?loc string =
-  match Ocamlfind.package_exists string with
+  match Ocaml_packages.package_exists string with
   | Ok () -> string
   | Error suggestion ->
      let hint =

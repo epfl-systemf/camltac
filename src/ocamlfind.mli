@@ -1,11 +1,5 @@
 (** Methods wrapping the [ocamlfind] executable. *)
 
-(** {1 Library management} *)
-
-val package_exists : string -> (unit, string option) result
-(** [package_exists name] returns [Ok ()] if [name] corresponds to a package, or
-    [Error name'] with the closest match otherwise. *)
-
 (** {1 Compilation} *)
 
 (** Compilation mode. *)
