@@ -5,7 +5,7 @@
 val is_loaded : string -> bool
 (** [is_loaded m] returns [true] if a module named [m] is already loaded. *)
 
-val load_module : locality:Libobject.locality -> name:string option -> Compiler.compiled -> unit
+val load_module : locality:Libobject.locality -> name:string option -> Compiler.Artifact.t -> unit
 (** [load_module ~locality ~name m] loads the given module in the current state.
 
     The [locality] argument specifies whether the module is accessible outside

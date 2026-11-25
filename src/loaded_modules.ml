@@ -22,14 +22,18 @@ let state =
 
 let is_loaded name = CString.Set.mem name !state.modules
 
-let load_named_module ~name (out: Compiler.compiled) =
-  Loader.load_file ~dependencies:out.packages `Public out.file;
+let load_named_module ~name (out: Compiler.Artifact.t) =
+  let dependencies = Compiler.Artifact.dependencies out in
+  let file = Compiler.Artifact.file out in
+  Loader.load_file ~dependencies `Public file;
   state := { modules = CString.Set.add name !state.modules }
 
-let load_anonymous_module (out: Compiler.compiled) =
-  Loader.load_file ~dependencies:out.packages `Private out.file
+let load_anonymous_module (out: Compiler.Artifact.t) =
+  let dependencies = Compiler.Artifact.dependencies out in
+  let file = Compiler.Artifact.file out in
+  Loader.load_file ~dependencies `Private file
 
-let load_module ~name (out: Compiler.compiled) =
+let load_module ~name (out: Compiler.Artifact.t) =
   match name with
   | Some name -> load_named_module ~name out
   | None      -> load_anonymous_module out
@@ -53,10 +57,10 @@ let load_module_with_env ~env ~name out =
 let run_module_initializers ~name =
   Runtime.Output.get_module name ()
 
-let replay_module ~env ~name (out: Compiler.compiled) =
+let replay_module ~env ~name (out: Compiler.Artifact.t) =
   (* Re-trigger module initializers for already loaded modules. *)
   match name with
-  | Some name when Loader.is_loaded out.file ->
+  | Some name when Loader.is_loaded (Compiler.Artifact.file out) ->
      with_env ~env (fun () -> run_module_initializers ~name)
   | _ ->
      load_module_with_env ~env ~name out

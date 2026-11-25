@@ -21,7 +21,7 @@ type state = private
     modules_dirs : CString.Set.t;              (** Set of module directories. *)
   }
 
-val declare_module : locality:Libobject.locality -> name:(string * Loc.t) option -> Compiler.compiled -> unit
+val declare_module : locality:Libobject.locality -> name:(string * Loc.t) option -> Compiler.Artifact.t -> unit
 (** [declare_module ~locality ~name out] updates the current compilation state by adding
     the given module. *)
 

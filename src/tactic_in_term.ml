@@ -38,7 +38,7 @@ open Names
     overhead is amortized over each interpretation. *)
 type raw_ocaml = {
     source_code: Snippet.t;                (** Source code of the snippet. *)
-    compilation_output: Compiler.compiled; (** Compilation output. *)
+    compilation_output: Compiler.Artifact.t; (** Compilation output. *)
 }
 
 (** Representation of OCaml snippets in [Glob_term.glob_constr] terms. *)
