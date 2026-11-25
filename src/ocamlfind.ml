@@ -106,13 +106,6 @@ let run_command ?stdout ?stderr prog args =
 let run_ocamlfind ?stdout ?stderr args =
   run_command ?stdout ?stderr (ocamlfind ()) args
 
-let get_diagnostics ?source stderr =
-  match source with
-  | Some source -> In_channel.with_open_text stderr (Diagnostic.parse ~source)
-  | None ->
-     (* The file is synthetic, so we can't report diagnostics. *)
-     []
-
 let ocamlc
       ?(native = Dynlink.is_native)
       ?(packages = [])
@@ -121,7 +114,6 @@ let ocamlc
       ?optimize
       ?pp
       ?(extra_args = [])
-      ?source
       mode impl =
   let compiler = if native then "ocamlopt" else "ocamlc" in
   let args, out =
@@ -142,6 +134,7 @@ let ocamlc
     | _ -> None
   in
   let stderr = Build_file.path (Build_file.with_extension out ".stderr") in
+  let get_diagnostics () = In_channel.with_open_text stderr Diagnostic.parse in
   match run_ocamlfind ?stdout ~stderr (compiler :: args) with
-  | Ok () -> Ok (out, get_diagnostics ?source stderr)
-  | Error code -> Error (code, get_diagnostics ?source stderr)
+  | Ok ()      -> Ok out, get_diagnostics ()
+  | Error code -> Error code, get_diagnostics ()
