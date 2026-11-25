@@ -41,3 +41,8 @@ let create ~workspace ~file contents =
   Filesystem.mkdir ~p:true (Filename.dirname file);
   Filesystem.write ~file contents;
   source
+
+let create_companion ~workspace ~name source contents =
+  let companion = { source with name } in
+  Filesystem.write ~file:(resolve ~workspace companion) contents;
+  companion

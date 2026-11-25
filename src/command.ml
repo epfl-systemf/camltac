@@ -84,8 +84,7 @@ let compilation_args ~workspace ~file ~directives snippet =
   |> add_pp pp
 
 (** Compiles a build file, reporting diagnostics. *)
-let compile ~workspace ~file ~directives ~source mode build_file =
-  let args = compilation_args ~workspace ~file ~directives source in
+let compile ~args ~source mode build_file =
   let result, diagnostics = Compiler.compile ~args mode build_file in
   Error_reporter.report_all ~source diagnostics;
   match result with
@@ -99,12 +98,13 @@ let compile ~workspace ~file ~directives ~source mode build_file =
 (** Writes the scaffolded snippet to a source file, then copies it to the build
     directory. Module checks are not meant to be inspected, hence the source is
     only generated in the build directory. *)
-let create_build_file ~workspace ~file ~loaded_units cmd contents =
+let create_build_file ~workspace ~file ~loaded_units ~args cmd contents =
   match cmd with
   | Check_module -> Build_file.generate ~workspace ~dir:".check" ~name:file contents
   | _ ->
-     Source_file.create ~workspace ~file contents
-     |> Build_file.copy_source ~workspace ~loaded_units
+     let source_file = Source_file.create ~workspace ~file contents in
+     Editor_support.create_merlin_file ~workspace ~args source_file;
+     Build_file.copy_source ~workspace ~loaded_units source_file
 
 let rec scaffold_mode snippet = function
   | Check_expression -> Expression
@@ -128,9 +128,10 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
   let workspace = Workspace.at (Current_library.cwd ()) in
   let file = Current_library.top_module_name () in
   let loaded_units = Loader.loaded_units () in
+  let args = compilation_args ~workspace ~file ~directives snippet in
   Scaffold.make scaffold_mode snippet
-  |> create_build_file ~workspace ~file ~loaded_units cmd
-  |> compile ~workspace ~file ~directives ~source:snippet build.mode
+  |> create_build_file ~workspace ~file ~loaded_units ~args cmd
+  |> compile ~args ~source:snippet build.mode
   |> record_out build.recorded
 
 (** {1 Interpretation} *)
