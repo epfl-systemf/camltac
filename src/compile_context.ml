@@ -43,13 +43,13 @@ let add_module (name, Compiler.{ file; packages }) =
     Module declaration is recorded in [Libobject], so that it can be replayed
     upon [Require]/[Import]. *)
 
-let module_object : Libobject.locality * (string option * Compiler.compiled) -> Libobject.obj =
+let module_object : Libobject.locality * (string option * Logical_artifact.t) -> Libobject.obj =
   let open Libobject in
   declare_object
     (object_with_locality
       "camltac-declared-module"
       ~stage:Synterp
-      ~cache:add_module
+      ~cache:(fun (name, out) -> add_module (name, Logical_artifact.to_physical out))
       ~subst:None
       ~discharge:(fun x -> x))
 
@@ -62,7 +62,7 @@ let check_module_name = function
 
 let declare_module ~locality ~name out =
   let name = check_module_name name in
-  Lib.add_leaf (module_object (locality, (name, out)))
+  Lib.add_leaf (module_object (locality, (name, Logical_artifact.of_physical out)))
 
 (** {2 Module aliases} *)
 
