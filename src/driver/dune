@@ -1,0 +1,10 @@
+(library
+ (name camltac_driver)
+ (synopsis "Camltac's main driver")
+ (public_name rocq-camltac.plugin.driver)
+ (libraries
+   rocq-camltac.plugin.state
+   rocq-camltac.plugin.toolchain
+   rocq-camltac.plugin.ppx
+   rocq-runtime.vernac)
+ (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{coq:version.major}, %{coq:version.minor}))")))

@@ -1,0 +1,122 @@
+(** Low-level interface to [ocamlfind]. *)
+
+open Camltac_workspace
+
+(** {1 [ocamlfind]} *)
+
+[%%if rocq >= (9, 1)]
+let ocamlfind () = Boot.Env.ocamlfind ()
+[%%else]
+let ocamlfind () = Envars.ocamlfind ()
+[%%endif]
+
+let run_command ?stdout ?stderr prog args =
+  let command = Filename.quote_command prog ?stdout ?stderr args in
+  let err = Sys.command command in
+  if err = 0 then Ok () else Error err
+
+let run_ocamlfind ?stdout ?stderr args =
+  run_command ?stdout ?stderr (ocamlfind ()) args
+
+(** {1 [ocamlfind ocamlc]/[ocamlopt] *)
+
+(** {2 Building the argument list} *)
+
+type mode =
+  | Shared_library of { linkall: bool }
+  | Executable of { linkall: bool; linkpkg: bool }
+  | Compile_only
+  | Infer_interface
+
+let output_extension mode ~native =
+  match mode, native with
+  | Shared_library _, true  -> ".cmxs"
+  | Shared_library _, false -> ".cma"
+  | Executable _    , _     -> ".exe"
+  | Compile_only    , true  -> ".cmx"
+  | Compile_only    , false -> ".cmo"
+  | Infer_interface , _     -> ".check.mli"
+
+let arguments name list =
+  let[@tail_mod_cons] rec loop = function
+    | [] -> []
+    | arg :: args -> name :: arg :: loop args
+  in
+  loop list
+
+let compilation_args
+      ~native
+      ~packages
+      ~include_dirs ~open_modules
+      ?optimize
+      ?pp
+      ~extra_args
+      mode
+      impl =
+  let out = Build_file.with_extension (output_extension mode ~native) impl in
+  let args =
+     (match mode, native with
+      | Shared_library _, true  -> ["-shared"]
+      | Shared_library _, false -> ["-a"]
+      | Executable _    , _     -> []
+      | Compile_only    , _     -> ["-c"]
+      | Infer_interface , _     -> ["-i"])
+    @ ["-impl"; Filesystem.Path.relativize_if_under ~dir:(Sys.getcwd ()) (Build_file.resolve impl)]
+    @ (if mode <> Infer_interface then ["-o"; Build_file.resolve out] else [])
+    @ (match optimize, native with
+      | Some `O2, true -> ["-O2"]
+      | Some `O3, true -> ["-O3"]
+      | _       , _    -> [])
+    @ arguments "-package" packages
+    @ arguments "-I" include_dirs
+    @ arguments "-open" open_modules
+    @ (match pp with
+      | Some pp -> ["-pp"; pp]
+      | None    -> [])
+    @ (match mode with
+      | Shared_library { linkall = true }
+      | Executable { linkall = true; _ } -> ["-linkall"]
+      | _                                -> [])
+    @ (match mode with
+      | Executable { linkpkg = true; _ } -> ["-linkpkg"]
+      | _                                -> [])
+    @ ["-color"; "never"; "-error-style"; "short"] (* Options for easier parsing. *)
+    @ ["-thread"] (* Silence [ocamlfind] warning on OCaml 4.14; see PR #79. *)
+    @ extra_args
+  in
+  args, out
+
+(** {2 Calling the compiler} *)
+
+let ocamlc
+      ?(native = Dynlink.is_native)
+      ?(packages = [])
+      ?(include_dirs = [])
+      ?(open_modules = [])
+      ?optimize
+      ?pp
+      ?(extra_args = [])
+      mode impl =
+  let compiler = if native then "ocamlopt" else "ocamlc" in
+  let args, out =
+    compilation_args
+      ~native
+      ~packages
+      ~include_dirs
+      ~open_modules
+      ?optimize
+      ?pp
+      ~extra_args
+      mode impl
+  in
+  (* The output of [Infer_interface] is printed on the standard output. *)
+  let stdout =
+    match mode with
+    | Infer_interface -> Some (Build_file.resolve out)
+    | _               -> None
+  in
+  let stderr = Build_file.resolve (Build_file.with_extension ".stderr" out) in
+  let get_diagnostics () = In_channel.with_open_text stderr Diagnostic.parse in
+  match run_ocamlfind ?stdout ~stderr (compiler :: args) with
+  | Ok ()      -> Ok out, get_diagnostics ()
+  | Error code -> Error code, get_diagnostics ()

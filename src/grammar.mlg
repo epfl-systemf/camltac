@@ -1,6 +1,9 @@
 DECLARE PLUGIN "rocq-camltac.plugin"
 
 {
+open Camltac_workspace
+open Camltac_driver
+open Camltac_tactic_in
 open Names
 
 (* Term grammar *)
@@ -19,7 +22,7 @@ let file_of_loc (loc: Loc.t) =
   | ToplevelInput ->
      (* VSRocq and ProofGeneral use a toplevel, so we rely on the top
         module name if there is one. *)
-     match Current_library.top_module_name () with
+     match State.Current_library.top_module_name () with
      | "Top" (* default *) -> "_toplevel_"
      | name -> name ^ ".v"
 
@@ -95,7 +98,7 @@ VERNAC ARGUMENT EXTEND ocaml_file
 | [ string(file) ] ->
    { let open Filesystem.Path in
      let file =
-       if Filename.is_relative file then Current_library.cwd () / file
+       if Filename.is_relative file then State.Current_library.cwd () / file
        else file
      in file, loc }
 END

@@ -1,0 +1,6 @@
+(library
+ (name camltac_workspace)
+ (synopsis "Camltac's workspace")
+ (public_name rocq-camltac.plugin.workspace)
+ (libraries rocq-runtime.library)
+ (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{coq:version.major}, %{coq:version.minor}))")))

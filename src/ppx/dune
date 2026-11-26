@@ -1,0 +1,5 @@
+(library
+ (name camltac_ppx)
+ (public_name rocq-camltac.plugin.ppx)
+ (synopsis "Support for OCaml PPXs in Camltac snippets")
+ (libraries rocq-camltac.plugin.toolchain))

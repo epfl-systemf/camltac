@@ -1,0 +1,11 @@
+(library
+ (name state)
+ (public_name rocq-camltac.plugin.state)
+ (synopsis "Camltac's global state")
+ (libraries
+   rocq-camltac.plugin.workspace
+   rocq-camltac.plugin.toolchain
+   rocq-camltac.plugin.loader
+   rocq-runtime.library
+   rocq-runtime.vernac)
+ (preprocess (pps ppx_optcomp -- -cookie "ppx_optcomp.env=env ~rocq:(Defined (%{coq:version.major}, %{coq:version.minor}))")))
