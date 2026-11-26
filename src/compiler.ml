@@ -1,9 +1,20 @@
 (** High-level interface to the OCaml compiler. *)
 
-type compiled =
-  { file     : Build_file.t;
-    packages : string list
-  }
+(** {1 Compilation artifacts} *)
+
+module Artifact = struct
+  type t =
+    { dependencies : string list;
+      file         : Build_file.t
+    }
+
+  let unit_name artifact = Filesystem.Path.module_name (Build_file.resolve artifact.file)
+  let dirname artifact = Filename.dirname (Build_file.resolve artifact.file)
+  let dependencies artifact = artifact.dependencies
+  let file artifact = artifact.file
+
+  let unsafe_of_file ~dependencies file = { dependencies; file }
+end
 
 (** {1 Compilation} *)
 
@@ -26,5 +37,5 @@ let compile ~(args: Compilation_args.t) mode (impl: Build_file.t) =
       impl
   in
   match result with
-  | Ok out     -> Ok { file = out; packages = args.packages }, diagnostics
+  | Ok out     -> Ok Artifact.{ file = out; dependencies = args.packages }, diagnostics
   | Error code -> Error code, diagnostics

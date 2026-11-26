@@ -21,7 +21,7 @@ type t =
 
 (** {1 Synterp} *)
 
-type synterp_result = Compiler.compiled
+type synterp_result = Compiler.Artifact.t
 
 (** {2 Build plan} *)
 
@@ -34,7 +34,7 @@ type recorded =
   (** Record the snippet with the given name. *)
 
 type build =
-  { mode     : Ocamlfind.mode;  (** Mode of the OCaml compiler to use. *)
+  { mode     : Compiler.mode;     (** Mode of the OCaml compiler to use. *)
     recorded : recorded;        (** Whether the snippet compilation is recorded in [Libobject]. *)
   }
 
@@ -111,7 +111,7 @@ let rec scaffold_mode snippet = function
   | Eval ->
      (* Infer the type of the tactic to scaffold correctly. *)
      let out = synterp Check_expression snippet in
-     begin match Interface.tactic_type (Interface.read out.Compiler.file) with
+     begin match Interface.tactic_type (Interface.read (Compiler.Artifact.file out)) with
      | Some typ -> Value_tactic { typ }
      | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.str "Argument to Eval is not a tactic.")
      end
@@ -138,7 +138,7 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
 (** {2 [Check]} *)
 
 let check out =
-  Interface.read out.Compiler.file
+  Interface.read (Compiler.Artifact.file out)
   |> Interface.pp
   |> Feedback.msg_info
 
@@ -155,8 +155,8 @@ let load_module { name; locality } out =
 
 (** {2 [Eval]} *)
 
-let load Compiler.{ packages; file } =
-  Loader.load_file ~dependencies:packages `Private file
+let load out =
+  Loader.load_file ~dependencies:(Compiler.Artifact.dependencies out) `Private (Compiler.Artifact.file out)
 
 [%%if rocq >= (9, 2)]
 let poly_default = PolyFlags.default
@@ -186,7 +186,7 @@ let eval ?proof out =
 
 (** {1 Interp} *)
 
-let interp ?proof cmd (out: Compiler.compiled) =
+let interp ?proof cmd (out: Compiler.Artifact.t) =
   match cmd with
   | Check_expression | Check_module -> check out
   | Eval -> eval ?proof out

@@ -28,7 +28,9 @@ let state =
     ~name:"Camltac:compilation_state"
     empty_state
 
-let add_module (name, Compiler.{ file; packages }) =
+let add_module (name, artifact) =
+  let file = Compiler.Artifact.file artifact in
+  let packages = Compiler.Artifact.dependencies artifact in
   let old_state = !state in
   state :=
     { modules      = (match name with

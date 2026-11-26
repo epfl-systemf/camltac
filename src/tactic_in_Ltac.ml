@@ -4,7 +4,7 @@ open Ltac_plugin
 
 (** {1 Tactics in Ltac} *)
 
-type t = Snippet.t * Compiler.compiled
+type t = Snippet.t * Compiler.Artifact.t
 
 [%%if rocq >= (9, 3)]
 let wit_ocaml_in_ltac : (t, t, Geninterp.Val.t) Genarg.genarg_type =
