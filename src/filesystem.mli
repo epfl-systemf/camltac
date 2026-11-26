@@ -1,30 +1,37 @@
 (** Utilities for interacting with the file system. *)
 
-exception Not_found
-(** Exception raised when a file could not be found. *)
+(** {1 Paths} *)
 
-(** {1 Read/write} *)
+module Path : sig
+  type t = CUnix.physical_path
+  (** A path on the filesystem. *)
 
-val read : CUnix.physical_path -> string
+  val (/) : t -> t -> t
+  (** [path1 / path2] concatenates [path1] with [path2] using
+      {!Filename.concat}. *)
+
+  val module_name : t -> string
+  (** [module_name path] return the OCaml module name of the given
+      path. *)
+
+  val relativize_if_under : dir:t -> t -> t
+  (** [relativize_if_under ~dir path] relativizes [path] relative to
+      [dir] if [dir] is a prefix of [path]. Otherwise, [path] is
+      returned unchanged. *)
+end
+
+(** {1 Files} *)
+
+val read : Path.t -> string
 (** [read filename] returns the contents of the given file.
 
     @raise Not_found if [filename] does not correspond to a file. *)
 
-val read_or_error : loc:Loc.t -> CUnix.physical_path -> string
-(** [read_or_error ~loc filename] reads the contents of [filename],
-    or raises using [CErrors.user_error]. *)
+val read_or_error : loc:Loc.t -> Path.t -> string
+(** [read_or_error ~loc filename] reads the contents of [filename], or
+    raises using [CErrors.user_error ~loc]. *)
 
-val write : file:CUnix.physical_path -> string -> unit
-(** [write ~file contents] writes the given [contents] to [file], creating it if
-    it does not exist, or overwriting its previous content. *)
-
-(** {1 Utilities} *)
-
-val module_name : CUnix.physical_path -> string
-(** [module_name file] returns the OCaml module name of the given
-    file. *)
-
-val relativize_if_under : ?dir:string -> CUnix.physical_path -> CUnix.physical_path
-(** [relativize_if_under ?dir path] relativizes [path] relative to [dir]
-    (current working directory by default) if [dir] is a prefix of
-    [path]. Otherwise, [path] is returned unchanged. *)
+val write : file:Path.t -> string -> unit
+(** [write ~file contents] writes the given [contents] to [file],
+    creating it if it does not exist, or overwriting its previous
+    content. *)

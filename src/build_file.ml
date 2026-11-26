@@ -15,7 +15,7 @@ let with_extension file ext =
   { file with path = Filename.remove_extension file.path ^ ext }
 
 let module_name build_file =
-  Filesystem.module_name build_file.path
+  Filesystem.Path.module_name build_file.path
 
 (** {1 Read/write} *)
 
@@ -44,4 +44,4 @@ let write ~kind contents =
   let prefix = kind_prefix kind in
   let file = write_temp ~dir ~prefix contents in
   { root = Layout.Root.current ();
-    path = Filesystem.relativize_if_under ~dir:layout.root file }
+    path = Filesystem.Path.relativize_if_under ~dir:layout.root file }

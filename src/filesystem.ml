@@ -1,9 +1,28 @@
 (** Utilities for interacting with the file system. *)
 
-exception Not_found
-(** Exception raised when a file could not be found. *)
+(** {1 Paths} *)
 
-(** {1 Read/write} *)
+module Path = struct
+  type t = CUnix.physical_path
+
+  let (/) = Filename.concat
+
+  let module_name filename =
+    (* TODO: Support UTF-8 capitalization. *)
+    Filename.basename filename
+    |> Filename.remove_extension
+    |> String.capitalize_ascii
+
+  let relativize_if_under ~dir filename =
+    let prefix = dir ^ Filename.dir_sep in
+    if String.starts_with ~prefix filename then
+      let n = String.length prefix in
+      String.sub filename n (String.length filename - n)
+    else
+      filename
+end
+
+(** {1 Files} *)
 
 let read filename =
   try In_channel.with_open_text filename In_channel.input_all
@@ -17,18 +36,3 @@ let read_or_error ~loc filename =
 
 let write ~file contents =
   Out_channel.with_open_text file (fun oc -> output_string oc contents)
-
-(** {1 Utilities} *)
-
-let module_name filename =
-  Filename.basename filename
-  |> Filename.remove_extension
-  |> String.capitalize_ascii
-
-let relativize_if_under ?(dir = Sys.getcwd ()) filename =
-  let prefix = dir ^ "/" in
-  if String.starts_with ~prefix filename then
-    let prefix_length = String.length prefix in
-    String.sub filename prefix_length (String.length filename - prefix_length)
-  else
-    filename
