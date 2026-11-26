@@ -15,11 +15,11 @@ let with_extension file ext =
   { file with path = Filename.remove_extension file.path ^ ext }
 
 let module_name build_file =
-  File.module_name build_file.path
+  Filesystem.module_name build_file.path
 
 (** {1 Read/write} *)
 
-let read file = File.read (locate file)
+let read file = Filesystem.read (locate file)
 
 type kind = Snippet | Module | Ppx_driver
 
@@ -35,7 +35,7 @@ let kind_prefix = function
 
 let write_temp ~dir ~prefix contents =
   let file = Filename.temp_file ~temp_dir:dir prefix ".ml" in
-  File.write ~file contents;
+  Filesystem.write ~file contents;
   file
 
 let write ~kind contents =
@@ -44,4 +44,4 @@ let write ~kind contents =
   let prefix = kind_prefix kind in
   let file = write_temp ~dir ~prefix contents in
   { root = Layout.Root.current ();
-    path = File.relativize_if_under ~dir:layout.root file }
+    path = Filesystem.relativize_if_under ~dir:layout.root file }

@@ -19,7 +19,7 @@ let parse intf =
 
 let read mli_file =
   Build_file.locate mli_file
-  |> File.read
+  |> Filesystem.read
   |> String.trim
   |> parse
 
