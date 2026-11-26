@@ -4,7 +4,7 @@ open Ltac_plugin
 
 (** {1 Tactics in Ltac} *)
 
-type t = Snippet.t * Compiler.Artifact.t
+type t = Snippet.t * Driver.synterp_result
 
 [%%if rocq >= (9, 3)]
 let wit_ocaml_in_ltac : (t, t, Geninterp.Val.t) Genarg.genarg_type =
@@ -17,7 +17,7 @@ let wit_ocaml_in_ltac : (t, t, Util.Empty.t) Genarg.genarg_type =
 [%%endif]
 
 let from_ocaml snippet =
-  let compilation_output = Command.synterp Command.Tactic_in_Ltac snippet in
+  let compilation_output = Driver.(synterp Command.Tactic_in_Ltac snippet) in
   Tacexpr.TacGeneric (Some "ocaml", Genarg.(in_gen (rawwit wit_ocaml_in_ltac) (snippet, compilation_output)))
 
 (** {2 Internalization} *)
@@ -35,7 +35,7 @@ let () =
 (** {2 Interpretation} *)
 
 let interp ist (_, out) =
-  Command.interp Command.Tactic_in_Ltac out;
+  Driver.interp out;
   let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
   (* Get the resulting tactic. *)
   let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in

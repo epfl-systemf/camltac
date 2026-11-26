@@ -102,9 +102,9 @@ END
 VERNAC COMMAND EXTEND CamltacEval CLASSIFIED AS QUERY
 | ![proof_opt_query] [ "Camltac" "Eval" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { Command.synterp ~directives:Directives.eval_directives Command.Eval snippet }
+     { Driver.(synterp ~directives:Directives.eval_directives Command.Eval snippet) }
   -> { fun ~pstate:proof ->
-       Command.interp ?proof Command.Eval synterp_result }
+       Driver.interp ?proof synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
@@ -112,19 +112,18 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
      directives = Directives.attribute ]
    [ "Camltac" "Run" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { let cmd = Command.Module { name = None; locality } in
-       cmd, Command.synterp ~directives cmd snippet }
-  -> { let cmd, synterp_result = synterp_result in
-       Command.interp cmd synterp_result }
+     { let cmd = Driver.Command.Module { name = None; locality } in
+       Driver.synterp ~directives cmd snippet }
+  -> { Driver.interp synterp_result }
 
 | #[ locality = Attributes.hint_locality;
      directives = Directives.attribute ]
    [ "Camltac" "Module" ocaml_module(m) ":=" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { let cmd = Command.Module { name = Some m; locality } in
-       cmd, Command.synterp ~directives cmd snippet }
-  -> { let cmd, synterp_result = synterp_result in
-       Command.interp cmd synterp_result }
+     { let m, loc = m in
+       let cmd = Driver.Command.Module { name = Some m; locality } in
+       Driver.synterp ~directives cmd snippet }
+  -> { Driver.interp synterp_result }
 
 | #[ locality = Attributes.hint_locality;
      directives = Directives.attribute ]
@@ -135,17 +134,16 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
        let contents = Filesystem.read_or_error ~loc file in
        let snippet = Snippet.of_file ~file contents in
        let name = Filesystem.Path.module_name file in
-       let cmd = Command.Module { name = Some (name, loc); locality } in
-       cmd, Command.synterp ~directives cmd snippet }
-  -> { let cmd, synterp_result = synterp_result in
-       Command.interp cmd synterp_result }
+       let cmd = Driver.Command.Module { name = Some name; locality } in
+       Driver.synterp ~directives cmd snippet }
+  -> { Driver.interp synterp_result }
 END
 
 VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
 | [ "Camltac" "Check" ocaml(snippet) ]
   SYNTERP AS synterp_result
-     { Command.synterp Command.Check_expression snippet }
-  -> { Command.interp Command.Check_expression synterp_result }
+     { Driver.(synterp Command.Check_expression snippet) }
+  -> { Driver.interp synterp_result }
 
 | [ "Camltac" "Check" ocaml_module(m) ]
   SYNTERP AS synterp_result
@@ -153,14 +151,14 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
        let module_name, loc = m in
        let file = file_of_loc loc in
        let snippet = Snippet.make ~loc ~file (Format.sprintf "include %s" module_name) in
-       Command.synterp Command.Check_module snippet }
-  -> { Command.interp Command.Check_module synterp_result }
+       Driver.(synterp Command.Check_module snippet) }
+  -> { Driver.interp synterp_result }
 
 | [ "Camltac" "Check" ocaml_file(file) ]
   SYNTERP AS synterp_result
      { let file, loc = file in
        let contents = Filesystem.read_or_error ~loc file in
        let snippet = Snippet.of_file ~file contents in
-       Command.synterp Command.Check_module snippet }
-  -> { Command.interp Command.Check_module synterp_result }
+       Driver.(synterp Command.Check_module snippet) }
+  -> { Driver.interp synterp_result }
 END

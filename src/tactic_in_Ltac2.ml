@@ -5,14 +5,14 @@ open Tac2expr
 
 (** {1 OCaml tactics in Ltac2} *)
 
-type t = Snippet.t * Compiler.Artifact.t
+type t = Snippet.t * Driver.synterp_result
 
 (** Generic tag for OCaml snippets in Ltac2. *)
 let wit_ocaml_in_ltac2: (t, t) Tac2dyn.Arg.tag = Tac2dyn.Arg.create "ocaml-in-ltac2"
 
 let from_ocaml snippet =
   let loc = Snippet.loc snippet in
-  let compilation_output = Command.synterp Command.Tactic_in_Ltac2 snippet in
+  let compilation_output = Driver.(synterp Command.Tactic_in_Ltac2 snippet) in
   CAst.make ~loc (CTacExt (wit_ocaml_in_ltac2, (snippet, compilation_output)))
 
 (** {2 Internalization} *)
@@ -38,7 +38,7 @@ let subst _ x = x
 
 let interp _ltac2_env (_, compilation_output) =
   (* Run the code *)
-  let () = Command.interp Command.Tactic_in_Ltac2 compilation_output in
+  let () = Driver.interp compilation_output in
   (* Interpret the result as a tactic *)
   let open Proofview.Monad in
   Runtime.Output.get_tactic () >> return v_unit
