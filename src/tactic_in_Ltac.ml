@@ -1,47 +1,45 @@
 (** Support for OCaml tactics in Ltac. *)
 
 open Ltac_plugin
+open Driver
 
 (** {1 Tactics in Ltac} *)
 
-type t = Snippet.t * Driver.synterp_result
-
 [%%if rocq >= (9, 3)]
-let wit_ocaml_in_ltac : (t, t, Geninterp.Val.t) Genarg.genarg_type =
+let wit_ocaml_in_ltac : (Tactic.raw, Tactic.glob, Geninterp.Val.t) Genarg.genarg_type =
   let genarg = Genarg.make0 "ocaml-in-ltac" in
   Geninterp.register_val0 genarg (Some Any);
   genarg
 [%%else]
-let wit_ocaml_in_ltac : (t, t, Util.Empty.t) Genarg.genarg_type =
+let wit_ocaml_in_ltac : (Tactic.raw, Tactic.glob, Util.Empty.t) Genarg.genarg_type =
   Genarg.make0 "ocaml-in-ltac"
 [%%endif]
 
 let from_ocaml snippet =
-  let compilation_output = Driver.(synterp Command.Tactic_in_Ltac snippet) in
-  Tacexpr.TacGeneric (Some "ocaml", Genarg.(in_gen (rawwit wit_ocaml_in_ltac) (snippet, compilation_output)))
+  let artifact = Driver.Tactic.embed snippet in
+  Tacexpr.TacGeneric (Some "ocaml", Genarg.(in_gen (rawwit wit_ocaml_in_ltac) artifact))
 
 (** {2 Internalization} *)
 
 let () =
-  let intern glob_sign x = glob_sign, x in
+  let intern glob_sign x = glob_sign, Driver.Tactic.globalize glob_sign x in
   Genintern.register_intern0 wit_ocaml_in_ltac intern
 
 (** {2 Substitution} *)
 
-let () =
-  let subst _ x = x in
-  Gensubst.register_subst0 wit_ocaml_in_ltac subst
+let () = Gensubst.register_subst0 wit_ocaml_in_ltac Driver.Tactic.mod_subst
 
 (** {2 Interpretation} *)
 
-let interp ist (_, out) =
-  Driver.interp out;
-  let idtac = Tacinterp.Value.of_closure { ist with lfun = Names.Id.Map.empty } (CAst.make (Tacexpr.TacId [])) in
-  (* Get the resulting tactic. *)
-  let tactic: unit Proofview.tactic = Runtime.Output.get_tactic () in
+let idtac ist =
+  Tacinterp.Value.of_closure
+    { ist with lfun = Names.Id.Map.empty }
+    (CAst.make (Tacexpr.TacId []))
+
+let interp ist tactic =
   let open Proofview.Monad in
-  tactic >>= fun () ->
-  Ftactic.return idtac
+  Driver.Tactic.interp tactic >>= fun () ->
+  Ftactic.return (idtac ist)
 
 [%%if rocq >= (9, 3)]
 let () = Tacinterp.Register.register_interp0 wit_ocaml_in_ltac interp
@@ -50,11 +48,24 @@ let () = Geninterp.register_interp0 wit_ocaml_in_ltac interp
 [%%endif]
 
 (** {2 Printing} *)
-let printer (snippet, _) =
-  Genprint.PrinterBasic (fun _env _evd -> Pp.str (Snippet.contents snippet))
+
+let raw_printer raw =
+  Genprint.PrinterBasic (fun env sigma -> Driver.Tactic.print_raw env sigma raw)
+
+let glob_printer glob =
+  Genprint.PrinterBasic (fun env sigma -> Driver.Tactic.print_glob env sigma glob)
 
 [%%if rocq >= (9, 3)]
-let () = Genprint.register_print0 wit_ocaml_in_ltac printer printer Genprint.generic_val_print
+let () =
+  Genprint.register_print0
+    wit_ocaml_in_ltac
+    raw_printer
+    glob_printer
+    Genprint.generic_val_print
 [%%else]
-let () = Genprint.register_noval_print0 wit_ocaml_in_ltac printer printer
+let () =
+  Genprint.register_noval_print0
+    wit_ocaml_in_ltac
+    raw_printer
+    glob_printer
 [%%endif]
