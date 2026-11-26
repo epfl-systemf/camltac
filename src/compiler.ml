@@ -28,11 +28,11 @@ type error =
 let report_error ~loc = function
   | Preprocessors (file, err) ->
      CErrors.user_err ~loc
-       Pp.(str "Compilation of preprocessors for " ++ str (Build_file.module_name file) ++
+       Pp.(str "Compilation of preprocessors for " ++ str (Filesystem.Path.module_name (Build_file.path file)) ++
            str " failed with exit code " ++ int err ++ str ".")
   | Compilation_failed (file, err) ->
      CErrors.user_err ~loc
-       Pp.(str "Compilation of " ++ str (Build_file.path file) ++
+       Pp.(str "Compilation of " ++ str (Build_file.resolve file) ++
            str " failed with exit code " ++ int err ++ str ".")
 
 (** {2 Compilation method} *)
@@ -41,7 +41,7 @@ let compile ~args ~(directives: Build_directives.t) ~source mode (impl: Build_fi
   let (let*) = Result.bind in
   let ppxs = directives.ppx in
   let* pp =
-    match Preprocessing.select_driver ~ppxs ~source:(Snippet.contents source) with
+    match Preprocessing.select_driver ~workspace:(Build_file.workspace impl) ~file:(Snippet.file source) ~ppxs ~source:(Snippet.contents source) with
     | Ok driver -> Ok (Preprocessing.pp_flag driver)
     | Error err -> Error (Preprocessors (impl, err))
   in
@@ -50,7 +50,7 @@ let compile ~args ~(directives: Build_directives.t) ~source mode (impl: Build_fi
   let result, diagnostics =
     Ocamlfind.ocamlc
       ~packages:(packages @ args.packages)
-      ~include_dirs:((Build_file.layout impl).modules :: args.include_dirs)
+      ~include_dirs:(Filename.dirname (Build_file.resolve impl) :: args.include_dirs)
       ~open_modules:(args.open_modules)
       ~optimize:(`O3)
       ~extra_args:("-no-alias-deps" :: "-short-paths" :: directives.compiler_options)

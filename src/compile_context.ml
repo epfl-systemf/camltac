@@ -35,7 +35,7 @@ let add_module (name, Compiler.{ file; packages }) =
                      | Some name -> CString.Map.add name file old_state.modules
                      | None -> old_state.modules);
       packages     = CString.Set.add_seq (List.to_seq packages) old_state.packages;
-      modules_dirs = CString.Set.add ((Build_file.layout file).modules) old_state.modules_dirs;
+      modules_dirs = CString.Set.add (Filename.dirname (Build_file.resolve file)) old_state.modules_dirs;
     }
 
 (** {2 Libobject}
@@ -67,7 +67,7 @@ let declare_module ~locality ~name out =
 (** {2 Module aliases} *)
 
 let module_alias (name, file) =
-  (name, Build_file.module_name file)
+  (name, Filesystem.Path.module_name (Build_file.path file))
 
 let module_aliases () =
   CString.Map.bindings !state.modules

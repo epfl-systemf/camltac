@@ -1,5 +1,7 @@
 (** Preprocessor drivers. *)
 
+open Filesystem.Path
+
 (** {1 Driver} *)
 
 type t =
@@ -13,7 +15,7 @@ let ppx_rocq = Ppx_rocq
 let resolve = function
   | No_preprocessing   -> None
   | Ppx_rocq           -> Some "ppx_rocq" (* TODO: Avoid PATH *)
-  | Custom_driver file -> Some (Filename.quote (Build_file.locate file))
+  | Custom_driver file -> Some (Filename.quote (Build_file.resolve file))
 
 (** {1 Custom drivers} *)
 
@@ -21,8 +23,10 @@ module Custom_driver = struct
   let contents =
     {|let () = Ppxlib.Driver.standalone ()|}
 
-  let build ~ppxs =
-    let driver = Build_file.(write ~kind:Ppx_driver contents) in
+  let build ~workspace ~file ~ppxs =
+    (* TODO: Build drivers per project instead of per file. *)
+    let hash = Digest.to_hex (Digest.string (String.concat "," ppxs)) in
+    let driver = Build_file.generate ~workspace ~dir:(".ppx" / file / hash) ~name:"ppx.ml" contents in
     (* We compile in bytecode mode since it links much faster than native. *)
     Ocamlfind.ocamlc
       ~native:false
@@ -57,10 +61,10 @@ let memoize ~key f =
      | Ok driver -> Cache.add cache key driver; Ok (Custom_driver driver)
      | Error err -> Error err
 
-let build_custom ~ppxs =
+let build_custom ~workspace ~file ~ppxs =
   let key = List.sort_uniq String.compare ppxs in
   memoize ~key
     (fun ppxs ->
-      let result, diagnostics = Custom_driver.build ~ppxs in
+      let result, diagnostics = Custom_driver.build ~workspace ~file ~ppxs in
       ignore diagnostics; (* We can't report them correctly. *)
       result)

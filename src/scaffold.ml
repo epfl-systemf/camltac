@@ -54,18 +54,11 @@ let add_segment ~segment scaffold =
 let indent ~n scaffold =
   for _ = 1 to n do Buffer.add_char scaffold ' ' done
 
-let file_of_loc (loc: Loc.t) =
-  match loc.fname with
-  | InFile { file; _ } -> file
-  | ToplevelInput ->
-     (* Use the module name set by the [-top] option, if any. *)
-     let _, top_module_name = Libnames.split_dirpath (Lib.library_dp ()) in
-     match Names.Id.to_string top_module_name with
-     | "Top" (* default *) -> "_toplevel_"
-     | name -> name ^ ".v"
-
-let add_contents ~loc contents scaffold =
-  add_line_number_directive ~line:loc.Loc.line_nb ~file:(file_of_loc loc) scaffold;
+let add_contents snippet scaffold =
+  let loc = Snippet.loc snippet in
+  let file = Snippet.file snippet in
+  let contents = Snippet.contents snippet in
+  add_line_number_directive ~line:loc.line_nb ~file scaffold;
   (* Indent the first line to obtain correct column numbers. *)
   indent ~n:(loc.bp - loc.bol_pos) scaffold;
   Buffer.add_string scaffold contents
@@ -87,11 +80,11 @@ let module_aliases () =
      |> String.concat "\n  "
      |> Format.sprintf module_aliases_format
 
-let build_scaffold ~loc ~header ~footer contents =
-  let scaffold = Buffer.create (String.length contents) in
+let build_scaffold ~header ~footer snippet =
+  let scaffold = Buffer.create (String.length (Snippet.contents snippet)) in
   add_segment ~segment:(module_aliases ()) scaffold;
   add_segment ~segment:header scaffold;
-  add_contents ~loc contents scaffold;
+  add_contents snippet scaffold;
   add_segment ~segment:footer scaffold;
   Buffer.contents scaffold
 
@@ -143,6 +136,4 @@ let make kind snippet =
     | Unit_tactic                 -> unit_tactic_scaffold
     | Value_tactic { typ }        -> value_tactic_scaffold typ
   in
-  let loc = Snippet.loc snippet in
-  let contents = Snippet.contents snippet in
-  build_scaffold ~loc ~header ~footer contents
+  build_scaffold ~header ~footer snippet

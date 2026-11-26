@@ -35,3 +35,9 @@ val write : file:Path.t -> string -> unit
 (** [write ~file contents] writes the given [contents] to [file],
     creating it if it does not exist, or overwriting its previous
     content. *)
+
+(** {1 Directories} *)
+
+val mkdir : ?p:bool -> Path.t -> unit
+(** [mkdir ?p dir] creates the directory [dir]. If [p] is [true], parent
+    directories are also created. *)

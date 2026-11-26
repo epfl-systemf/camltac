@@ -6,8 +6,8 @@
 
 (** {1 Preprocessing} *)
 
-val select_driver : ppxs:string list -> source:string -> (Ppx_driver.t, int) result
-(** [select_driver ~ppxs ~source] determines how
+val select_driver : workspace:Workspace.t -> file:string -> ppxs:string list -> source:string -> (Ppx_driver.t, int) result
+(** [select_driver ~workspace ~file ~ppxs ~source] determines how
     [source] should be preprocessed, building a custom driver if
     necessary. *)
 

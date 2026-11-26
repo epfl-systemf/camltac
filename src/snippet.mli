@@ -1,5 +1,7 @@
 (** OCaml code snippets. *)
 
+open Filesystem
+
 (** {1 Snippets}
 
     A snippet is a piece of OCaml code which Camltac compiles and runs.
@@ -14,11 +16,13 @@
 type t
 (** Type of OCaml snippets. *)
 
-val make : loc:Loc.t -> string -> t
-(** [make ~loc contents] creates a snippet from the source [contents]
-    located at [loc] in the user project. *)
+val make : loc:Loc.t -> file:Path.t -> string -> t
+(** [make ~loc ~file contents] creates a snippet from the source
+    [contents] located at [loc] in the user project.
 
-val of_file : file:CUnix.physical_path -> string -> t
+    [file] is the path to the file where the snippet appears. *)
+
+val of_file : file:Path.t -> string -> t
 (** [of_file ~file contents] creates a snippet from the source
     [contents] present in [file]. This is used by [Camltac Load]. *)
 
@@ -28,3 +32,7 @@ val contents : t -> string
 val loc : t -> Loc.t
 (** [loc snippet] returns the location of the snippet in the user
     project. *)
+
+val file : t -> Path.t
+(** [file snippet] returns the path to the file where the snippet
+    appears. *)

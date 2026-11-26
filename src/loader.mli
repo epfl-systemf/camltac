@@ -16,3 +16,7 @@ val load_file : ?dependencies:string list -> [`Public | `Private] -> Build_file.
     @param public
       If [`Public], the compilation unit is available to subsequently loaded files.
  *)
+
+val loaded_units : unit -> CString.Set.t
+(** [loaded_units ()] returns the set of compilation units dynlinked in the
+    current process. *)

@@ -1,14 +1,17 @@
 (** OCaml code snippets. *)
 
+open Filesystem
+
 (** {1 Snippets} *)
 
 type t =
   { loc: Loc.t;
+    file: Path.t;
     contents: string }
 
 (** {2 Constructors} *)
 
-let make ~loc contents = { loc; contents }
+let make ~loc ~file contents = { loc; file; contents }
 
 let of_file ~file contents =
   let loc = Loc.{
@@ -21,10 +24,12 @@ let of_file ~file contents =
      bol_pos_last = max_int;
      ep = String.length contents
   } in
-  make ~loc contents
+  make ~loc ~file contents
 
 (** {2 Getters} *)
 
 let loc { loc; _ } = loc
 
 let contents { contents; _ } = contents
+
+let file { file; _ } = file

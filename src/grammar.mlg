@@ -13,6 +13,16 @@ open Ltac2_plugin.G_ltac2
 
 let ocaml_code = Procq.Entry.make "ocaml_code"
 
+let file_of_loc (loc: Loc.t) =
+  match loc.fname with
+  | InFile { file; _ } -> file
+  | ToplevelInput ->
+     (* VSRocq and ProofGeneral use a toplevel, so we rely on the top
+        module name if there is one. *)
+     match Current_library.top_module_name () with
+     | "Top" (* default *) -> "_toplevel_"
+     | name -> name ^ ".v"
+
 let get_quotation_contents ~loc ~prefix q =
   let sep, contents = Tok.trim_quotation q in
   (* Get location of OCaml code only *)
@@ -52,7 +62,8 @@ GLOBAL:
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
         { let loc, contents = get_quotation_contents ~loc ~prefix:"ocaml:" q in
-	  Snippet.make ~loc contents } ] ]
+          let file = file_of_loc loc in
+	  Snippet.make ~loc ~file contents } ] ]
   ;
 
   (* OCaml-in-term *)
@@ -81,12 +92,9 @@ END
 
 VERNAC ARGUMENT EXTEND ocaml_file
 | [ string(file) ] ->
-   { let file =
-       if Filename.is_relative file then
-         let (/) = Filename.concat in
-         match loc.fname with
-         | InFile { file = rocq_file; _ } -> Sys.getcwd () / Filename.dirname rocq_file / file
-         | ToplevelInput -> Sys.getcwd () / file
+   { let open Filesystem.Path in
+     let file =
+       if Filename.is_relative file then Current_library.cwd () / file
        else file
      in file, loc }
 END
@@ -143,7 +151,8 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
   SYNTERP AS synterp_result
      { (* [Camltac Check M.] ≅ [Camltac Check ocaml:(include M).] *)
        let module_name, loc = m in
-       let snippet = Snippet.make ~loc (Format.sprintf "include %s" module_name) in
+       let file = file_of_loc loc in
+       let snippet = Snippet.make ~loc ~file (Format.sprintf "include %s" module_name) in
        Command.synterp Command.Check_module snippet }
   -> { Command.interp Command.Check_module synterp_result }
 

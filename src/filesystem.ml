@@ -41,3 +41,12 @@ let read_or_error ~loc filename =
 
 let write ~file contents =
   Out_channel.with_open_text file (fun oc -> output_string oc contents)
+
+(** {1 Directories} *)
+
+let rec mkdir ?(p = false) dir =
+  if not (Sys.file_exists dir) then begin
+    if p then mkdir ~p (Filename.dirname dir);
+    try Sys.mkdir dir 0o700
+    with Sys_error _ when Sys.file_exists dir -> ()
+  end

@@ -1,56 +1,66 @@
-(** Build artifacts. *)
+(** Build files. *)
+
+open Filesystem
 
 (** {1 Build files}
 
-    A build file is a file in a build directory, i.e., in a specific
-    {!Layout.t}. Build files are used to temporarily store source files and
-    build artifacts, such as compiled libraries or executables.
- *)
+    A build file is a file used as an input or output of the compilation
+    process. Build files are stored in the [.camltac/build] directory. *)
 
 type t
-(** Type of build files.
+(** Type of build files. *)
 
-    Build files are physical, so they must not be written to [.vo] files
-    directly. Use {!Logical_path} for that purpose.
- *)
+val workspace : t -> Workspace.t
+(** [workspace file] returns the workspace that the build file belongs
+    to. *)
 
-val unsafe_of_path : root:CUnix.physical_path -> CUnix.physical_path -> t
-(** [unsafe_of_path ~root path] creates a build file from a [root] and
-    a [path] relative to [root]. The file is not checked for existence. *)
+val path : t -> Path.t
+(** [path file] returns the relative path of the file in its
+    workspace. *)
 
-val root : t -> CUnix.physical_path
-(** [root file] returns the root of the layout of [file]. *)
+(** {2 Creating build files} *)
 
-val relative_path : t -> CUnix.physical_path
-(** [relative_path file] returns the path of [file] relative to its root. *)
+val copy_source : workspace:Workspace.t -> loaded_units:CString.Set.t -> Source_file.t -> t
+(** [copy_source ~workspace ~loaded_units source] copies the [source]
+    file to the build directory in [workspace] to prepare it for
+    compilation.
 
-val layout : t -> Layout.t
-(** [layout file] returns the layout which includes the build file. *)
+    The contents of the source file are written to a fresh file in a
+    subdirectory of [.camltac/build] that mirrors the directory structure
+    of the source file. For example, [.camltac/sources/A/0/A0.ml] is
+    copied to [.camltac/build/A/0].
 
-val locate : t -> CUnix.physical_path
-(** [locate file] looks for the given [file] by locating it in the build
-    directory where it was originally created. *)
+    Since {!Loader.load_file} cannot load units with the same name
+    twice, the build file name includes a random part that guarantee it
+    is distinct from any of the [loaded_units].
 
-val path : t -> CUnix.physical_path
-(** [path file] returns the physical path of [file]. Contrary to [locate file],
-    [path file] does not check that the file exists. *)
+    Earlier copies of the same source, along with their compilation
+    products, are deleted. *)
 
-val with_extension : t -> string -> t
-(** [with_extension file ext] returns a build file that has the same path as
-    [file] but with extension [ext] instead. *)
+val generate : workspace:Workspace.t -> dir:string -> name:string -> string -> t
+(** [generate ~workspace ~dir ~name contents] creates a build file in
+    the [dir] subdirectory of [.camltac/build], with the given [name]
+    and [contents].
 
-val module_name : t -> string
-(** [module_name file] is equivalent to [Filesystem.Path.module_name (locate file)] but
-    more efficient. *)
+    A typical use-case of this method is for generated files that do not
+    have a source file, e.g., PPX drivers. *)
 
-(** {1 Read/write} *)
+val with_extension : string -> t -> t
+(** [with_extension ext file] returns the build file [file'] such that
+    [resolve file' = Filename.remove_extension (resolve file) ^ ext]. *)
 
-val read : t -> string
-(** [read file] reads the given build file. *)
+(**/**)
 
-(** Kind of build files. *)
-type kind = Snippet | Module | Ppx_driver
+val unsafe_of_path : workspace:Workspace.t -> Path.t -> t
+(** [unsafe_of_path ~workspace path] returns the build file in [workspace] that
+    has the given [path].
 
-val write : kind:kind -> string -> t
-(** [write ~kind contents] saves the given contents to a fresh build file. The
-    exact location where the file is saved depends on [kind]. *)
+    It is unsafe in the sense that the file is not checked for existence, nor is
+    it checked that the file is in the [.camltac/build] directory. *)
+
+(**/**)
+
+(** {2 Path resolution} *)
+
+val resolve : t -> Path.t
+(** [resolve file] returns the absolute path of [file]. *)
