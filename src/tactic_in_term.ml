@@ -1,5 +1,6 @@
 (** Support for tactic-in-terms using Rocq's generic argument mecanism. *)
 
+open Driver
 open Names
 
 (** {1 Tactic-in-terms} *)
@@ -32,39 +33,31 @@ open Names
     - [Genprint.register_constr_print]: printing functions.
  *)
 
-(** Representation of OCaml snippets in [Constrexpr.constr_expr] terms.
-
-    Note that snippets are compiled once at parsing time, so that the compilation
-    overhead is amortized over each interpretation. *)
-type raw_ocaml = {
-    source_code: Snippet.t;                (** Source code of the snippet. *)
-    compilation_output: Driver.synterp_result; (** Compilation output. *)
-}
-
-(** Representation of OCaml snippets in [Glob_term.glob_constr] terms. *)
-type glob_ocaml = raw_ocaml * Runtime.Environment.t
-
 [%%if rocq >= (9, 3)]
-let wit_ocaml_in_term : (raw_ocaml, glob_ocaml) GenConstr.tag = GenConstr.create "ocaml-in-term"
+
+let wit_ocaml_in_term : (Tactic.raw, Tactic.glob) GenConstr.tag =
+  GenConstr.create "ocaml-in-term"
 
 let make ?loc raw =
   CAst.make ?loc (Constrexpr.CGenarg (Raw (wit_ocaml_in_term, raw)))
+
 [%%else]
-let wit_ocaml_in_term : (raw_ocaml, glob_ocaml, Util.Empty.t) Genarg.genarg_type = Genarg.make0 "ocaml-in-term"
+
+let wit_ocaml_in_term : (Tactic.raw, Tactic.glob, Util.Empty.t) Genarg.genarg_type =
+  Genarg.make0 "ocaml-in-term"
 
 let make ?loc raw =
   CAst.make ?loc (Constrexpr.CGenarg (Genarg.GenArg (Rawwit wit_ocaml_in_term, raw)))
+
 [%%endif]
 
 let from_ocaml snippet =
-  let compilation_output = Driver.(synterp Command.Tactic_in_term snippet) in
-  let raw = { source_code = snippet; compilation_output } in
+  let raw = Driver.Tactic.embed snippet in
   make ~loc:(Snippet.loc snippet) raw
 
 (** {2 Internalization} *)
 
-let intern ?loc:_ glb_sign snippet =
-  snippet, Runtime.Environment.capture glb_sign
+let intern ?loc:_ = Driver.Tactic.globalize
 
 [%%if rocq >= (9, 3)]
 let () = Genintern.register_intern_constr wit_ocaml_in_term intern
@@ -76,27 +69,23 @@ let () =
 
 (** {2 Module substitution} *)
 
-let subst s (snippet, env) =
-  snippet, Runtime.Environment.map (Detyping.subst_glob_constr (Global.env()) s) env
-
 [%%if rocq >= (9, 3)]
-let () = Gensubst.register_constr_subst wit_ocaml_in_term subst
+let () = Gensubst.register_constr_subst wit_ocaml_in_term Driver.Tactic.mod_subst
 [%%else]
-let () = Gensubst.register_subst0 wit_ocaml_in_term subst
+let () = Gensubst.register_subst0 wit_ocaml_in_term Driver.Tactic.mod_subst
 [%%endif]
 
 (** {2 Notation substitution} *)
 
-let subst_notation _ map (snippet, env) =
-  snippet, Runtime.Environment.map_unresolved map env
+let subst_notation _ map glob = Driver.Tactic.subst_notation_vars map glob
 
 [%%if rocq >= (9, 1)]
 let () = Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
 [%%else]
 let () =
-  let subst_notation vars map (snippet, env) =
+  let subst_notation vars map glob =
     let map = fun x -> Id.Map.find_opt x map in
-    subst_notation vars map (snippet, env)
+    subst_notation vars map glob
   in
   Genintern.register_ntn_subst0 wit_ocaml_in_term subst_notation
 [%%endif]
@@ -110,19 +99,14 @@ let refine_by_tactic = Proof.refine_by_tactic
 [%%endif]
 
 let () =
-  let interp ?loc:_ ~poly genv sigma tycon ({ source_code; compilation_output }, env) =
-    (* Run the code *)
-    let () = Driver.interp compilation_output in
-    (* Interpret the result as a tactic *)
-    let tac: unit Proofview.tactic = Runtime.Output.get_tactic () in
+  let interp ?loc:_ ~poly genv sigma tycon tactic =
+    let tac: unit Proofview.tactic = Driver.Tactic.interp tactic in
     let name = Names.Id.of_string "camltac" in
     let sigma, concl = match tycon with
       | Some ty -> sigma, ty
-      | None -> GlobEnv.new_type_evar genv sigma ~src:(Some (Snippet.loc source_code), Evar_kinds.InternalHole)
+      | None    -> GlobEnv.new_type_evar genv sigma ~src:(None, Evar_kinds.InternalHole)
     in
-    let () = Runtime.Environment.set_env env in
     let c, sigma = refine_by_tactic ~name ~poly (GlobEnv.renamed_env genv) sigma concl tac in
-    let () = Runtime.Environment.unset_env () in
     let j = { Environ.uj_val = c; Environ.uj_type = concl } in
     (j, sigma)
   in
@@ -132,25 +116,14 @@ let () =
 
 open Genprint
 
-let ocaml_printer { source_code; _ } =
-  PrinterBasic begin fun _env _evd ->
-    Pp.str (Snippet.contents source_code)
-  end
+let raw_printer raw =
+  PrinterBasic (fun env sigma -> Driver.Tactic.print_raw env sigma raw)
 
-let glob_ocaml_printer ({ source_code; _ }, env) =
-  let open Pp in
-  PrinterBasic begin fun _env _evd ->
-    let vars = Runtime.Environment.variables env in
-    let vars = Id.Set.fold List.cons vars [] in
-    match vars with
-    | [] -> str (Snippet.contents source_code)
-    | _ ->
-       (* TODO: This representation is not valid syntax *)
-       pr_sequence Id.print vars ++ str " |-" ++ str (Snippet.contents source_code)
-  end
+let glob_printer glob =
+  PrinterBasic (fun env sigma -> Driver.Tactic.print_glob env sigma glob)
 
 [%%if rocq <= (9, 2)]
-let () = Genprint.register_noval_print0 wit_ocaml_in_term ocaml_printer glob_ocaml_printer
+let () = Genprint.register_noval_print0 wit_ocaml_in_term raw_printer glob_printer
 [%%else]
-let () = Genprint.register_constr_print wit_ocaml_in_term ocaml_printer glob_ocaml_printer
+let () = Genprint.register_constr_print wit_ocaml_in_term raw_printer glob_printer
 [%%endif]

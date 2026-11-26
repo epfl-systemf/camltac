@@ -11,9 +11,6 @@ module Command = struct
     | Eval
     | Check_expression
     | Check_module
-    | Tactic_in_term
-    | Tactic_in_Ltac
-    | Tactic_in_Ltac2
 
   and module_info =
     { name: string option;
@@ -21,10 +18,8 @@ module Command = struct
     }
 
   let compilation_mode = function
-    | Module _ | Eval | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-       Compiler.Shared_library { linkall = true }
-    | Check_expression | Check_module ->
-       Compiler.Infer_interface
+    | Module _ | Eval                 -> Compiler.Shared_library { linkall = true }
+    | Check_expression | Check_module -> Compiler.Infer_interface
 end
 
 open Command
@@ -79,13 +74,6 @@ module Commands (P: Pipeline.PARAMS) = struct
     |> create_build_file
     |> compile (Compiler.Shared_library { linkall = true }) ~source:snippet
 
-  let embed_tactic snippet =
-    scaffold Scaffold.Unit_tactic snippet
-    |> create_source_file
-    |> create_merlin_file
-    |> create_build_file
-    |> compile (Compiler.Shared_library { linkall = true }) ~source:snippet
-
   let check_expression snippet =
     scaffold Scaffold.Expression snippet
     |> create_source_file
@@ -104,8 +92,6 @@ module Commands (P: Pipeline.PARAMS) = struct
     | Eval                      -> eval snippet
     | Check_expression          -> check_expression snippet
     | Check_module              -> check_module snippet
-    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-       embed_tactic snippet
 end
 
 let current_params ?(directives = Directives.empty) snippet =
@@ -128,11 +114,6 @@ let synterp ?(directives = Directives.empty) cmd snippet =
 module Interp = struct
   open Pipeline
 
-  let load out =
-    let dependencies = Compiler.Artifact.dependencies out in
-    let file = Compiler.Artifact.file out in
-    Loader.load_file ~dependencies `Private file
-
   let eval ?proof out =
     load_tactic out
     |> run_tactic ?proof
@@ -147,7 +128,71 @@ module Interp = struct
     | Module { name; locality }       -> load_module ~locality ~name out
     | Eval                            -> eval ?proof out
     | Check_expression | Check_module -> check out
-    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 -> load out
 end
 
 let interp = Interp.run
+
+(** {1 Embedded tactics} *)
+
+module Tactic = struct
+
+  type raw =
+    { source: Snippet.t;
+      artifact: Compiler.Artifact.t
+    }
+
+  type glob =
+    { source: Snippet.t;
+      env: Runtime.Environment.t;
+      artifact: Logical_artifact.t
+    }
+
+  (** {2 Embedding} *)
+
+  let embed (source: Snippet.t) =
+    let module P = (val current_params source) in
+    let open Pipeline.Make(P) in
+    let artifact =
+      scaffold Scaffold.Unit_tactic source
+      |> create_source_file
+      |> create_merlin_file
+      |> create_build_file
+      |> compile (Compiler.Shared_library { linkall = true }) ~source
+    in
+    { source; artifact }
+
+  (** {2 Globalization} *)
+
+  let globalize glob_sign ({ source; artifact }: raw) =
+    let env = Runtime.Environment.capture glob_sign in
+    let artifact = Logical_artifact.of_physical artifact in
+    { source; env; artifact }
+
+  (** {2 Module substitution} *)
+
+  let mod_subst s glob =
+    let f = Detyping.subst_glob_constr (Global.env ()) s in
+    let env = Runtime.Environment.map f glob.env in
+    { glob with env }
+
+  let subst_notation_vars f glob =
+    let env = Runtime.Environment.map_unresolved f glob.env in
+    { glob with env }
+
+  (** {2 Interpretation} *)
+
+  let interp { source; env; artifact } =
+    let artifact = Logical_artifact.to_physical artifact in
+    Runtime.Environment.set_env env;
+    Fun.protect
+      (fun () -> Pipeline.load_tactic artifact)
+      ~finally:Runtime.Environment.unset_env
+
+  (** {2 Printers} *)
+
+  let print_raw _env _evd ({ source; _ }: raw) =
+    Pp.str (Snippet.contents source)
+
+  let print_glob _env _evd ({ source; _ }: glob) =
+    Pp.str (Snippet.contents source)
+end

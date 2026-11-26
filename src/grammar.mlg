@@ -59,6 +59,7 @@ GRAMMAR EXTEND Gram
 GLOBAL:
   ocaml_code term tactic_value ltac2_atom;
 
+  (** {1 OCaml quotations} *)
   ocaml_code:
     [ [ q = QUOTATION "ocaml:" ->
         { let loc, contents = get_quotation_contents ~loc ~prefix:"ocaml:" q in
@@ -66,17 +67,17 @@ GLOBAL:
 	  Snippet.make ~loc ~file contents } ] ]
   ;
 
-  (* OCaml-in-term *)
+  (** {2 OCaml tactics-in-term} *)
   term: LEVEL "0"
     [ [ c = ocaml_code -> { Tactic_in_term.from_ocaml c } ] ]
   ;
 
-  (* OCaml-in-Ltac *)
+  (** {2 OCaml tactics-in-Ltac} *)
   tactic_value: FIRST
     [ [ c = ocaml_code -> { Tactic_in_Ltac.from_ocaml c } ] ]
   ;
 
-  (* OCaml-in-Ltac2 *)
+  (** {2 OCaml tactics-in-Ltac2} *)
   ltac2_atom: FIRST
     [ [ c = ocaml_code -> { Tactic_in_Ltac2.from_ocaml c } ] ]
   ;

@@ -37,15 +37,6 @@ module Command : sig
     (** Type-checking OCaml modules:
         [Camltac Check M]. *)
 
-    | Tactic_in_term
-    (** Tactic-in-term modality: [Definition x := ocaml:(…)]. *)
-
-    | Tactic_in_Ltac
-    (** Tactic-in-Ltac modality: [Ltac f := ocaml:(…)]. *)
-
-    | Tactic_in_Ltac2
-    (** Tactic-in-Ltac2 modality: [Ltac2 f () := ocaml:(…)]. *)
-
   and module_info =
     { name: string option;
       (** Name of the module, or [None] for [Camltac Run]. *)
@@ -89,3 +80,66 @@ val interp : ?proof:Declare.Proof.t -> synterp_result -> unit
     - The compiled file is loaded using {!Loader.load_file} or
       {!Module_loader.load_module}.
     - The environment is cleaned up. *)
+
+(** {1 Embedded tactics}
+
+    OCaml tactics can be embedded in terms, Ltac, or Ltac2 expressions,
+    where they are executed differently from commands. The general process
+    goes through 3 distinct phases:
+
+    - {e Embedding}: the act of inserting an OCaml snippet inside a host
+      term or Ltac/Ltac2 expression;
+
+    - {e Globalization}: the transformation from a raw, embedded snippet
+      into a globalized intermediate representation that is
+      location-independent and is persisted to disk.
+
+    - {e Interpretation}: the act of producing a term or Ltac/Ltac2
+      expression from a globalized snippet.
+
+    Implementation note: the technical term for embedded values is
+    "generic argument".
+ *)
+
+module Tactic : sig
+
+  type raw
+  (** "Raw" type of embedded OCaml tactics in an AST. *)
+
+  type glob
+  (** "Globalized" type of embedded OCaml tactics.
+      This type is marshallable and can be persisted to [.vo] files. *)
+
+  val embed : Snippet.t -> raw
+  (** [embed snippet] embeds an OCaml tactic snippet into a host AST.
+      This is the moral equivalent of {!synterp} for tactics. *)
+
+  (** {2 Globalization} *)
+
+  val globalize : Genintern.glob_sign -> raw -> glob
+  (** [globalize glob_sign raw] globalizes the embedded OCaml tactic. *)
+
+  (** {2 Substitutions} *)
+
+  val mod_subst : Mod_subst.substitution -> glob -> glob
+  (** [mod_subst s glob] performs the module substitution [s] in [glob]. *)
+
+  val subst_notation_vars : (Names.variable -> Glob_term.glob_constr option) -> glob -> glob
+  (** [subst_notation_vars f glob] map notations variables to their value in [glob]. *)
+
+  (** {2 Interpretation} *)
+
+  val interp : glob -> unit Proofview.tactic
+  (** [interp glob] loads the OCaml snippet, and returns the obtained
+      tactic value. *)
+
+  (** {2 Printers} *)
+
+  val print_raw : Environ.env -> Evd.evar_map -> raw -> Pp.t
+  (** [print_raw env evd raw] prints the raw embedded OCaml tactic
+      snippet. *)
+
+  val print_glob : Environ.env -> Evd.evar_map -> glob -> Pp.t
+  (** [print_glob env evd glob] prints the globalized OCaml tactic
+      snippet. *)
+end
