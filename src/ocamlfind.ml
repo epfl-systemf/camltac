@@ -1,27 +1,5 @@
 (** Methods wrapping the [ocamlfind] executable. *)
 
-(** {1 Library management} *)
-
-(** For this part, we use the [Findlib] API instead of the executable,
-    because the API directly returns structured output. This might
-    hypothetically lead to incoherencies however. *)
-
-let () = Findlib.init ()
-
-let list_packages ?prefix () =
-  Findlib.list_packages' ?prefix ()
-
-let packages = lazy (list_packages ())
-
-let package_exists name =
-  let packages = Lazy.force packages in
-  if List.mem name packages then
-    Ok ()
-  else
-    (* TODO: Add suggestion using spellcheck (OCaml 5.4). *)
-    let suggestion = None in
-    Error suggestion
-
 (** {1 Compilation} *)
 
 (** {2 Arguments} *)
