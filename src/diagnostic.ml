@@ -2,32 +2,22 @@
 
 (** {1 Diagnostic} *)
 
-type severity =
-  | Alert of string
-  | Warning of int
-  | Error
-  | Unknown
-
 type t =
-  { loc      : Loc.t option;
+  { loc      : location option;
     severity : severity;
     message  : Pp.t;
   }
 
-
-(** {2 Compiler locations} *)
-
-(** Locations as printed by the OCaml compiler. Lines are 1-based, characters
-    are 0-based offsets within their line. *)
-type location =
+and location =
   | File of string
-  (** [File "file.ml":] *)
-
   | Line of { file : string; line : int }
-  (** [File "file.ml", line l:] *)
-
   | Range of { file : string; lines : int * int; chars : int * int }
-  (** [File "file.ml", lines l1-l2, characters c1-c2:] *)
+
+and severity =
+  | Alert of string
+  | Warning of int
+  | Error
+  | Unknown
 
 (** {1 Parsing} *)
 
@@ -61,59 +51,6 @@ let parse_header =
 
 let is_header line =
   parse_header line <> None
-
-(** {2 Locations}
-
-    We convert compiler locations to Rocq {!Loc.t} by computing the position
-    of the characters, using the snippet's location as a basis. *)
-
-(** Position of the beginning of [line] in the Rocq file. *)
-let beginning_of_line ~line source =
-  let loc = Snippet.loc source in
-  let n = line - loc.line_nb in
-  if n = 0 then
-    loc.bol_pos
-  else
-    let rec find i n =
-      match String.index_from_opt (Snippet.contents source) i '\n' with
-      | None -> loc.ep
-      | Some j when n = 1 -> loc.bp + j + 1
-      | Some j -> find (j + 1) (n - 1)
-    in
-    find 0 n
-
-(** Position of the end of the line starting at [bol]. *)
-let end_of_line ~bol source =
-  let loc = Snippet.loc source in
-  (* Note: [bol < loc.bp] for the first line. *)
-  let from = (max bol loc.bp) - loc.bp in
-  match String.index_from_opt (Snippet.contents source) from '\n' with
-  | Some i -> loc.bp + i
-  | None -> loc.ep
-
-let clamp x ~low ~high = max low (min high x)
-
-let range_loc ~lines:(line_nb, line_nb_last) ~chars:(char1, char2) source =
-  let bol_pos = beginning_of_line ~line:line_nb source in
-  let bol_pos_last = beginning_of_line ~line:line_nb_last source in
-  let bp =
-    clamp (bol_pos + char1)
-      ~low:bol_pos
-      ~high:(end_of_line ~bol:bol_pos source)
-  in
-  let ep =
-    clamp (bol_pos_last + char2)
-      ~low:bol_pos_last
-      ~high:(end_of_line ~bol:bol_pos_last source)
-  in
-  { (Snippet.loc source) with line_nb; line_nb_last; bol_pos; bol_pos_last; bp; ep }
-
-let to_loc ~source = function
-  | File file -> Snippet.loc source
-  | Line { file; line } ->
-     range_loc ~lines:(line, line + 1) ~chars:(0, max_int) source
-  | Range { file; lines = (line1, line2); chars = (char1, char2) } ->
-     range_loc ~lines:(line1, line2) ~chars:(char1, char2) source
 
 (** {2 Severity}
 
@@ -151,22 +88,21 @@ let rec parse_message ~indent = function
 
 (** {2 Main method} *)
 
-let rec parse_lines ~source = function
+let rec parse_lines = function
   | [] -> []
   | header :: rest ->
      match parse_header header with
-     | Some location ->
-        let loc = Some (to_loc ~source location) in
+     | Some loc ->
         let severity, indent = parse_severity rest in
         let message, rest = parse_message ~indent rest in
-        { loc; severity; message } :: parse_lines ~source rest
+        { loc = Some loc; severity; message } :: parse_lines rest
      | None ->
         (* Standalone message. *)
         let message, rest = parse_message ~indent:0 (header :: rest) in
-        { loc = None; severity = Unknown; message } :: parse_lines ~source rest
+        { loc = None; severity = Unknown; message } :: parse_lines rest
 
-let parse ~source stderr =
+let parse stderr =
   In_channel.input_all stderr
   |> String.split_on_char '\n'
   |> List.filter_map (fun line -> if String.trim line = "" then None else Some line)
-  |> parse_lines ~source
+  |> parse_lines

@@ -53,8 +53,9 @@ let build_custom ~ppxs =
   match Cache.find_opt cache ppxs with
   | Some driver -> Ok driver
   | None ->
-     Custom_driver.build ~ppxs
-     |> Result.map (fun (driver, _) -> Cache.add cache ppxs driver; driver)
+     let result, diagnostics = Custom_driver.build ~ppxs in
+     ignore diagnostics; (* The driver is synthetic: we can't report them correctly. *)
+     Result.map (fun driver -> Cache.add cache ppxs driver; driver) result
 
 (** {2 Preprocessing heuristic}
 
