@@ -10,9 +10,19 @@
 type t
 (** Type of build files.
 
-    This type is marshallable, and build files with a [Logical] layout root can
-    be safely written to [.vo] files (they support relocation).
+    Build files are physical, so they must not be written to [.vo] files
+    directly. Use {!Logical_path} for that purpose.
  *)
+
+val unsafe_of_path : root:CUnix.physical_path -> CUnix.physical_path -> t
+(** [unsafe_of_path ~root path] creates a build file from a [root] and
+    a [path] relative to [root]. The file is not checked for existence. *)
+
+val root : t -> CUnix.physical_path
+(** [root file] returns the root of the layout of [file]. *)
+
+val relative_path : t -> CUnix.physical_path
+(** [relative_path file] returns the path of [file] relative to its root. *)
 
 val layout : t -> Layout.t
 (** [layout file] returns the layout which includes the build file. *)

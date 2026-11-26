@@ -1,47 +1,6 @@
 (** Layout of build directories. *)
 
-open Names
-
 let (/) = Filename.concat
-
-(** {1 Layout root} *)
-
-module Root = struct
-  type t =
-  | Logical of DirPath.t
-  | Physical of CUnix.physical_path
-
-  let root_path = function
-    | Physical physical -> physical
-    | Logical logical ->
-       match Loadpath.find_with_logical_path logical with
-       | [] -> CErrors.user_err (Pp.(str "No LoadPath found for " ++ DirPath.print logical ++ str "."))
-       | loadpath :: _ ->
-          (* TODO: Warn on ambiguous load paths? *)
-          Loadpath.physical loadpath
-
-  let current () =
-    let library_path = Libnames.pop_dirpath (Lib.library_dp ()) in
-    let is_toplevel = DirPath.is_empty library_path in
-    if is_toplevel then
-      Physical (Sys.getcwd ())
-    else
-      Logical library_path
-end
-
-let resolve root file =
-  match root with
-  | Root.Physical physical ->
-     let path = physical / file in
-     if Sys.file_exists path then
-       path
-     else
-       CErrors.user_err (Pp.(str "File " ++ str file ++ str " not found in " ++ str physical))
-  | Logical logical ->
-     Loadpath.find_extra_dep_with_logical_path ~from:logical ~file ()
-
-let path root file =
-  Root.root_path root / file
 
 (** {1 Layouts} *)
 
@@ -53,9 +12,10 @@ type t =
     ppx      : CUnix.physical_path
   }
 
+let camltac_dir = ".camltac"
+
 let of_root root =
-  let root = Root.root_path root in
-  let build = root / ".camltac" in
+  let build = root / camltac_dir in
   { root;
     build;
     snippets = build / "snippets";
@@ -73,7 +33,21 @@ let ensure_exists layout =
   mkdir layout.modules;
   mkdir layout.ppx
 
+(** {2 Current layout} *)
+
+let current_root () =
+  let library_path = Libnames.pop_dirpath (Lib.library_dp ()) in
+  let is_toplevel = Names.DirPath.is_empty library_path in
+  if is_toplevel then
+    Sys.getcwd ()
+  else
+    match Loadpath.find_with_logical_path library_path with
+    | [] -> CErrors.user_err (Pp.(str "No LoadPath found for " ++ Names.DirPath.print library_path ++ str "."))
+    | loadpath :: _ ->
+       (* TODO: Warn on ambiguous load paths? *)
+       Loadpath.physical loadpath
+
 let current () =
-  let layout = of_root (Root.current ()) in
+  let layout = of_root (current_root ()) in
   ensure_exists layout;
   layout

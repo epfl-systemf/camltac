@@ -1,39 +1,5 @@
 (** Build directories layout. *)
 
-open Names
-
-(** {1 Layout root} *)
-
-(** The root of the layout describes how build directories
-    and artifacts are resolved. *)
-module Root : sig
-  type t =
-    | Logical of DirPath.t
-    (** Build artifacts are resolved relative to the logical path.
-
-        Used by [rocq c]. This mode supports relocation of build
-        artifacts. *)
-
-    | Physical of CUnix.physical_path
-    (** Build artifacts are stored at the given physical location.
-
-        Used by [rocq top] and IDEs. *)
-
-  val current : unit -> t
-  (** [current ()] returns the root of the current layout. *)
-
-end
-
-val resolve : Root.t -> CUnix.physical_path -> CUnix.physical_path
-(** [resolve root file] resolves the given physical path against the
-    root, checking for file existence.
-
-    @raise UserErr if [file] does not resolve to a file. *)
-
-val path : Root.t -> CUnix.physical_path -> CUnix.physical_path
-(** [path root file] resolves the [file] against the root and
-    returns the obtained full path. *)
-
 (** {1 Physical layouts} *)
 
 (** Layout for build directories. *)
@@ -45,8 +11,14 @@ type t = private
    ppx      : CUnix.physical_path; (** Path where PPX drivers are stored. *)
  }
 
-val of_root : Root.t -> t
+val camltac_dir : string
+(** Name of the directory that contains the build artifacts, relative to
+    the layout's root. *)
+
+val of_root : CUnix.physical_path -> t
 (** [of_root root] returns the layout from the given [root]. *)
 
 val current : unit -> t
-(** [current ()] returns the layout for the currently compiling Rocq file. *)
+(** [current ()] returns the layout for the currently compiling Rocq file. The
+    layout is rooted at the physical location of the file's logical
+    directory, or at the current directory for top-level files. *)

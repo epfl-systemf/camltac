@@ -3,13 +3,26 @@
 (** {1 Build files} *)
 
 type t =
-  { root: Layout.Root.t;      (** Root of the layout. *)
-    path: CUnix.physical_path (** Path relative to [root]. *)
+  { root: CUnix.physical_path; (** Root of the layout. *)
+    path: CUnix.physical_path  (** Path relative to [root]. *)
   }
 
+let (/) = Filename.concat
+
+let unsafe_of_path ~root path = { root; path }
+
+let root file = file.root
+let relative_path file = file.path
+
 let layout file = Layout.of_root file.root
-let locate file = Layout.resolve file.root file.path
-let path file = Layout.path file.root file.path
+let path file = file.root / file.path
+
+let locate file =
+  let path = path file in
+  if Sys.file_exists path then
+    path
+  else
+    CErrors.user_err (Pp.(str "File " ++ str file.path ++ str " not found in " ++ str file.root))
 
 let with_extension file ext =
   { file with path = Filename.remove_extension file.path ^ ext }
@@ -43,5 +56,5 @@ let write ~kind contents =
   let dir = kind_dir ~layout kind in
   let prefix = kind_prefix kind in
   let file = write_temp ~dir ~prefix contents in
-  { root = Layout.Root.current ();
+  { root = layout.root;
     path = Filesystem.Path.relativize_if_under ~dir:layout.root file }

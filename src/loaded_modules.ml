@@ -63,11 +63,11 @@ let replay_module ~env ~name (out: Compiler.compiled) =
 
 open Libobject
 
-let module_replay_object =
+let module_replay_object : Libobject.locality * (Runtime.Environment.t * string option * Logical_artifact.t) -> Libobject.obj =
   declare_object
     { (object_with_locality
          ~stage:Summary.Stage.Interp
-         ~cache:(fun (env, name, out) -> ignore (replay_module ~env ~name out))
+         ~cache:(fun (env, name, out) -> ignore (replay_module ~env ~name (Logical_artifact.to_physical out)))
          ~subst:None
          ~discharge:Fun.id
          "camltac:replay_module")
@@ -82,4 +82,4 @@ let load_module ~locality ~name out =
   (* Record replay object for Require/Import. *)
   match locality with
   | Local -> ()
-  | _ -> Lib.add_leaf (module_replay_object (locality, (env, name, out)))
+  | _ -> Lib.add_leaf (module_replay_object (locality, (env, name, Logical_artifact.of_physical out)))
