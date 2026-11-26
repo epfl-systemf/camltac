@@ -60,127 +60,92 @@ let compilation_args ~workspace ~file ~directives ~state snippet =
   |> Directives.extend_args directives
   |> Compilation_args.add_pp (pp_flag ~workspace ~file ~ppxs:directives.Directives.ppx snippet)
 
-(** {3 Compilation} *)
+module Commands (P: Pipeline.PARAMS) = struct
+  open Pipeline.Make(P)
 
-(** Records the compilation of a module in [Libobject]. *)
-let record_out cmd out =
-  let () =
+  let compile_module ~locality ~name snippet =
+    scaffold (Scaffold.Module { name }) snippet
+    |> create_source_file
+    |> create_merlin_file
+    |> create_build_file
+    |> compile (Compiler.Shared_library { linkall = true }) ~source:snippet
+    |> declare_module ~locality ~name
+
+  let eval snippet =
+    let typ = infer_tactic_type snippet in
+    scaffold (Scaffold.Value_tactic { typ }) snippet
+    |> create_source_file
+    |> create_merlin_file
+    |> create_build_file
+    |> compile (Compiler.Shared_library { linkall = true }) ~source:snippet
+
+  let embed_tactic snippet =
+    scaffold Scaffold.Unit_tactic snippet
+    |> create_source_file
+    |> create_merlin_file
+    |> create_build_file
+    |> compile (Compiler.Shared_library { linkall = true }) ~source:snippet
+
+  let check_expression snippet =
+    scaffold Scaffold.Expression snippet
+    |> create_source_file
+    |> create_merlin_file
+    |> create_build_file
+    |> infer_interface ~source:snippet
+
+  let check_module snippet =
+    scaffold (Scaffold.Module { name = None }) snippet
+    |> generate_file ~dir:".check" ~name:P.file
+    |> infer_interface ~source:snippet
+
+  let run ~directives cmd snippet =
     match cmd with
-    | Module { name; locality } -> Synterp.declare ~locality ~name out
-    | _ -> ()
-  in out
+    | Module { name; locality } -> compile_module ~locality ~name snippet
+    | Eval                      -> eval snippet
+    | Check_expression          -> check_expression snippet
+    | Check_module              -> check_module snippet
+    | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
+       embed_tactic snippet
+end
 
-(** Compiles a build file, reporting diagnostics. *)
-let compile ~args ~source mode build_file =
-  let result, diagnostics = Compiler.compile ~args mode build_file in
-  Error_reporter.report_all ~source diagnostics;
-  match result with
-  | Ok artifact -> artifact
-  | Error code ->
-     (* Compilation errors are reported by [Error_reporter], so this case
-        covers other types of errors. *)
-     CErrors.user_err ~loc:(Snippet.loc source)
-       Pp.(str "Compilation failed with exit code " ++ int code ++ str ".")
+let current_params ?(directives = Directives.empty) snippet =
+  (module struct
+      let state        = Synterp.current ()
+      let workspace    = Workspace.at (Current_library.cwd ())
+      let file         = Current_library.top_module_name ()
+      let aliases      = CString.Map.bindings (Synterp.module_name_map state)
+      let args         = compilation_args ~workspace ~file ~directives ~state snippet
+      let loaded_units = Loader.loaded_units ()
+  end : Pipeline.PARAMS)
 
-(** Writes the scaffolded snippet to a source file, then copies it to the build
-    directory. Module checks are not meant to be inspected, hence the source is
-    only generated in the build directory. *)
-let create_build_file ~workspace ~file ~loaded_units ~args cmd contents =
-  match cmd with
-  | Check_module -> Build_file.generate ~workspace ~dir:".check" ~name:file contents
-  | _ ->
-     let source_file = Source_file.create ~workspace ~file contents in
-     Editor_support.create_merlin_file ~workspace ~args source_file;
-     Build_file.copy_source ~workspace ~loaded_units source_file
-
-let rec scaffold_mode snippet = function
-  | Check_expression -> Expression
-  | Eval ->
-     (* Infer the type of the tactic to scaffold correctly. *)
-     let _, out = synterp Check_expression snippet in
-     begin match Interface.tactic_type (Interface.read (Compiler.Artifact.file out)) with
-     | Some typ -> Value_tactic { typ }
-     | None -> CErrors.user_err ~loc:(Snippet.loc snippet) (Pp.str "Argument to Eval is not a tactic.")
-     end
-  | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 ->
-     Unit_tactic
-  | Module { name; _ } ->
-     Scaffold.Module { name }
-  | Check_module ->
-     Scaffold.Module { name = None }
-
-and synterp ?(directives = Directives.empty) cmd snippet =
-  let scaffold_mode = scaffold_mode snippet cmd in
-  let workspace = Workspace.at (Current_library.cwd ()) in
-  let file = Current_library.top_module_name () in
-  let loaded_units = Loader.loaded_units () in
-  let state = Synterp.current () in
-  let aliases = CString.Map.bindings (Synterp.module_name_map state) in
-  let args = compilation_args ~workspace ~file ~directives ~state snippet in
-  Scaffold.make scaffold_mode ~aliases snippet
-  |> create_build_file ~workspace ~file ~loaded_units ~args cmd
-  |> compile ~args ~source:snippet (Command.compilation_mode cmd)
-  |> record_out cmd
-  |> fun out -> cmd, out
+let synterp ?(directives = Directives.empty) cmd snippet =
+  let module P = (val current_params ~directives snippet) in
+  let module S = Commands(P) in
+  cmd, S.run ~directives cmd snippet
 
 (** {2 Interpretation} *)
 
 module Interp = struct
-
-  (** {3 [Check]} *)
-
-  let check out =
-    Interface.read (Compiler.Artifact.file out)
-    |> Interface.pp
-    |> Feedback.msg_info
-
-  (** {3 [Module]} *)
-
-  let check_module_shadowing state = function
-    | Some name ->
-       if Interp.is_loaded name state then
-         Feedback.msg_warning (Pp.(str "Module " ++ str name ++ str " shadows a previously-defined module."))
-    | None -> ()
-
-  let load_module ~name ~locality out =
-    check_module_shadowing (Interp.current ()) name;
-    Interp.load_module ~locality ~name out
-
-  (** {3 [Eval]} *)
+  open Pipeline
 
   let load out =
-    Loader.load_file ~dependencies:(Compiler.Artifact.dependencies out) `Private (Compiler.Artifact.file out)
-
-[%%if rocq >= (9, 2)]
-  let poly_default = PolyFlags.default
-[%%else]
-  let poly_default = false
-[%%endif]
-
-  let run_tactic ?proof tactic =
-    let env = Global.env () in
-    let proof =
-      match proof with
-      | None ->
-         let sigma = Evd.from_env env in
-         let name = Id.of_string "camltac" in
-         Proof.start ~name ~poly:poly_default sigma []
-      | Some proof ->
-         Declare.Proof.get proof
-    in
-    let (_, _, result) = Proof.run_tactic env tactic proof in
-    result
+    let dependencies = Compiler.Artifact.dependencies out in
+    let file = Compiler.Artifact.file out in
+    Loader.load_file ~dependencies `Private file
 
   let eval ?proof out =
-    load out;
-    let tactic : Pp.t Proofview.tactic = Runtime.Output.get_tactic () in
-    let result = run_tactic ?proof tactic in
-    Feedback.msg_info result
+    load_tactic out
+    |> run_tactic ?proof
+    |> Feedback.msg_info
+
+  let check out =
+    parse_interface out
+    |> print_interface
 
   let run ?proof (cmd, out) =
     match cmd with
-    | Module { name; locality } -> load_module ~name ~locality out
-    | Eval -> eval ?proof out
+    | Module { name; locality }       -> load_module ~locality ~name out
+    | Eval                            -> eval ?proof out
     | Check_expression | Check_module -> check out
     | Tactic_in_term | Tactic_in_Ltac | Tactic_in_Ltac2 -> load out
 end
