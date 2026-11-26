@@ -30,7 +30,7 @@ val with_extension : t -> string -> t
     [file] but with extension [ext] instead. *)
 
 val module_name : t -> string
-(** [module_name file] is equivalent to [File.module_name (locate file)] but
+(** [module_name file] is equivalent to [Filesystem.module_name (locate file)] but
     more efficient. *)
 
 (** {1 Read/write} *)

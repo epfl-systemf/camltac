@@ -65,7 +65,7 @@ let compilation_args
       | Executable _    , _     -> []
       | Compile_only    , _     -> ["-c"]
       | Infer_interface , _     -> ["-i"])
-    @ ["-impl"; File.relativize_if_under (Build_file.locate impl)]
+    @ ["-impl"; Filesystem.relativize_if_under (Build_file.locate impl)]
     @ (if mode <> Infer_interface then ["-o"; Build_file.path out] else [])
     @ (match optimize, native with
       | Some `O2, true -> ["-O2"]

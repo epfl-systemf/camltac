@@ -124,9 +124,9 @@ VERNAC COMMAND EXTEND CamltacModule CLASSIFIED AS SIDEFF
   SYNTERP AS synterp_result
      { let file, loc = file in
        (* [Camltac Load "M.ml"] ≅ [Camltac Module M := ocaml:(<contents of M.ml>)] *)
-       let contents = File.read_or_error ~loc file in
+       let contents = Filesystem.read_or_error ~loc file in
        let snippet = Snippet.of_file ~file contents in
-       let name = File.module_name file in
+       let name = Filesystem.module_name file in
        let cmd = Command.Module { name = Some (name, loc); locality } in
        cmd, Command.synterp ~directives cmd snippet }
   -> { let cmd, synterp_result = synterp_result in
@@ -150,7 +150,7 @@ VERNAC COMMAND EXTEND CamltacCheck CLASSIFIED AS QUERY
 | [ "Camltac" "Check" ocaml_file(file) ]
   SYNTERP AS synterp_result
      { let file, loc = file in
-       let contents = File.read_or_error ~loc file in
+       let contents = Filesystem.read_or_error ~loc file in
        let snippet = Snippet.of_file ~file contents in
        Command.synterp Command.Check_module snippet }
   -> { Command.interp Command.Check_module synterp_result }
