@@ -29,4 +29,4 @@ val add_pp : string option -> t -> t
 (** [add_pp pp] sets the [-pp] option of [args] to [pp]. *)
 
 val add_extras : string list -> t -> t
-(** [add_extras extras] adds [extras] to [args.extras]. *)
+(** [add_extras extras args] appends [extras] to [args.extras]. *)

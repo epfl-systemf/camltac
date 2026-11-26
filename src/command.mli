@@ -54,7 +54,7 @@ and module_info =
 type synterp_result = Compiler.Artifact.t
 (** Type of synterp result. *)
 
-val synterp : ?directives:Build_directives.t -> t -> Snippet.t -> synterp_result
+val synterp : ?directives:Directives.t -> t -> Snippet.t -> synterp_result
 (** [synterp ?directives cmd snippet] performs the syntactic interpretation phase of [cmd]
     on [snippet]:
 

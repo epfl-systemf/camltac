@@ -68,7 +68,7 @@ let record_out recorded out =
 (** Compilation arguments for [snippet]: the current compilation context,
     extended with the build directives and the preprocessor. *)
 let compilation_args ~workspace ~file ~directives snippet =
-  let ppxs = directives.Build_directives.ppx in
+  let ppxs = directives.Directives.ppx in
   let pp =
     match Preprocessing.select_driver ~workspace ~file ~ppxs ~source:(Snippet.contents snippet) with
     | Ok driver -> Preprocessing.pp_flag driver
@@ -76,12 +76,9 @@ let compilation_args ~workspace ~file ~directives snippet =
        CErrors.user_err ~loc:(Snippet.loc snippet)
          Pp.(str "Compilation of PPX driver failed with exit code " ++ int err)
   in
-  let open Compilation_args in
   Compile_context.current ()
-  |> add_packages directives.libraries
-  |> add_packages (List.concat_map Ocaml_packages.ppx_runtime_deps ppxs)
-  |> add_extras directives.compiler_options
-  |> add_pp pp
+  |> Directives.extend_args directives
+  |> Compilation_args.add_pp pp
 
 (** Compiles a build file, reporting diagnostics. *)
 let compile ~workspace ~file ~directives ~source mode build_file =
@@ -122,7 +119,7 @@ let rec scaffold_mode snippet = function
   | Module { name = None; _ } | Check_module ->
      Module { name = None }
 
-and synterp ?(directives = Build_directives.empty) cmd snippet =
+and synterp ?(directives = Directives.empty) cmd snippet =
   let build = build_of_cmd cmd in
   let scaffold_mode = scaffold_mode snippet cmd in
   let workspace = Workspace.at (Current_library.cwd ()) in
