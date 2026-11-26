@@ -41,11 +41,11 @@ let compile ~args ~(directives: Build_directives.t) ~source mode (impl: Build_fi
   let (let*) = Result.bind in
   let ppxs = directives.ppx in
   let* pp =
-    match Preprocessing.prepare ~ppxs ~source:(Snippet.contents source) with
-    | Ok pp -> Ok (Preprocessing.pp_flag pp)
+    match Preprocessing.select_driver ~ppxs ~source:(Snippet.contents source) with
+    | Ok driver -> Ok (Preprocessing.pp_flag driver)
     | Error err -> Error (Preprocessors (impl, err))
   in
-  let ppx_runtime_deps = Preprocessing.runtime_deps ~ppxs in
+  let ppx_runtime_deps = List.concat_map Ocaml_packages.ppx_runtime_deps ppxs in
   let packages = ppx_runtime_deps @ directives.libraries in
   let result, diagnostics =
     Ocamlfind.ocamlc

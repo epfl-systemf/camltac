@@ -1,66 +1,9 @@
 (** Preprocessing of snippets. *)
 
-(** {1 Preprocessing} *)
+(** {1 Preprocessing heuristic}
 
-type t =
-  | Skip                   (** No preprocessing is done. *)
-  | Ppx_rocq               (** Only [ppx_rocq] applies. *)
-  | Custom of Build_file.t (** Custom driver. *)
-
-(** {2 Custom drivers}
-
-    When more than one preprocessor is involved, we combine them in a single
-    executable called a {e custom driver}, so that the AST is traversed only once.
-
-    This follows what Dune calls the "fast pipeline" mode:
-    {:https://dune.readthedocs.io/en/stable/explanation/preprocessing.html}.
- *)
-
-module Custom_driver = struct
-  let contents =
-    {|let () = Ppxlib.Driver.standalone ()|}
-
-  let build ~ppxs =
-    let driver = Build_file.(write ~kind:Ppx_driver contents) in
-    (* We compile in bytecode mode since it links much faster than native. *)
-    Ocamlfind.ocamlc
-      ~native:false
-      ~packages:(["ppxlib"; "ppx_rocq"] @ ppxs)
-      ~extra_args:["-predicates"; "ppx_driver"]
-      Ocamlfind.(Executable { linkpkg = true; linkall = true })
-      driver
-end
-
-(** {2 Caching}
-
-    Since custom drivers only depend on the ppx list, we cache them so that
-    they're built only once per process. This is important for [Camltac Eval],
-    since it uses a custom driver that includes [ppx_rocq] and [ppx_deriving.show].
- *)
-
-module Ppx_list = struct
-  type t = string list
-  let equal = List.equal String.equal
-  let hash = Hashtbl.hash
-end
-
-module Cache = Hashtbl.Make(Ppx_list)
-
-let cache = Cache.create 4
-
-let build_custom ~ppxs =
-  let ppxs = List.sort_uniq String.compare ppxs in
-  match Cache.find_opt cache ppxs with
-  | Some driver -> Ok driver
-  | None ->
-     let result, diagnostics = Custom_driver.build ~ppxs in
-     ignore diagnostics; (* The driver is synthetic: we can't report them correctly. *)
-     Result.map (fun driver -> Cache.add cache ppxs driver; driver) result
-
-(** {2 Preprocessing heuristic}
-
-    Preprocessing can be skipped if the source file does not include either
-    the [%] character, or the {v [@ v} character sequence.
+    Preprocessing can be skipped if the source file does not include
+    either the [%] character, or the {v [@ v} character sequence.
  *)
 
 (* OCaml attributes are false positives introduced by the scaffold itself. *)
@@ -71,7 +14,7 @@ let is_ocaml_attribute s i =
   | s when String.equal s ocaml_attribute -> true
   | _ | exception Invalid_argument _ -> false
 
-let contains_ppx_markers ~source =
+let needs_ppx ~source =
   let n = String.length source in
   let rec loop i =
     if i >= n then false
@@ -87,35 +30,18 @@ let contains_ppx_markers ~source =
 
 (** {2 Preprocessing} *)
 
-let prepare ~ppxs ~source =
+let select_driver ~ppxs ~source =
   match ppxs with
-  | [] ->
-     if contains_ppx_markers ~source then Ok Ppx_rocq
-     else Ok Skip
-  | _ ->
-     build_custom ~ppxs
-     |> Result.map (fun driver -> Custom driver)
+  | [] when needs_ppx ~source -> Ok Ppx_driver.ppx_rocq
+  | []                        -> Ok Ppx_driver.empty
+  | _                         -> Ppx_driver.build_custom ~ppxs
 
 (** {1 Compiler options} *)
 
 let pp_flag_format : _ format =
   {|%s -as-pp --use-compiler-pp --cookie ppx_rocq.camltac_mode=true|}
 
-let pp_flag = function
-  | Skip     -> None
-  | Ppx_rocq ->
-     (* TODO: Point directly to ppx_rocq executable to avoid PATH. *)
-     Some (Format.sprintf pp_flag_format "ppx_rocq")
-  | Custom driver ->
-     let driver = Build_file.locate driver in
-     Some (Format.sprintf pp_flag_format (Filename.quote driver))
-
-(** {2 Runtime dependencies}
-
-    Runtime dependencies are libraries that PPX rewriters use to function
-    properly. They can be found by looking at the package's META file through
-    {!Findlib}.
- *)
-
-let runtime_deps ~ppxs =
-  List.concat_map Ocaml_packages.ppx_runtime_deps ppxs
+let pp_flag driver =
+  match Ppx_driver.resolve driver with
+  | Some path -> Some (Format.sprintf pp_flag_format path)
+  | None      -> None
