@@ -7,10 +7,15 @@ module Path = struct
 
   let (/) = Filename.concat
 
+  let remove_extensions basename =
+    match String.index_opt basename '.' with
+    | Some i -> String.sub basename 0 i
+    | None   -> basename
+
   let module_name filename =
     (* TODO: Support UTF-8 capitalization. *)
     Filename.basename filename
-    |> Filename.remove_extension
+    |> remove_extensions
     |> String.capitalize_ascii
 
   let relativize_if_under ~dir filename =
