@@ -5,11 +5,8 @@ type t =
                                The string records the type. *)
   | Signature of string    (** A whole signature. *)
 
-(** An unlikely name, so that it cannot be confused with regular user code. *)
-let single_value_name = "__x"
-
 let parse intf =
-  let prefix = "val " ^ single_value_name ^ " :" in
+  let prefix = "val " ^ Scaffold.single_value_name ^ " :" in
   if String.starts_with ~prefix intf then
     let l = String.length prefix in
     let typ = String.sub intf l (String.length intf - l) in

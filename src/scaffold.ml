@@ -72,17 +72,17 @@ end
 ;;
 |}
 
-let module_aliases () =
-  match Compile_context.module_aliases () with
+let module_aliases aliases =
+  match aliases with
   | [] -> ""
   | aliases ->
      List.map (fun (name, mangled) -> Format.sprintf "module %s = %s" name mangled) aliases
      |> String.concat "\n  "
      |> Format.sprintf module_aliases_format
 
-let build_scaffold ~header ~footer snippet =
+let build_scaffold ~aliases ~header ~footer snippet =
   let scaffold = Buffer.create (String.length (Snippet.contents snippet)) in
-  add_segment ~segment:(module_aliases ()) scaffold;
+  add_segment ~segment:(module_aliases aliases) scaffold;
   add_segment ~segment:header scaffold;
   add_contents snippet scaffold;
   add_segment ~segment:footer scaffold;
@@ -90,8 +90,11 @@ let build_scaffold ~header ~footer snippet =
 
 (** {2 Scaffolds} *)
 
+(** An unlikely name, so that it cannot be confused with regular user code. *)
+let single_value_name = "__x"
+
 let expression_scaffold =
-  Format.sprintf {|let %s = begin|} Interface.single_value_name, {|end|}
+  Format.sprintf {|let %s = begin|} single_value_name, {|end|}
 
 let module_scaffold name =
   {|
@@ -127,7 +130,7 @@ let () = Runtime.Output.set_tactic begin
 end
 |} typ typ
 
-let make kind snippet =
+let make kind ~aliases snippet =
   let header, footer =
     match kind with
     | Expression                  -> expression_scaffold
@@ -136,4 +139,4 @@ let make kind snippet =
     | Unit_tactic                 -> unit_tactic_scaffold
     | Value_tactic { typ }        -> value_tactic_scaffold typ
   in
-  build_scaffold ~header ~footer snippet
+  build_scaffold ~aliases ~header ~footer snippet

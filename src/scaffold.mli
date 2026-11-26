@@ -33,5 +33,16 @@ type kind =
   | Value_tactic of { typ: string }
   (** A tactic of type [typ tactic]. Its return value is printed. *)
 
-val make : kind -> Snippet.t -> string
-(** [make kind snippet] scaffolds [snippet] according to [kind]. *)
+val make : kind -> aliases:(string * string) list -> Snippet.t -> string
+(** [make kind ~aliases snippet] scaffolds [snippet] according to
+    [kind].
+
+    [aliases] is a list of module aliases to prepend to the scaffold's
+    header. *)
+
+(**/**)
+
+val single_value_name : string
+(** The name of the variable used to scaffold {!Expression}.
+    It is used to retrieve the type of an expression from a generated
+    OCaml interface (see {!Interface.parse}). *)
