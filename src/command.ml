@@ -65,6 +65,47 @@ let record_out recorded out =
          out
   in out
 
+(** Compilation arguments for [snippet]: the current compilation context,
+    extended with the build directives and the preprocessor. *)
+let compilation_args ~workspace ~file ~directives snippet =
+  let ppxs = directives.Build_directives.ppx in
+  let pp =
+    match Preprocessing.select_driver ~workspace ~file ~ppxs ~source:(Snippet.contents snippet) with
+    | Ok driver -> Preprocessing.pp_flag driver
+    | Error err ->
+       CErrors.user_err ~loc:(Snippet.loc snippet)
+         Pp.(str "Compilation of PPX driver failed with exit code " ++ int err)
+  in
+  let open Compilation_args in
+  Compile_context.current ()
+  |> add_packages directives.libraries
+  |> add_packages (List.concat_map Ocaml_packages.ppx_runtime_deps ppxs)
+  |> add_extras directives.compiler_options
+  |> add_pp pp
+
+(** Compiles a build file, reporting diagnostics. *)
+let compile ~workspace ~file ~directives ~source mode build_file =
+  let args = compilation_args ~workspace ~file ~directives source in
+  let result, diagnostics = Compiler.compile ~args mode build_file in
+  Error_reporter.report_all ~source diagnostics;
+  match result with
+  | Ok artifact -> artifact
+  | Error code ->
+     (* Compilation errors are reported by [Error_reporter], so this case
+        covers other types of errors. *)
+     CErrors.user_err ~loc:(Snippet.loc source)
+       Pp.(str "Compilation failed with exit code " ++ int code ++ str ".")
+
+(** Writes the scaffolded snippet to a source file, then copies it to the build
+    directory. Module checks are not meant to be inspected, hence the source is
+    only generated in the build directory. *)
+let create_build_file ~workspace ~file ~loaded_units cmd contents =
+  match cmd with
+  | Check_module -> Build_file.generate ~workspace ~dir:".check" ~name:file contents
+  | _ ->
+     Source_file.create ~workspace ~file contents
+     |> Build_file.copy_source ~workspace ~loaded_units
+
 let rec scaffold_mode snippet = function
   | Check_expression -> Expression
   | Eval ->
@@ -81,16 +122,6 @@ let rec scaffold_mode snippet = function
   | Module { name = None; _ } | Check_module ->
      Module { name = None }
 
-(** Writes the scaffolded snippet to a source file, then copies it to the build
-    directory. Module checks are not meant to be inspected, hence the source is
-    only generated in the build directory. *)
-and create_build_file ~workspace ~file ~loaded_units cmd contents =
-  match cmd with
-  | Check_module -> Build_file.generate ~workspace ~dir:".check" ~name:file contents
-  | _ ->
-     Source_file.create ~workspace ~file contents
-     |> Build_file.copy_source ~workspace ~loaded_units
-
 and synterp ?(directives = Build_directives.empty) cmd snippet =
   let build = build_of_cmd cmd in
   let scaffold_mode = scaffold_mode snippet cmd in
@@ -99,16 +130,15 @@ and synterp ?(directives = Build_directives.empty) cmd snippet =
   let loaded_units = Loader.loaded_units () in
   Scaffold.make scaffold_mode snippet
   |> create_build_file ~workspace ~file ~loaded_units cmd
-  |> Compiler.compile ~args:(Compile_context.current ()) ~directives ~source:snippet build.mode
-  |> Result.fold ~ok:(record_out build.recorded) ~error:(Compiler.report_error ~loc:(Snippet.loc snippet))
+  |> compile ~workspace ~file ~directives ~source:snippet build.mode
+  |> record_out build.recorded
 
 (** {1 Interpretation} *)
 
 (** {2 [Check]} *)
 
 let check out =
-  let open Compiler in
-  Interface.read out.file
+  Interface.read out.Compiler.file
   |> Interface.pp
   |> Feedback.msg_info
 

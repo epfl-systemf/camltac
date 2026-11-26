@@ -1,4 +1,4 @@
-(** Compilation of OCaml snippets. *)
+(** High-level interface to the OCaml compiler. *)
 
 (** {1 Compilation} *)
 
@@ -6,13 +6,6 @@
 type compiled =
   { file     : Build_file.t; (** Compiled file. *)
     packages : string list;  (** Packages required to load [file]. *)
-  }
-
-(** Arguments to pass to {!compile}. *)
-type args =
-  { packages     : string list; (** Packages to link ([-package]). *)
-    include_dirs : string list; (** Directories to include ([-I]). *)
-    open_modules : string list; (** Modules to open ([-open]). *)
   }
 
 (** Type of compilation modes. *)
@@ -30,22 +23,6 @@ type mode = Ocamlfind.mode =
   | Infer_interface
   (** Infer the interface ([-i]). *)
 
-(** {2 Compilation errors} *)
-
-type error
-(** Type of compilation errors. *)
-
-val report_error : loc:Loc.t -> error -> 'a
-(** [report_error error] pretty-prints the compilation error(s). *)
-
-(** {2 Compilation method} *)
-
-val compile :
-  args:args ->
-  directives:Build_directives.t ->
-  source:Snippet.t ->
-  mode ->
-  Build_file.t ->
-  (compiled, error) result
-(** [compile ~args ~directives ~source mode file] is the main compilation procedure,
+val compile : args:Compilation_args.t -> mode -> Build_file.t -> (compiled, int) result * Diagnostic.t list
+(** [compile ~args mode file] is the main compilation procedure,
     compiling [file] according to compilation [mode]. *)
