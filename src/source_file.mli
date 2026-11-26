@@ -28,6 +28,15 @@ val create : workspace:Workspace.t -> file:string -> string -> t
     files (see #86).
  *)
 
+val create_companion : workspace:Workspace.t -> name:string -> t -> string -> t
+(** [create_companion ~workspace ~name source contents] writes
+    [contents] to a companion file of [source]. The companion file has
+    the given [name] and is placed in the same directory as [source] in
+    [workspace].
+
+    Unlike [create], this does not increase the internal snippet
+    counter. *)
+
 (** {2 Path resolution} *)
 
 val path : t -> Path.t
