@@ -150,7 +150,7 @@ let remove_hints ?locality globrefs { name; _ } =
 
 let all_hints { db; _ } =
   let hints = ref [] in
-  Hints.Hint_db.iter (fun _ _ list -> hints := list) db;
+  Hints.Hint_db.iter (fun _ _ list -> hints := list @ !hints) db;
   !hints
 
 let print { db; _ } =
