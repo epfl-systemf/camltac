@@ -99,6 +99,17 @@
  (action (diff Module.expected Module.output)))
 
 (rule
+ (targets ModuleShadowing.output)
+ (deps ModuleShadowing.v _dummy_target.v (package rocq-camltac))
+ (action
+  (with-stdout-to ModuleShadowing.output
+   (system "mkdir -p .expected && rocq c -q -Q ../theories Camltac -R . Camltac.Tests -o .expected/ModuleShadowing.vo ModuleShadowing.v"))))
+
+(rule
+ (alias runtest)
+ (action (diff ModuleShadowing.expected ModuleShadowing.output)))
+
+(rule
  (targets Quasiquotes.output)
  (deps Quasiquotes.v _dummy_target.v (package rocq-camltac))
  (action
