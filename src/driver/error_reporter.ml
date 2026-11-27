@@ -71,8 +71,7 @@ let to_loc ~source = function
 let report ~source Diagnostic.{ loc; severity; message } =
   let loc = Option.map (to_loc ~source) loc in
   match severity with
-  | Unknown   -> Feedback.msg_info ?loc message
-  | Alert _   -> Feedback.msg_notice ?loc message
+  | Unknown   -> Feedback.msg_notice ?loc message
   | Warning _ -> Feedback.msg_warning ?loc message
   | Error     -> CErrors.user_err ?loc message
 

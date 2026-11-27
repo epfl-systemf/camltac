@@ -26,10 +26,9 @@ and location =
 
 (** Type of diagnostic severity. *)
 and severity =
-  | Alert of string (** [Alert x] *)
   | Warning of int  (** [Warning n] *)
   | Error           (** [Error:] *)
-  | Unknown
+  | Unknown         (** Unknown severities, e.g., alerts. *)
 
 val parse : In_channel.t -> t list
 (** [parse ic] parses the given input channel into a list of diagnostics. *)

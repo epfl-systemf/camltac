@@ -16,7 +16,6 @@ and location =
   | Range of { file : string; lines : int * int; chars : int * int }
 
 and severity =
-  | Alert of string
   | Warning of int
   | Error
   | Unknown
@@ -58,50 +57,61 @@ let is_header line =
 
     Severity is included on the second line of the diagnostic. *)
 
-let line_severity =
+let parse_severity =
   try_parse "Error" Error <+>
-  try_parse "Warning %d" (fun n -> Warning n) <+>
-  try_parse "Alert %s:" (fun name -> Alert name)
+  try_parse "Warning %d" (fun n -> Warning n)
 
-let parse_severity lines =
-  let line = try List.hd lines with Failure _ -> "" in
-  let severity = line_severity line in
-  match severity with
+let parse_severity_line line =
+  match parse_severity line with
   | Some severity ->
-     let indent = match String.index_opt line ':' with
-       | Some i -> min (i + 2) (String.length line)
-       | None -> 0
+     let message =
+       match String.index_opt line ':' with
+       | Some i -> String.sub line (i + 2) (String.length line - i - 2)
+       | None   -> line
      in
-     severity, indent
-  | None -> Unknown, 0
+     severity, Pp.str message
+  | None -> Unknown, Pp.str line
 
 (** {2 Message} *)
 
-let rec parse_message ~indent = function
+let continuation_indent = function
+  | Error     -> 7
+  | Warning _ -> 2
+  | Unknown   -> 0
+
+let parse_message_line ~severity line =
+  let indent = continuation_indent severity in
+  String.sub line indent (String.length line - indent)
+
+let rec parse_message ~severity = function
   | [] -> Pp.mt (), []
   | line :: rest ->
      if is_header line then Pp.mt (), line :: rest
      else
-       let message, rest = parse_message ~indent rest in
-       (* Continuation lines may be shorter than the indentation. *)
-       let indent = min indent (String.length line) in
-       let line = String.sub line indent (String.length line - indent) in
+       let message, rest = parse_message ~severity rest in
+       let line = parse_message_line ~severity line in
        Pp.(str line ++ fnl () ++ message), rest
 
 (** {2 Main method} *)
 
 let rec parse_lines = function
   | [] -> []
-  | header :: rest ->
+  | [header] ->
+     (* A single empty message. *)
+     let loc = parse_header header in
+     [{ loc; severity = Unknown; message = Pp.mt () }]
+  | header :: severity_line :: rest ->
      match parse_header header with
      | Some loc ->
-        let severity, indent = parse_severity rest in
-        let message, rest = parse_message ~indent rest in
+        let severity, first_line = parse_severity_line severity_line in
+        let continuation, rest = parse_message ~severity rest in
+        let message = Pp.(first_line ++ fnl () ++ continuation) in
         { loc = Some loc; severity; message } :: parse_lines rest
      | None ->
         (* Standalone message. *)
-        let message, rest = parse_message ~indent:0 (header :: rest) in
-        { loc = None; severity = Unknown; message } :: parse_lines rest
+        let severity = Unknown in
+        let message, rest = parse_message ~severity (severity_line :: rest) in
+        { loc = None; severity; message } :: parse_lines rest
 
 let parse stderr =
   In_channel.input_all stderr
