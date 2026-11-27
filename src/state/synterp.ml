@@ -8,34 +8,23 @@ open Camltac_toolchain
     declared modules. *)
 
 module Module_registry = struct
-  type t = entry list
-  and entry =
-    { name: string option;          (** Name of the module. *)
-      artifact: Compiler.Artifact.t (** Module artifact. *)
-    }
+  type t = Compiler.Artifact.t CString.Map.t
 
-  let empty : t = []
+  let empty : t = CString.Map.empty
 
   let register ~name artifact registry =
-    { name; artifact } :: registry
+    match name with
+    | Some name -> CString.Map.add name artifact registry
+    | None      -> registry
 
   let artifacts registry =
-    List.map (fun entry -> entry.artifact) registry
+    CString.Map.bindings registry |> List.map snd
 
   let module_exists name registry =
-    let name_equal = function
-      | Some name' -> String.equal name name'
-      | None       -> false
-    in
-    List.exists (fun entry -> name_equal entry.name) registry
+    CString.Map.mem name registry
 
   let module_name_map registry =
-    let binding { name; artifact } =
-      match name with
-      | None      -> None
-      | Some name -> Some (name, Compiler.Artifact.unit_name artifact)
-    in
-    List.filter_map binding registry |> CString.Map.of_list
+    CString.Map.map Compiler.Artifact.unit_name registry
 end
 
 (** {1 Synterp state} *)
