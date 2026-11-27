@@ -60,7 +60,7 @@ let parse_flag_value ~check ?loc = function
      List.map (subflag_name ~check) flags
 
 let string_list_parser ~check ?loc acc value =
-  Option.default [] acc @ (parse_flag_value ~check value)
+  Option.default [] acc @ (parse_flag_value ~check ?loc value)
 
 (** {2 Validation} *)
 
