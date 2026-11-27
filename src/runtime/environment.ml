@@ -17,7 +17,9 @@ let map f env =
 let map_unresolved f env =
   let f var = function
     | Some v -> Some v
-    | None -> try f var with _ -> None
+    | None   ->
+       try f var
+       with e when CErrors.noncritical e -> None
   in
   Id.Map.mapi f env
 
