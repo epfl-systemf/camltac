@@ -37,15 +37,16 @@ let id id =
   Goal_select.SelectId (Names.Id.of_string id)
 
 let only selectors t =
-  (* Fuse [nth] and [range] selectors. *)
   let fold acc x =
     let open Goal_select in
     match acc, x with
     | SelectList [], _ -> x
-    | _, SelectAll -> Goal_select.SelectAll
+    | _, SelectAll | SelectAll, _ -> Goal_select.SelectAll
+    (* Fuse [nth] and [range] selectors. *)
     | SelectList l, SelectList l' -> Goal_select.SelectList (l @ l')
-    | SelectList l, SelectNth n -> Goal_select.SelectList (l @ [(n, n)])
-    | SelectNth n, SelectList l -> Goal_select.SelectList ([(n, n)] @ l)
+    | SelectList l, SelectNth n   -> Goal_select.SelectList (l @ [(n, n)])
+    | SelectNth n , SelectList l  -> Goal_select.SelectList ([(n, n)] @ l)
+    | SelectNth n , SelectNth m   -> Goal_select.SelectList ([(n, n); (m, m)])
     | _, _ -> assert false
   in
   let selectors = List.fold_left fold (SelectList []) selectors in
